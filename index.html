@@ -1,0 +1,383 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<title>키즈짱 시장놀이</title>
+<style>
+  :root{
+    --bg1:#fff3d6; --bg2:#ffe0ec; --ink:#3a2b1f;
+    --card:#ffffff; --shadow:0 8px 0 rgba(0,0,0,.12);
+    --red:#ff6b6b; --green:#4cd68a; --blue:#5cc8ff; --yellow:#ffd23f;
+    --purple:#b085ff; --orange:#ff9f45;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0; height:100%;}
+  body{
+    font-family:"Jua","Baloo 2","Comic Sans MS",system-ui,sans-serif;
+    color:var(--ink);
+    background:linear-gradient(160deg,var(--bg1),var(--bg2));
+    display:flex; align-items:center; justify-content:center;
+    min-height:100%; padding:14px; overflow-x:hidden;
+  }
+  .frame{
+    width:100%; max-width:520px; background:var(--card);
+    border-radius:28px; padding:18px 16px 22px;
+    box-shadow:var(--shadow); position:relative; overflow:hidden;
+  }
+  h1{margin:0; text-align:center; font-size:30px; letter-spacing:1px;}
+  h1 .emo{filter:drop-shadow(0 3px 0 rgba(0,0,0,.1));}
+  .subtitle{text-align:center; color:#a58b6f; margin:2px 0 12px; font-size:14px;}
+
+  /* top status bar */
+  .hud{display:flex; gap:8px; justify-content:space-between; align-items:stretch; margin-bottom:12px;}
+  .chip{
+    flex:1; background:var(--bg1); border-radius:16px; padding:8px 6px;
+    text-align:center; border:3px solid #fff; box-shadow:0 4px 0 rgba(0,0,0,.08);
+  }
+  .chip .lbl{font-size:12px; color:#a58b6f;}
+  .chip .val{font-size:20px; line-height:1.1;}
+
+  /* shopping list */
+  .board{
+    background:linear-gradient(180deg,#fffdf6,#fff6e2);
+    border-radius:20px; padding:12px; margin-bottom:12px;
+    border:3px dashed #ffcf7d;
+  }
+  .board h2{margin:0 0 8px; font-size:17px; text-align:center;}
+  .list{display:flex; flex-wrap:wrap; gap:8px; justify-content:center;}
+  .want{
+    display:flex; align-items:center; gap:6px; background:#fff;
+    border-radius:14px; padding:6px 10px; box-shadow:0 3px 0 rgba(0,0,0,.08);
+    font-size:16px; transition:transform .15s;
+  }
+  .want.done{background:#e7ffe8; text-decoration:line-through; opacity:.65;}
+  .want .qty{background:var(--red); color:#fff; border-radius:10px; padding:0 6px; font-size:13px;}
+  .want.done .qty{background:var(--green);}
+
+  /* market shelf */
+  .shelf{display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:12px;}
+  .item{
+    background:#fff; border:none; border-radius:18px; padding:10px 6px 8px;
+    box-shadow:0 5px 0 rgba(0,0,0,.12); cursor:pointer; text-align:center;
+    transition:transform .08s, box-shadow .08s; font-family:inherit; color:var(--ink);
+  }
+  .item:active{transform:translateY(4px); box-shadow:0 1px 0 rgba(0,0,0,.12);}
+  .item .pic{font-size:40px; line-height:1;}
+  .item .nm{font-size:14px; margin-top:2px;}
+  .item .pr{font-size:14px; color:#ff7a3d; margin-top:1px;}
+
+  /* cart */
+  .cart{
+    background:var(--bg2); border-radius:20px; padding:10px 12px; margin-bottom:12px;
+    border:3px solid #fff;
+  }
+  .cart h2{margin:0 0 6px; font-size:16px; display:flex; justify-content:space-between; align-items:center;}
+  .cart .total{color:#e23; font-size:18px;}
+  .cartlist{display:flex; flex-wrap:wrap; gap:6px; min-height:34px; align-items:center;}
+  .citem{
+    background:#fff; border-radius:12px; padding:4px 8px; font-size:15px; cursor:pointer;
+    box-shadow:0 2px 0 rgba(0,0,0,.1); user-select:none;
+  }
+  .citem:active{transform:scale(.94);}
+  .empty{color:#b39b82; font-size:14px;}
+
+  .btns{display:flex; gap:10px;}
+  .btn{
+    flex:1; border:none; border-radius:18px; padding:14px; font-size:18px;
+    font-family:inherit; color:#fff; cursor:pointer; box-shadow:0 5px 0 rgba(0,0,0,.18);
+    transition:transform .08s, box-shadow .08s;
+  }
+  .btn:active{transform:translateY(4px); box-shadow:0 1px 0 rgba(0,0,0,.18);}
+  .btn.pay{background:var(--green);}
+  .btn.reset{background:var(--red); flex:0 0 90px;}
+
+  /* speech bubble */
+  .talk{
+    margin-top:12px; background:#fffbe9; border:3px solid #ffe08a; border-radius:16px;
+    padding:10px 12px; font-size:15px; text-align:center; min-height:22px;
+  }
+
+  /* overlay */
+  .overlay{
+    position:absolute; inset:0; background:rgba(58,43,31,.55);
+    display:flex; align-items:center; justify-content:center; padding:20px;
+    opacity:0; pointer-events:none; transition:opacity .25s;
+  }
+  .overlay.show{opacity:1; pointer-events:auto;}
+  .modal{
+    background:#fff; border-radius:24px; padding:24px 20px; text-align:center;
+    max-width:340px; width:100%; box-shadow:0 12px 0 rgba(0,0,0,.2);
+    transform:scale(.85); transition:transform .25s;
+  }
+  .overlay.show .modal{transform:scale(1);}
+  .modal .big{font-size:56px;}
+  .modal h2{margin:6px 0; font-size:26px;}
+  .modal p{margin:6px 0 16px; color:#7a6650; font-size:16px;}
+  .stars{font-size:34px; letter-spacing:4px;}
+
+  .float{position:absolute; font-size:26px; pointer-events:none; animation:up 1s ease-out forwards;}
+  @keyframes up{from{transform:translateY(0); opacity:1;} to{transform:translateY(-70px); opacity:0;}}
+
+  .footer{text-align:center; margin-top:12px; font-size:12px; color:#c3ad95;}
+</style>
+</head>
+<body>
+  <div class="frame" id="frame">
+    <h1><span class="emo">🛒</span> 키즈짱 시장놀이</h1>
+    <div class="subtitle">장바구니에 담고, 딱 맞게 계산해요!</div>
+
+    <div class="hud">
+      <div class="chip"><div class="lbl">단계</div><div class="val" id="level">1</div></div>
+      <div class="chip"><div class="lbl">별점</div><div class="val" id="score">⭐ 0</div></div>
+      <div class="chip"><div class="lbl">내 지갑</div><div class="val" id="wallet">2000원</div></div>
+    </div>
+
+    <div class="board">
+      <h2>📋 오늘의 장보기 목록</h2>
+      <div class="list" id="wishlist"></div>
+    </div>
+
+    <div class="shelf" id="shelf"></div>
+
+    <div class="cart">
+      <h2>🧺 장바구니 <span class="total" id="total">0원</span></h2>
+      <div class="cartlist" id="cartlist"><span class="empty">아직 비어있어요~ 물건을 담아보세요!</span></div>
+    </div>
+
+    <div class="btns">
+      <button class="btn reset" id="resetBtn">비우기</button>
+      <button class="btn pay" id="payBtn">계산하기 💰</button>
+    </div>
+
+    <div class="talk" id="talk">안녕! 나는 시장 아저씨야. 목록대로 물건을 담아볼까? 😄</div>
+
+    <div class="footer">키즈짱 시장놀이 · 아이들을 위한 계산 놀이</div>
+
+    <div class="overlay" id="overlay">
+      <div class="modal">
+        <div class="big" id="mBig">🎉</div>
+        <h2 id="mTitle">참 잘했어요!</h2>
+        <div class="stars" id="mStars">⭐⭐⭐</div>
+        <p id="mText">다음 단계로 가볼까요?</p>
+        <button class="btn pay" id="nextBtn" style="box-shadow:0 5px 0 rgba(0,0,0,.18)">다음 단계 ▶</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+(function(){
+  // ---- 상품 데이터 (이모지 + 이름 + 가격) ----
+  const CATALOG = [
+    {id:"apple", pic:"🍎", nm:"사과", pr:200},
+    {id:"banana",pic:"🍌", nm:"바나나", pr:300},
+    {id:"milk",  pic:"🥛", nm:"우유", pr:500},
+    {id:"bread", pic:"🍞", nm:"빵", pr:400},
+    {id:"fish",  pic:"🐟", nm:"생선", pr:600},
+    {id:"carrot",pic:"🥕", nm:"당근", pr:100},
+    {id:"egg",   pic:"🥚", nm:"계란", pr:250},
+    {id:"candy", pic:"🍬", nm:"사탕", pr:150},
+    {id:"cheese",pic:"🧀", nm:"치즈", pr:450},
+    {id:"grape", pic:"🍇", nm:"포도", pr:350},
+    {id:"corn",  pic:"🌽", nm:"옥수수", pr:200},
+    {id:"icecream",pic:"🍦",nm:"아이스크림", pr:550},
+  ];
+
+  const $ = id => document.getElementById(id);
+  const rnd = n => Math.floor(Math.random()*n);
+  const won = n => n.toLocaleString("ko-KR") + "원";
+
+  let level=1, score=0, wallet=2000;
+  let shelfItems=[];   // 이번 단계 진열 상품
+  let wishlist=[];     // {item, qty, got}
+  let cart=[];         // 담은 상품 항목 배열 (item 객체)
+
+  // ---- Web Audio 간단 효과음 ----
+  let AC=null;
+  function beep(freq, dur, type){
+    try{
+      AC = AC || new (window.AudioContext||window.webkitAudioContext)();
+      const o=AC.createOscillator(), g=AC.createGain();
+      o.type=type||"sine"; o.frequency.value=freq;
+      o.connect(g); g.connect(AC.destination);
+      g.gain.setValueAtTime(0.0001, AC.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.25, AC.currentTime+0.02);
+      g.gain.exponentialRampToValueAtTime(0.0001, AC.currentTime+dur);
+      o.start(); o.stop(AC.currentTime+dur);
+    }catch(e){}
+  }
+  const sPick  = ()=>beep(660,0.12,"triangle");
+  const sDrop  = ()=>beep(330,0.10,"square");
+  const sWin   = ()=>{beep(523,0.12);setTimeout(()=>beep(659,0.12),120);setTimeout(()=>beep(784,0.2),240);};
+  const sOops  = ()=>beep(160,0.25,"sawtooth");
+
+  function say(msg){ $("talk").textContent = msg; }
+
+  // ---- 단계 셋업 ----
+  function setupLevel(){
+    const count = Math.min(6, 3 + level);            // 진열 상품 수 (최대 6)
+    const wishCount = Math.min(1 + Math.floor(level/2), 3); // 살 종류 수 (최대 3)
+    const maxQty = level >= 3 ? 3 : (level >= 2 ? 2 : 1);
+
+    // 진열 상품 뽑기
+    const pool = [...CATALOG].sort(()=>Math.random()-0.5);
+    shelfItems = pool.slice(0, Math.max(count, wishCount+2)).slice(0,6);
+
+    // 살 목록 만들기
+    const chosen = [...shelfItems].sort(()=>Math.random()-0.5).slice(0, wishCount);
+    wishlist = chosen.map(it => ({item:it, qty:1+rnd(maxQty), got:0}));
+
+    // 지갑: 필요한 금액보다 넉넉하게
+    const need = wishlist.reduce((s,w)=>s+w.item.pr*w.qty,0);
+    wallet = Math.ceil((need + 300) / 100) * 100;
+
+    cart=[];
+    renderAll();
+    say("이번엔 " + wishlist.map(w=>w.item.nm+" "+w.qty+"개").join(", ") + " 사러 왔어요! 🧺");
+  }
+
+  function renderAll(){ renderHud(); renderWish(); renderShelf(); renderCart(); }
+
+  function renderHud(){
+    $("level").textContent = level;
+    $("score").textContent = "⭐ " + score;
+    $("wallet").textContent = won(wallet);
+  }
+
+  function renderWish(){
+    const box=$("wishlist"); box.innerHTML="";
+    wishlist.forEach(w=>{
+      const need = w.qty;
+      const have = countInCart(w.item.id);
+      const done = have >= need;
+      w.got = have;
+      const el=document.createElement("div");
+      el.className="want"+(done?" done":"");
+      el.innerHTML = `${w.item.pic} ${w.item.nm} <span class="qty">${have}/${need}</span>`;
+      box.appendChild(el);
+    });
+  }
+
+  function renderShelf(){
+    const box=$("shelf"); box.innerHTML="";
+    shelfItems.forEach(it=>{
+      const b=document.createElement("button");
+      b.className="item";
+      b.innerHTML=`<div class="pic">${it.pic}</div><div class="nm">${it.nm}</div><div class="pr">${won(it.pr)}</div>`;
+      b.onclick=(e)=>addToCart(it,e);
+      box.appendChild(b);
+    });
+  }
+
+  function renderCart(){
+    const box=$("cartlist"); box.innerHTML="";
+    if(cart.length===0){
+      box.innerHTML='<span class="empty">아직 비어있어요~ 물건을 담아보세요!</span>';
+    }else{
+      cart.forEach((it,idx)=>{
+        const c=document.createElement("span");
+        c.className="citem";
+        c.innerHTML=`${it.pic} ${it.nm} <b style="color:#ff7a3d">${won(it.pr)}</b> ✕`;
+        c.title="빼기";
+        c.onclick=()=>removeFromCart(idx);
+        box.appendChild(c);
+      });
+    }
+    $("total").textContent = won(cartTotal());
+  }
+
+  function countInCart(id){ return cart.filter(c=>c.id===id).length; }
+  function cartTotal(){ return cart.reduce((s,c)=>s+c.pr,0); }
+
+  function addToCart(it,e){
+    cart.push(it);
+    sPick();
+    floaty(it.pic, e);
+    renderWish(); renderCart();
+    // 지갑 초과 경고
+    if(cartTotal()>wallet){ say("앗! 지갑보다 비싸요~ 조금 빼볼까요? 💸"); }
+  }
+
+  function removeFromCart(idx){
+    cart.splice(idx,1); sDrop();
+    renderWish(); renderCart();
+  }
+
+  function floaty(txt,e){
+    if(!e) return;
+    const f=document.createElement("div");
+    f.className="float"; f.textContent=txt;
+    const r=$("frame").getBoundingClientRect();
+    f.style.left=(e.clientX-r.left-12)+"px";
+    f.style.top=(e.clientY-r.top-12)+"px";
+    $("frame").appendChild(f);
+    setTimeout(()=>f.remove(),1000);
+  }
+
+  // ---- 계산하기 ----
+  function pay(){
+    // 목록 정확히 채웠는지 검사
+    let ok=true, extra=false;
+    const needMap={};
+    wishlist.forEach(w=>needMap[w.item.id]=w.qty);
+    const haveMap={};
+    cart.forEach(c=>haveMap[c.id]=(haveMap[c.id]||0)+1);
+
+    // 부족/초과 체크
+    for(const w of wishlist){
+      if((haveMap[w.item.id]||0)!==w.qty){ ok=false; }
+    }
+    for(const id in haveMap){
+      if(!needMap[id]){ extra=true; ok=false; }
+      else if(haveMap[id]>needMap[id]){ extra=true; ok=false; }
+    }
+
+    const total=cartTotal();
+    if(total>wallet){
+      sOops(); say("지갑에 돈이 부족해요! 물건을 조금 빼주세요~ 💰");
+      return;
+    }
+    if(cart.length===0){ sOops(); say("장바구니가 비었어요~ 물건을 담아주세요! 🧺"); return; }
+
+    if(ok){
+      // 성공! 남은 돈 적을수록 별 많이
+      const left=wallet-total;
+      let stars=1;
+      if(left<=200) stars=3; else if(left<=500) stars=2;
+      score+=stars;
+      sWin();
+      showModal("🎉","참 잘했어요!", "⭐".repeat(stars),
+        `딱 맞게 계산했어요! 거스름돈은 ${won(left)} 이에요. 별 ${stars}개 획득!`);
+    }else{
+      sOops();
+      if(extra) say("목록에 없는 게 있거나 너무 많이 담았어요! 다시 확인해봐요 🔎");
+      else say("아직 목록을 다 못 채웠어요~ 조금만 더! 💪");
+    }
+  }
+
+  function showModal(big,title,stars,text){
+    $("mBig").textContent=big;
+    $("mTitle").textContent=title;
+    $("mStars").textContent=stars;
+    $("mText").textContent=text;
+    $("overlay").classList.add("show");
+  }
+
+  function nextLevel(){
+    $("overlay").classList.remove("show");
+    level++;
+    if(level>6){ level=1; }   // 계속 순환 (난이도 최고 유지)
+    setupLevel();
+  }
+
+  // ---- 이벤트 ----
+  $("payBtn").onclick=pay;
+  $("resetBtn").onclick=()=>{ cart=[]; sDrop(); renderWish(); renderCart(); say("장바구니를 비웠어요! 다시 담아볼까요? 😊"); };
+  $("nextBtn").onclick=nextLevel;
+
+  // 시작!
+  setupLevel();
+})();
+</script>
+</body>
+</html>
