@@ -6,377 +6,466 @@
 <title>키즈짱 시장놀이</title>
 <style>
   :root{
-    --bg1:#fff3d6; --bg2:#ffe0ec; --ink:#3a2b1f;
-    --card:#ffffff; --shadow:0 8px 0 rgba(0,0,0,.12);
-    --red:#ff6b6b; --green:#4cd68a; --blue:#5cc8ff; --yellow:#ffd23f;
-    --purple:#b085ff; --orange:#ff9f45;
+    --ink:#2e2620; --card:#fffdf8;
+    --gold:#f7b731; --green:#20bf6b; --blue:#3867d6; --red:#eb3b5a;
+    --brown:#a0642e; --sky:#a5d8ff; --grass:#8ce99a;
+    --shadow:0 6px 0 rgba(0,0,0,.14);
   }
-  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent; font-family:inherit;}
   html,body{margin:0; height:100%;}
   body{
-    font-family:"Jua","Baloo 2","Comic Sans MS",system-ui,sans-serif;
-    color:var(--ink);
-    background:linear-gradient(160deg,var(--bg1),var(--bg2));
-    display:flex; align-items:center; justify-content:center;
-    min-height:100%; padding:14px; overflow-x:hidden;
+    font-family:"Jua","Baloo 2","Comic Sans MS",system-ui,sans-serif; color:var(--ink);
+    background:linear-gradient(160deg,#fff4d6,#ffe3c0); display:flex; justify-content:center;
+    min-height:100%; padding:10px; overflow-x:hidden;
   }
-  .frame{
-    width:100%; max-width:520px; background:var(--card);
-    border-radius:28px; padding:18px 16px 22px;
-    box-shadow:var(--shadow); position:relative; overflow:hidden;
-  }
-  h1{margin:0; text-align:center; font-size:30px; letter-spacing:1px;}
-  h1 .emo{filter:drop-shadow(0 3px 0 rgba(0,0,0,.1));}
-  .subtitle{text-align:center; color:#a58b6f; margin:2px 0 12px; font-size:14px;}
+  .frame{width:100%; max-width:540px; background:var(--card); border-radius:24px;
+    padding:14px 12px 16px; box-shadow:var(--shadow); position:relative; overflow:hidden;}
+  h1{margin:0 0 2px; text-align:center; font-size:26px;}
+  .sub{text-align:center; color:#b09070; font-size:12px; margin-bottom:10px;}
 
-  /* top status bar */
-  .hud{display:flex; gap:8px; justify-content:space-between; align-items:stretch; margin-bottom:12px;}
-  .chip{
-    flex:1; background:var(--bg1); border-radius:16px; padding:8px 6px;
-    text-align:center; border:3px solid #fff; box-shadow:0 4px 0 rgba(0,0,0,.08);
-  }
-  .chip .lbl{font-size:12px; color:#a58b6f;}
-  .chip .val{font-size:20px; line-height:1.1;}
+  /* HUD */
+  .hud{display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:10px;}
+  .stat{background:#fff7e6; border:3px solid #fff; border-radius:14px; padding:7px 9px; box-shadow:0 3px 0 rgba(0,0,0,.07);}
+  .stat .top{display:flex; justify-content:space-between; align-items:center; font-size:13px; color:#8a7355;}
+  .stat .big{font-size:18px; line-height:1.15;}
+  .bar{height:10px; border-radius:8px; background:#eadfce; overflow:hidden; margin-top:5px;}
+  .bar > i{display:block; height:100%; width:0%; border-radius:8px; transition:width .3s;}
+  .bar.gong > i{background:linear-gradient(90deg,#f7b731,#fa8231);}
+  .bar.fatigue > i{background:linear-gradient(90deg,#20bf6b,#f7b731,#eb3b5a);}
 
-  /* shopping list */
-  .board{
-    background:linear-gradient(180deg,#fffdf6,#fff6e2);
-    border-radius:20px; padding:12px; margin-bottom:12px;
-    border:3px dashed #ffcf7d;
-  }
-  .board h2{margin:0 0 8px; font-size:17px; text-align:center;}
-  .list{display:flex; flex-wrap:wrap; gap:8px; justify-content:center;}
-  .want{
-    display:flex; align-items:center; gap:6px; background:#fff;
-    border-radius:14px; padding:6px 10px; box-shadow:0 3px 0 rgba(0,0,0,.08);
-    font-size:16px; transition:transform .15s;
-  }
-  .want.done{background:#e7ffe8; text-decoration:line-through; opacity:.65;}
-  .want .qty{background:var(--red); color:#fff; border-radius:10px; padding:0 6px; font-size:13px;}
-  .want.done .qty{background:var(--green);}
-
-  /* market shelf */
-  .shelf{display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:12px;}
-  .item{
-    background:#fff; border:none; border-radius:18px; padding:10px 6px 8px;
-    box-shadow:0 5px 0 rgba(0,0,0,.12); cursor:pointer; text-align:center;
-    transition:transform .08s, box-shadow .08s; font-family:inherit; color:var(--ink);
-  }
-  .item:active{transform:translateY(4px); box-shadow:0 1px 0 rgba(0,0,0,.12);}
-  .item .pic{font-size:40px; line-height:1;}
-  .item .nm{font-size:14px; margin-top:2px;}
-  .item .pr{font-size:14px; color:#ff7a3d; margin-top:1px;}
-
-  /* cart */
-  .cart{
-    background:var(--bg2); border-radius:20px; padding:10px 12px; margin-bottom:12px;
-    border:3px solid #fff;
-  }
-  .cart h2{margin:0 0 6px; font-size:16px; display:flex; justify-content:space-between; align-items:center;}
-  .cart .total{color:#e23; font-size:18px;}
-  .cartlist{display:flex; flex-wrap:wrap; gap:6px; min-height:34px; align-items:center;}
-  .citem{
-    background:#fff; border-radius:12px; padding:4px 8px; font-size:15px; cursor:pointer;
-    box-shadow:0 2px 0 rgba(0,0,0,.1); user-select:none;
-  }
-  .citem:active{transform:scale(.94);}
-  .empty{color:#b39b82; font-size:14px;}
-
-  .btns{display:flex; gap:10px;}
-  .btn{
-    flex:1; border:none; border-radius:18px; padding:14px; font-size:18px;
-    font-family:inherit; color:#fff; cursor:pointer; box-shadow:0 5px 0 rgba(0,0,0,.18);
-    transition:transform .08s, box-shadow .08s;
-  }
+  /* scene */
+  .scene{position:relative; border-radius:18px; padding:16px 12px; text-align:center; margin-bottom:10px;
+    min-height:150px; display:flex; flex-direction:column; justify-content:center; align-items:center; overflow:hidden;
+    border:3px solid rgba(255,255,255,.7);}
+  .scene .placeName{font-size:20px; margin-bottom:2px; text-shadow:0 2px 0 rgba(255,255,255,.5);}
+  .scene .placeDesc{font-size:13px; color:rgba(0,0,0,.55); margin-bottom:10px;}
+  .hero{font-size:56px; line-height:1; filter:drop-shadow(0 4px 2px rgba(0,0,0,.2)); transition:transform .12s;}
+  .hero.work{animation:bob .4s ease-in-out;}
+  @keyframes bob{0%,100%{transform:translateY(0) rotate(0)}25%{transform:translateY(-8px) rotate(-8deg)}75%{transform:translateY(-4px) rotate(8deg)}}
+  .act{margin-top:12px; display:flex; gap:8px; flex-wrap:wrap; justify-content:center;}
+  .btn{border:none; border-radius:16px; padding:12px 16px; font-size:16px; color:#fff; cursor:pointer;
+    box-shadow:0 5px 0 rgba(0,0,0,.18); transition:transform .07s, box-shadow .07s;}
   .btn:active{transform:translateY(4px); box-shadow:0 1px 0 rgba(0,0,0,.18);}
-  .btn.pay{background:var(--green);}
-  .btn.reset{background:var(--red); flex:0 0 90px;}
+  .btn:disabled{filter:grayscale(.6) brightness(.9); opacity:.7; cursor:not-allowed;}
+  .btn.work{background:var(--green);} .btn.sell{background:var(--gold);}
+  .btn.sleep{background:var(--blue);} .btn.give{background:var(--red);} .btn.up{background:var(--brown);}
 
-  /* speech bubble */
-  .talk{
-    margin-top:12px; background:#fffbe9; border:3px solid #ffe08a; border-radius:16px;
-    padding:10px 12px; font-size:15px; text-align:center; min-height:22px;
-  }
+  /* talk */
+  .talk{background:#fffbe9; border:3px solid #ffe08a; border-radius:14px; padding:9px 11px;
+    font-size:14px; text-align:center; min-height:20px; margin-bottom:10px;}
 
-  /* overlay */
-  .overlay{
-    position:absolute; inset:0; background:rgba(58,43,31,.55);
-    display:flex; align-items:center; justify-content:center; padding:20px;
-    opacity:0; pointer-events:none; transition:opacity .25s;
-  }
-  .overlay.show{opacity:1; pointer-events:auto;}
-  .modal{
-    background:#fff; border-radius:24px; padding:24px 20px; text-align:center;
-    max-width:340px; width:100%; box-shadow:0 12px 0 rgba(0,0,0,.2);
-    transform:scale(.85); transition:transform .25s;
-  }
-  .overlay.show .modal{transform:scale(1);}
-  .modal .big{font-size:56px;}
-  .modal h2{margin:6px 0; font-size:26px;}
-  .modal p{margin:6px 0 16px; color:#7a6650; font-size:16px;}
-  .stars{font-size:34px; letter-spacing:4px;}
+  /* inventory */
+  .panel{background:#f6efe2; border-radius:16px; padding:10px; margin-bottom:10px; border:3px solid #fff;}
+  .panel h3{margin:0 0 7px; font-size:15px; display:flex; justify-content:space-between; align-items:center;}
+  .inv{display:flex; flex-wrap:wrap; gap:6px; min-height:30px; align-items:center;}
+  .slot{background:#fff; border-radius:12px; padding:4px 8px; font-size:15px; box-shadow:0 2px 0 rgba(0,0,0,.08);
+    display:flex; align-items:center; gap:4px;}
+  .slot .cnt{background:var(--brown); color:#fff; border-radius:9px; font-size:12px; padding:0 5px;}
+  .slot.rare{box-shadow:0 0 0 2px var(--gold), 0 2px 0 rgba(0,0,0,.1);}
+  .muted{color:#b3a082; font-size:13px;}
+  .shopgrid{display:grid; grid-template-columns:1fr 1fr; gap:7px;}
+  .row{display:flex; justify-content:space-between; align-items:center; background:#fff; border-radius:12px;
+    padding:6px 8px; font-size:14px; box-shadow:0 2px 0 rgba(0,0,0,.07);}
+  .row button{border:none; background:var(--gold); color:#fff; border-radius:10px; padding:5px 9px; font-size:13px; cursor:pointer; box-shadow:0 3px 0 rgba(0,0,0,.15);}
+  .row button:active{transform:translateY(2px); box-shadow:0 1px 0 rgba(0,0,0,.15);}
 
-  .float{position:absolute; font-size:26px; pointer-events:none; animation:up 1s ease-out forwards;}
-  @keyframes up{from{transform:translateY(0); opacity:1;} to{transform:translateY(-70px); opacity:0;}}
+  /* nav */
+  .nav{display:grid; grid-template-columns:repeat(4,1fr); gap:6px;}
+  .nav button{border:none; border-radius:14px; padding:9px 4px; font-size:12px; cursor:pointer;
+    background:#fff; box-shadow:0 3px 0 rgba(0,0,0,.1); color:var(--ink); line-height:1.3;}
+  .nav button .ic{font-size:20px; display:block;}
+  .nav button.on{background:var(--gold); color:#fff;}
+  .nav button.lock{filter:grayscale(1); opacity:.55;}
+  .nav button:active{transform:translateY(2px);}
 
-  .footer{text-align:center; margin-top:12px; font-size:12px; color:#c3ad95;}
+  /* floats + toast */
+  .float{position:absolute; font-size:20px; pointer-events:none; animation:fl 1s ease-out forwards; z-index:5;}
+  @keyframes fl{from{transform:translate(0,0); opacity:1} to{transform:translate(var(--dx,0),-60px); opacity:0}}
+  .toast{position:absolute; left:50%; top:14px; transform:translateX(-50%) translateY(-20px); background:var(--ink); color:#fff;
+    padding:8px 14px; border-radius:20px; font-size:14px; opacity:0; transition:.3s; z-index:20; pointer-events:none; white-space:nowrap;}
+  .toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
+
+  /* rankup overlay */
+  .ov{position:absolute; inset:0; background:rgba(46,38,32,.6); display:flex; align-items:center; justify-content:center;
+    padding:20px; opacity:0; pointer-events:none; transition:.25s; z-index:30;}
+  .ov.show{opacity:1; pointer-events:auto;}
+  .modal{background:#fff; border-radius:22px; padding:22px 18px; text-align:center; max-width:320px; width:100%;
+    box-shadow:0 10px 0 rgba(0,0,0,.2); transform:scale(.85); transition:.25s;}
+  .ov.show .modal{transform:scale(1);}
+  .modal .em{font-size:52px;} .modal h2{margin:6px 0; font-size:24px;} .modal p{color:#7a6650; font-size:14px; margin:4px 0 14px;}
 </style>
 </head>
 <body>
   <div class="frame" id="frame">
-    <h1><span class="emo">🛒</span> 키즈짱 시장놀이</h1>
-    <div class="subtitle">장바구니에 담고, 딱 맞게 계산해요!</div>
+    <h1>🏘️ 키즈짱 시장놀이</h1>
+    <div class="sub">자원을 모아 팔고 · 계급을 올리고 · 선행을 쌓아요</div>
 
     <div class="hud">
-      <div class="chip"><div class="lbl">단계</div><div class="val" id="level">1</div></div>
-      <div class="chip"><div class="lbl">별점</div><div class="val" id="score">⭐ 0</div></div>
-      <div class="chip"><div class="lbl">내 지갑</div><div class="val" id="wallet">2000원</div></div>
+      <div class="stat">
+        <div class="top"><span id="rankName">평민</span><span>내공</span></div>
+        <div class="big">🏅 <span id="rankNext">다음:견습</span></div>
+        <div class="bar gong"><i id="gongBar"></i></div>
+      </div>
+      <div class="stat">
+        <div class="top"><span>피로도</span><span id="fatTxt">0%</span></div>
+        <div class="big">😴</div>
+        <div class="bar fatigue"><i id="fatBar"></i></div>
+      </div>
+      <div class="stat">
+        <div class="top"><span>게임머니</span><span>💰</span></div>
+        <div class="big" id="money">0원</div>
+      </div>
+      <div class="stat">
+        <div class="top"><span>선행점수</span><span>❤️</span></div>
+        <div class="big" id="deed">0점</div>
+      </div>
     </div>
 
-    <div class="board">
-      <h2>📋 오늘의 장보기 목록</h2>
-      <div class="list" id="wishlist"></div>
+    <div class="scene" id="scene"></div>
+    <div class="talk" id="talk">환영해요! 숲·바다·광산·들판에서 자원을 모아 상점에 팔아봐요! 🌟</div>
+
+    <div class="panel" id="dynPanel"></div>
+
+    <div class="panel">
+      <h3>🎒 내 가방 <span class="muted" id="invCount">0칸</span></h3>
+      <div class="inv" id="inv"><span class="muted">아직 비어있어요~ 자원을 모아보세요!</span></div>
     </div>
 
-    <div class="shelf" id="shelf"></div>
+    <div class="nav" id="nav"></div>
 
-    <div class="cart">
-      <h2>🧺 장바구니 <span class="total" id="total">0원</span></h2>
-      <div class="cartlist" id="cartlist"><span class="empty">아직 비어있어요~ 물건을 담아보세요!</span></div>
-    </div>
-
-    <div class="btns">
-      <button class="btn reset" id="resetBtn">비우기</button>
-      <button class="btn pay" id="payBtn">계산하기 💰</button>
-    </div>
-
-    <div class="talk" id="talk">안녕! 나는 시장 아저씨야. 목록대로 물건을 담아볼까? 😄</div>
-
-    <div class="footer">키즈짱 시장놀이 · 아이들을 위한 계산 놀이</div>
-
-    <div class="overlay" id="overlay">
+    <div class="toast" id="toast"></div>
+    <div class="ov" id="ov">
       <div class="modal">
-        <div class="big" id="mBig">🎉</div>
-        <h2 id="mTitle">참 잘했어요!</h2>
-        <div class="stars" id="mStars">⭐⭐⭐</div>
-        <p id="mText">다음 단계로 가볼까요?</p>
-        <button class="btn pay" id="nextBtn" style="box-shadow:0 5px 0 rgba(0,0,0,.18)">다음 단계 ▶</button>
+        <div class="em" id="ovEm">🎉</div>
+        <h2 id="ovTitle">계급 상승!</h2>
+        <p id="ovText"></p>
+        <button class="btn work" id="ovBtn" style="box-shadow:0 5px 0 rgba(0,0,0,.18)">좋았어! ▶</button>
       </div>
     </div>
   </div>
 
 <script>
 (function(){
-  // ---- 상품 데이터 (이모지 + 이름 + 가격) ----
-  const CATALOG = [
-    {id:"apple", pic:"🍎", nm:"사과", pr:200},
-    {id:"banana",pic:"🍌", nm:"바나나", pr:300},
-    {id:"milk",  pic:"🥛", nm:"우유", pr:500},
-    {id:"bread", pic:"🍞", nm:"빵", pr:400},
-    {id:"fish",  pic:"🐟", nm:"생선", pr:600},
-    {id:"carrot",pic:"🥕", nm:"당근", pr:100},
-    {id:"egg",   pic:"🥚", nm:"계란", pr:250},
-    {id:"candy", pic:"🍬", nm:"사탕", pr:150},
-    {id:"cheese",pic:"🧀", nm:"치즈", pr:450},
-    {id:"grape", pic:"🍇", nm:"포도", pr:350},
-    {id:"corn",  pic:"🌽", nm:"옥수수", pr:200},
-    {id:"icecream",pic:"🍦",nm:"아이스크림", pr:550},
-  ];
-
   const $ = id => document.getElementById(id);
   const rnd = n => Math.floor(Math.random()*n);
   const won = n => n.toLocaleString("ko-KR") + "원";
 
-  let level=1, score=0, wallet=2000;
-  let shelfItems=[];   // 이번 단계 진열 상품
-  let wishlist=[];     // {item, qty, got}
-  let cart=[];         // 담은 상품 항목 배열 (item 객체)
+  // ---------- 데이터 ----------
+  // 장소별 자원 (일반 + 레어), 활동 이름/색
+  const PLACES = {
+    forest: {name:"🌲 숲속", desc:"나무와 약초를 채집해요", bg:"linear-gradient(180deg,#d3f9d8,#8ce99a)", hero:"🧑‍🌾",
+      verb:"채집하기",
+      loot:[{id:"branch",pic:"🪵",nm:"나뭇가지",pr:10,w:5},{id:"mushroom",pic:"🍄",nm:"버섯",pr:22,w:3},{id:"herb",pic:"🌿",nm:"약초",pr:38,w:2}],
+      rare:{id:"ginseng",pic:"🫚",nm:"산삼",pr:320}},
+    sea: {name:"🌊 바닷가", desc:"낚시로 물고기를 잡아요", bg:"linear-gradient(180deg,#a5d8ff,#4dabf7)", hero:"🎣",
+      verb:"낚시하기",
+      loot:[{id:"anchovy",pic:"🐟",nm:"멸치",pr:14,w:5},{id:"shell",pic:"🐚",nm:"조개",pr:26,w:3},{id:"squid",pic:"🦑",nm:"오징어",pr:42,w:2}],
+      rare:{id:"pearl",pic:"🦪",nm:"진주",pr:360}},
+    mine: {name:"⛏️ 광산", desc:"광석을 캐내요", bg:"linear-gradient(180deg,#ced4da,#868e96)", hero:"👷",
+      verb:"채광하기",
+      loot:[{id:"stone",pic:"🪨",nm:"돌멩이",pr:8,w:5},{id:"copper",pic:"🟤",nm:"구리",pr:30,w:3},{id:"iron",pic:"⚙️",nm:"철광석",pr:48,w:2}],
+      rare:{id:"gem",pic:"💎",nm:"보석",pr:420}},
+    field: {name:"🌾 들판", desc:"열매를 따고 사냥해요", bg:"linear-gradient(180deg,#ffec99,#ffd43b)", hero:"🏹",
+      verb:"사냥하기",
+      loot:[{id:"berry",pic:"🍓",nm:"산딸기",pr:12,w:5},{id:"grain",pic:"🌾",nm:"곡식",pr:24,w:3},{id:"meat",pic:"🍖",nm:"고기",pr:40,w:2}],
+      rare:{id:"goldegg",pic:"🥚",nm:"황금알",pr:340}},
+    heaven: {name:"☁️ 하늘나라", desc:"선행을 쌓은 자만의 낙원!", bg:"linear-gradient(180deg,#d0bfff,#b197fc)", hero:"😇",
+      verb:"별줍기",
+      loot:[{id:"stardust",pic:"✨",nm:"별가루",pr:180,w:5},{id:"cloud",pic:"🌈",nm:"무지개조각",pr:420,w:2}],
+      rare:{id:"wing",pic:"🪽",nm:"천사의날개",pr:1100}},
+  };
 
-  // ---- Web Audio 간단 효과음 ----
+  // 계급(내공점수 누적 기준)
+  const RANKS = [
+    {n:"평민", g:0},{n:"견습꾼", g:60},{n:"장돌뱅이", g:180},{n:"상인", g:400},
+    {n:"부농", g:750},{n:"대상인", g:1300},{n:"귀족", g:2100},{n:"백작", g:3200},
+    {n:"공작", g:4800},{n:"생명의 왕", g:7000}
+  ];
+
+  const HEAVEN_DEED = 50; // 하늘나라 개방에 필요한 선행점수
+
+  // ---------- 상태 ----------
+  const S = {
+    money:0, fatigue:0, gong:0, deed:0, rankIdx:0,
+    tool:1,           // 도구 레벨 (수확량 증가)
+    bed:false,        // 좋은 침대(피로 회복 빠름) 구매 여부
+    inv:{},           // id -> {pic,nm,pr,count,rare}
+    place:"forest",
+    heavenOpen:false,
+  };
+
+  // ---------- 사운드 ----------
   let AC=null;
-  function beep(freq, dur, type){
-    try{
-      AC = AC || new (window.AudioContext||window.webkitAudioContext)();
-      const o=AC.createOscillator(), g=AC.createGain();
-      o.type=type||"sine"; o.frequency.value=freq;
-      o.connect(g); g.connect(AC.destination);
-      g.gain.setValueAtTime(0.0001, AC.currentTime);
-      g.gain.exponentialRampToValueAtTime(0.25, AC.currentTime+0.02);
-      g.gain.exponentialRampToValueAtTime(0.0001, AC.currentTime+dur);
-      o.start(); o.stop(AC.currentTime+dur);
-    }catch(e){}
+  function beep(f,d,t){try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();const o=AC.createOscillator(),g=AC.createGain();o.type=t||"sine";o.frequency.value=f;o.connect(g);g.connect(AC.destination);g.gain.setValueAtTime(.0001,AC.currentTime);g.gain.exponentialRampToValueAtTime(.22,AC.currentTime+.02);g.gain.exponentialRampToValueAtTime(.0001,AC.currentTime+d);o.start();o.stop(AC.currentTime+d);}catch(e){}}
+  const sGet=()=>beep(600,.09,"triangle");
+  const sRare=()=>{beep(660,.1);setTimeout(()=>beep(880,.12),90);setTimeout(()=>beep(1040,.16),190);};
+  const sSell=()=>{beep(520,.08,"square");setTimeout(()=>beep(680,.09,"square"),70);};
+  const sSleep=()=>beep(300,.3,"sine");
+  const sBad=()=>beep(150,.25,"sawtooth");
+  const sUp=()=>{[523,659,784,1046].forEach((f,i)=>setTimeout(()=>beep(f,.16),i*110));};
+
+  // ---------- 유틸 ----------
+  function say(m){ $("talk").textContent=m; }
+  function toast(m){ const t=$("toast"); t.textContent=m; t.classList.add("show"); clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove("show"),1400); }
+  function rankName(){ return RANKS[S.rankIdx].n; }
+  function nextRank(){ return RANKS[S.rankIdx+1]; }
+
+  function addItem(it){
+    if(!S.inv[it.id]) S.inv[it.id]={pic:it.pic,nm:it.nm,pr:it.pr,count:0,rare:!!it.rare};
+    S.inv[it.id].count++;
   }
-  const sPick  = ()=>beep(660,0.12,"triangle");
-  const sDrop  = ()=>beep(330,0.10,"square");
-  const sWin   = ()=>{beep(523,0.12);setTimeout(()=>beep(659,0.12),120);setTimeout(()=>beep(784,0.2),240);};
-  const sOops  = ()=>beep(160,0.25,"sawtooth");
+  function invSlots(){ return Object.values(S.inv).filter(x=>x.count>0); }
 
-  function say(msg){ $("talk").textContent = msg; }
-
-  // ---- 단계 셋업 ----
-  function setupLevel(){
-    const count = Math.min(6, 3 + level);            // 진열 상품 수 (최대 6)
-    const wishCount = Math.min(1 + Math.floor(level/2), 3); // 살 종류 수 (최대 3)
-    const maxQty = level >= 3 ? 3 : (level >= 2 ? 2 : 1);
-
-    // 진열 상품 뽑기
-    const pool = [...CATALOG].sort(()=>Math.random()-0.5);
-    shelfItems = pool.slice(0, Math.max(count, wishCount+2)).slice(0,6);
-
-    // 살 목록 만들기
-    const chosen = [...shelfItems].sort(()=>Math.random()-0.5).slice(0, wishCount);
-    wishlist = chosen.map(it => ({item:it, qty:1+rnd(maxQty), got:0}));
-
-    // 지갑: 필요한 금액보다 넉넉하게
-    const need = wishlist.reduce((s,w)=>s+w.item.pr*w.qty,0);
-    wallet = Math.ceil((need + 300) / 100) * 100;
-
-    cart=[];
-    renderAll();
-    say("이번엔 " + wishlist.map(w=>w.item.nm+" "+w.qty+"개").join(", ") + " 사러 왔어요! 🧺");
-  }
-
-  function renderAll(){ renderHud(); renderWish(); renderShelf(); renderCart(); }
-
+  // ---------- 렌더 ----------
   function renderHud(){
-    $("level").textContent = level;
-    $("score").textContent = "⭐ " + score;
-    $("wallet").textContent = won(wallet);
+    $("rankName").textContent = rankName();
+    const nr = nextRank();
+    if(nr){
+      const base = RANKS[S.rankIdx].g, span = nr.g - base;
+      const p = Math.max(0, Math.min(100, ((S.gong-base)/span)*100));
+      $("gongBar").style.width = p+"%";
+      $("rankNext").textContent = "다음:"+nr.n+" ("+S.gong+"/"+nr.g+")";
+    }else{
+      $("gongBar").style.width="100%"; $("rankNext").textContent="최고 계급!";
+    }
+    const fp = Math.min(100,S.fatigue);
+    $("fatBar").style.width=fp+"%"; $("fatTxt").textContent=Math.round(fp)+"%";
+    $("money").textContent = won(S.money);
+    $("deed").textContent = S.deed+"점";
   }
 
-  function renderWish(){
-    const box=$("wishlist"); box.innerHTML="";
-    wishlist.forEach(w=>{
-      const need = w.qty;
-      const have = countInCart(w.item.id);
-      const done = have >= need;
-      w.got = have;
+  function renderInv(){
+    const box=$("inv"); const slots=invSlots();
+    $("invCount").textContent = slots.length+"칸";
+    if(slots.length===0){ box.innerHTML='<span class="muted">아직 비어있어요~ 자원을 모아보세요!</span>'; return; }
+    box.innerHTML="";
+    slots.forEach(x=>{
       const el=document.createElement("div");
-      el.className="want"+(done?" done":"");
-      el.innerHTML = `${w.item.pic} ${w.item.nm} <span class="qty">${have}/${need}</span>`;
+      el.className="slot"+(x.rare?" rare":"");
+      el.innerHTML=`${x.pic} ${x.nm} <span class="cnt">${x.count}</span>`;
       box.appendChild(el);
     });
   }
 
-  function renderShelf(){
-    const box=$("shelf"); box.innerHTML="";
-    shelfItems.forEach(it=>{
+  function renderScene(){
+    const p=PLACES[S.place];
+    const sc=$("scene");
+    sc.style.background=p.bg;
+    sc.innerHTML=`<div class="placeName">${p.name}</div><div class="placeDesc">${p.desc}</div>
+      <div class="hero" id="hero">${p.hero}</div><div class="act" id="act"></div>`;
+    const act=$("act");
+    // 활동 장소
+    if(p.loot){
       const b=document.createElement("button");
-      b.className="item";
-      b.innerHTML=`<div class="pic">${it.pic}</div><div class="nm">${it.nm}</div><div class="pr">${won(it.pr)}</div>`;
-      b.onclick=(e)=>addToCart(it,e);
-      box.appendChild(b);
+      b.className="btn work"; b.textContent="⛏️ "+p.verb;
+      b.onclick=doWork; act.appendChild(b);
+      if(S.fatigue>=100){ b.disabled=true; }
+    }
+  }
+
+  function renderPanel(){
+    const pan=$("dynPanel");
+    const pl=S.place;
+    if(pl==="shop"){ renderShop(pan); }
+    else if(pl==="home"){ renderHome(pan); }
+    else if(pl==="donate"){ renderDonate(pan); }
+    else { // 활동 장소: 간단 안내
+      pan.innerHTML=`<h3>🧭 활동 안내</h3>
+        <div class="muted">여기서 <b>${PLACES[pl].verb}</b>로 자원을 모아요. 피로도가 쌓이면 🏠집에서 쉬어야 해요! 모은 자원은 🏪상점에서 팔 수 있어요.</div>`;
+    }
+  }
+
+  function renderShop(pan){
+    const slots=invSlots();
+    let html=`<h3>🏪 상점 <span class="muted">자원을 팔아요</span></h3>`;
+    if(slots.length===0){ html+=`<div class="muted">팔 자원이 없어요~ 먼저 자원을 모아오세요!</div>`; }
+    else{
+      html+=`<div style="margin-bottom:8px"><button class="btn sell" id="sellAll" style="width:100%;box-shadow:0 4px 0 rgba(0,0,0,.15)">💰 전부 팔기 (${won(sellTotal())})</button></div>`;
+      html+=`<div class="shopgrid">`;
+      slots.forEach(x=>{
+        html+=`<div class="row"><span>${x.pic}${x.nm} <span class="muted">×${x.count}</span></span>
+          <button data-sell="${x.id}">${won(x.pr)}</button></div>`;
+      });
+      html+=`</div>`;
+    }
+    // 도구 강화
+    const cost=toolCost();
+    html+=`<h3 style="margin-top:12px">⚒️ 도구 강화 <span class="muted">Lv.${S.tool}</span></h3>
+      <div class="row"><span>수확량 +1 (현재 한 번에 ${1+S.tool}개까지)</span>
+      <button id="buyTool">${won(cost)}</button></div>`;
+    pan.innerHTML=html;
+    if($("sellAll")) $("sellAll").onclick=sellAll;
+    pan.querySelectorAll("[data-sell]").forEach(b=>b.onclick=()=>sellOne(b.getAttribute("data-sell")));
+    $("buyTool").onclick=buyTool;
+  }
+
+  function renderHome(pan){
+    let html=`<h3>🏠 우리 집 <span class="muted">쉬어서 피로를 풀어요</span></h3>`;
+    html+=`<div class="muted" style="margin-bottom:8px">현재 피로도 <b>${Math.round(S.fatigue)}%</b> · 잠을 자면 회복돼요.</div>`;
+    html+=`<div class="row"><span>😴 잠자기 (피로도 ${S.bed?"전부":"70"} 회복)</span><button id="sleepBtn" style="background:var(--blue)">쉬기</button></div>`;
+    if(!S.bed){
+      html+=`<div class="row" style="margin-top:7px"><span>🛏️ 푹신침대 사기 (한 번에 완전 회복)</span><button id="bedBtn" style="background:var(--brown)">${won(1500)}</button></div>`;
+    }else{
+      html+=`<div class="row" style="margin-top:7px"><span>🛏️ 푹신침대 보유중! 잠자면 완전 회복 😊</span><button disabled style="background:#ccc">완료</button></div>`;
+    }
+    pan.innerHTML=html;
+    $("sleepBtn").onclick=doSleep;
+    if($("bedBtn")) $("bedBtn").onclick=buyBed;
+  }
+
+  function renderDonate(pan){
+    let html=`<h3>❤️ 기부소 <span class="muted">착한 일을 하면 선행점수!</span></h3>`;
+    html+=`<div class="muted" style="margin-bottom:8px">돈을 기부하면 선행점수가 올라요. 선행점수 <b>${HEAVEN_DEED}점</b>을 모으면 <b>☁️하늘나라</b>가 열려요! (현재 ${S.deed}점)</div>`;
+    [[100,1],[500,6],[1000,14]].forEach(([m,d])=>{
+      html+=`<div class="row" style="margin-top:6px"><span>💝 ${won(m)} 기부 → 선행 +${d}점</span>
+        <button data-give="${m}" data-deed="${d}" style="background:var(--red)">기부</button></div>`;
+    });
+    pan.innerHTML=html;
+    pan.querySelectorAll("[data-give]").forEach(b=>b.onclick=()=>donate(+b.getAttribute("data-give"),+b.getAttribute("data-deed")));
+  }
+
+  function renderNav(){
+    const nav=$("nav");
+    const items=[
+      {k:"forest",ic:"🌲",t:"숲"},{k:"sea",ic:"🌊",t:"바다"},{k:"mine",ic:"⛏️",t:"광산"},{k:"field",ic:"🌾",t:"들판"},
+      {k:"shop",ic:"🏪",t:"상점"},{k:"home",ic:"🏠",t:"집"},{k:"donate",ic:"❤️",t:"기부소"},
+      {k:"heaven",ic:"☁️",t:"하늘나라"},
+    ];
+    nav.innerHTML="";
+    items.forEach(it=>{
+      const b=document.createElement("button");
+      const locked = it.k==="heaven" && !S.heavenOpen;
+      b.className=(S.place===it.k?"on ":"")+(locked?"lock":"");
+      b.innerHTML=`<span class="ic">${it.ic}</span>${locked?"🔒":it.t}`;
+      b.onclick=()=>{
+        if(locked){ sBad(); toast(`선행 ${HEAVEN_DEED}점을 모아야 열려요! (지금 ${S.deed}점)`); return; }
+        go(it.k);
+      };
+      nav.appendChild(b);
     });
   }
 
-  function renderCart(){
-    const box=$("cartlist"); box.innerHTML="";
-    if(cart.length===0){
-      box.innerHTML='<span class="empty">아직 비어있어요~ 물건을 담아보세요!</span>';
-    }else{
-      cart.forEach((it,idx)=>{
-        const c=document.createElement("span");
-        c.className="citem";
-        c.innerHTML=`${it.pic} ${it.nm} <b style="color:#ff7a3d">${won(it.pr)}</b> ✕`;
-        c.title="빼기";
-        c.onclick=()=>removeFromCart(idx);
-        box.appendChild(c);
-      });
+  function renderAll(){ renderHud(); renderScene(); renderPanel(); renderInv(); renderNav(); }
+
+  function go(k){ S.place=k; renderScene(); renderPanel(); renderNav();
+    const p=PLACES[k]; if(p) say(`${p.name}에 왔어요! ${p.desc} 😊`);
+    else if(k==="shop") say("어서오세요~ 모은 자원을 팔아볼까요? 🏪");
+    else if(k==="home") say("우리 집이다! 피곤하면 푹 쉬어요~ 😴");
+    else if(k==="donate") say("착한 일을 하면 복이 와요~ 선행점수를 쌓아봐요! ❤️");
+  }
+
+  // ---------- 행동 로직 ----------
+  function doWork(){
+    const p=PLACES[S.place];
+    if(S.fatigue>=100){ sBad(); say("너무 피곤해서 쓰러질 것 같아요! 🏠집에서 쉬어야 해요~"); return; }
+    const hero=$("hero"); if(hero){ hero.classList.remove("work"); void hero.offsetWidth; hero.classList.add("work"); }
+
+    // 수확량: 1 ~ (1+도구레벨)
+    const amount = 1 + rnd(1+S.tool);
+    let got=[], gongGain=0, rareHit=false;
+    for(let i=0;i<amount;i++){
+      // 레어 확률: 4% + 도구/1.5%
+      if(Math.random() < 0.04 + S.tool*0.015){
+        addItem(p.rare); got.push(p.rare); rareHit=true; gongGain+=8;
+      }else{
+        const it = weighted(p.loot);
+        addItem(it); got.push(it); gongGain+=2;
+      }
     }
-    $("total").textContent = won(cartTotal());
+    S.gong += gongGain;
+    S.fatigue = Math.min(100, S.fatigue + 12);
+
+    floatLoot(got);
+    if(rareHit){ sRare(); say(`우와! ${p.rare.pic}${p.rare.nm} 같은 귀한 걸 얻었어요!! 🎉`); }
+    else { sGet(); const first=got[0]; say(`${first.pic}${first.nm}${got.length>1?" 외 "+(got.length-1)+"개":""} 획득! (내공 +${gongGain})`); }
+
+    checkRankUp();
+    if(S.fatigue>=100) say("헉헉... 완전 지쳤어요! 이제 집에서 쉬어야 해요~ 😵");
+    renderHud(); renderInv(); renderScene(); if(S.place===S.place) renderPanel();
   }
 
-  function countInCart(id){ return cart.filter(c=>c.id===id).length; }
-  function cartTotal(){ return cart.reduce((s,c)=>s+c.pr,0); }
-
-  function addToCart(it,e){
-    cart.push(it);
-    sPick();
-    floaty(it.pic, e);
-    renderWish(); renderCart();
-    // 지갑 초과 경고
-    if(cartTotal()>wallet){ say("앗! 지갑보다 비싸요~ 조금 빼볼까요? 💸"); }
+  function weighted(list){
+    const total=list.reduce((s,x)=>s+x.w,0); let r=Math.random()*total;
+    for(const x of list){ if((r-=x.w)<0) return x; } return list[0];
   }
 
-  function removeFromCart(idx){
-    cart.splice(idx,1); sDrop();
-    renderWish(); renderCart();
+  function floatLoot(got){
+    const sc=$("scene"); const r=sc.getBoundingClientRect();
+    got.slice(0,6).forEach((it,i)=>{
+      const f=document.createElement("div"); f.className="float"; f.textContent=it.pic;
+      f.style.left=(r.width/2-10 + (i-2)*22)+"px"; f.style.top=(r.height/2)+"px";
+      f.style.setProperty("--dx",((i-2)*10)+"px");
+      sc.appendChild(f); setTimeout(()=>f.remove(),1000);
+    });
   }
 
-  function floaty(txt,e){
-    if(!e) return;
-    const f=document.createElement("div");
-    f.className="float"; f.textContent=txt;
-    const r=$("frame").getBoundingClientRect();
-    f.style.left=(e.clientX-r.left-12)+"px";
-    f.style.top=(e.clientY-r.top-12)+"px";
-    $("frame").appendChild(f);
-    setTimeout(()=>f.remove(),1000);
+  function sellTotal(){ return invSlots().reduce((s,x)=>s+x.pr*x.count,0); }
+  function sellOne(id){
+    const it=S.inv[id]; if(!it||it.count<=0) return;
+    const gain=it.pr*it.count; S.money+=gain; toast(`${it.pic}${it.nm} ×${it.count} → +${won(gain)}`);
+    it.count=0; sSell(); renderHud(); renderInv(); renderPanel();
+    say(`${it.nm}을(를) 팔아서 ${won(gain)} 벌었어요! 💰`);
+  }
+  function sellAll(){
+    const total=sellTotal(); if(total<=0) return;
+    S.money+=total; Object.values(S.inv).forEach(x=>x.count=0);
+    sSell(); toast(`전부 팔았어요! +${won(total)}`); say(`자원을 몽땅 팔아서 ${won(total)} 벌었어요! 부자 되는 중~ 🤑`);
+    renderHud(); renderInv(); renderPanel();
   }
 
-  // ---- 계산하기 ----
-  function pay(){
-    // 목록 정확히 채웠는지 검사
-    let ok=true, extra=false;
-    const needMap={};
-    wishlist.forEach(w=>needMap[w.item.id]=w.qty);
-    const haveMap={};
-    cart.forEach(c=>haveMap[c.id]=(haveMap[c.id]||0)+1);
+  function toolCost(){ return 800 + (S.tool-1)*700; }
+  function buyTool(){
+    const c=toolCost();
+    if(S.money<c){ sBad(); toast("돈이 부족해요!"); say("돈이 조금 모자라요~ 자원을 더 팔아봐요! 💸"); return; }
+    S.money-=c; S.tool++; sUp(); toast(`도구 강화! Lv.${S.tool}`); say(`도구를 강화했어요! 이제 한 번에 최대 ${1+S.tool}개까지 얻어요! 💪`);
+    renderHud(); renderPanel();
+  }
 
-    // 부족/초과 체크
-    for(const w of wishlist){
-      if((haveMap[w.item.id]||0)!==w.qty){ ok=false; }
+  function doSleep(){
+    if(S.fatigue<=0){ say("전혀 안 피곤한데요? 쌩쌩해요! 😆"); return; }
+    const rec = S.bed ? 100 : 70;
+    S.fatigue=Math.max(0,S.fatigue-rec); sSleep();
+    say(S.bed?"푹신침대에서 쿨쿨~ 피로가 싹 풀렸어요! 😴✨":"쿨쿨 잘 잤다~ 피로가 많이 풀렸어요! 😴");
+    renderHud(); renderScene(); renderPanel();
+  }
+  function buyBed(){
+    if(S.money<1500){ sBad(); toast("돈이 부족해요!"); return; }
+    S.money-=1500; S.bed=true; sUp(); toast("푹신침대 구매!"); say("푹신침대를 샀어요! 이제 자면 피로가 완전히 풀려요~ 🛏️");
+    renderHud(); renderPanel();
+  }
+
+  function donate(m,d){
+    if(S.money<m){ sBad(); toast("돈이 부족해요!"); say("기부하고 싶은데 돈이 모자라요~ 조금 더 벌어와요! 💸"); return; }
+    S.money-=m; S.deed+=d; sSell();
+    toast(`선행 +${d}점! ❤️`); say(`${won(m)}을 기부했어요! 마음이 따뜻해지네요~ 선행점수 ${S.deed}점! ❤️`);
+    if(!S.heavenOpen && S.deed>=HEAVEN_DEED){
+      S.heavenOpen=true; sUp();
+      showModal("😇","하늘나라 개방!",`선행점수 ${HEAVEN_DEED}점 달성! 이제 아래 ☁️하늘나라에 갈 수 있어요. 귀한 보물이 가득해요!`);
     }
-    for(const id in haveMap){
-      if(!needMap[id]){ extra=true; ok=false; }
-      else if(haveMap[id]>needMap[id]){ extra=true; ok=false; }
-    }
+    renderHud(); renderPanel(); renderNav();
+  }
 
-    const total=cartTotal();
-    if(total>wallet){
-      sOops(); say("지갑에 돈이 부족해요! 물건을 조금 빼주세요~ 💰");
-      return;
-    }
-    if(cart.length===0){ sOops(); say("장바구니가 비었어요~ 물건을 담아주세요! 🧺"); return; }
-
-    if(ok){
-      // 성공! 남은 돈 적을수록 별 많이
-      const left=wallet-total;
-      let stars=1;
-      if(left<=200) stars=3; else if(left<=500) stars=2;
-      score+=stars;
-      sWin();
-      showModal("🎉","참 잘했어요!", "⭐".repeat(stars),
-        `딱 맞게 계산했어요! 거스름돈은 ${won(left)} 이에요. 별 ${stars}개 획득!`);
-    }else{
-      sOops();
-      if(extra) say("목록에 없는 게 있거나 너무 많이 담았어요! 다시 확인해봐요 🔎");
-      else say("아직 목록을 다 못 채웠어요~ 조금만 더! 💪");
+  function checkRankUp(){
+    const nr=nextRank();
+    if(nr && S.gong>=nr.g){
+      S.rankIdx++; sUp();
+      const isKing = S.rankIdx===RANKS.length-1;
+      showModal(isKing?"👑":"🏅", (isKing?"최고 계급 달성!":"계급 상승!"),
+        isKing? `축하해요! 마침내 '생명의 왕'이 되었어요! 시장의 전설이에요! 👑✨`
+              : `계급이 '${rankName()}'(으)로 올랐어요! 더 열심히 모아봐요! 🎉`);
+      // 여러 단계 한 번에 오르는 경우 대비
+      checkRankUp();
     }
   }
 
-  function showModal(big,title,stars,text){
-    $("mBig").textContent=big;
-    $("mTitle").textContent=title;
-    $("mStars").textContent=stars;
-    $("mText").textContent=text;
-    $("overlay").classList.add("show");
+  function showModal(em,title,text){
+    $("ovEm").textContent=em; $("ovTitle").textContent=title; $("ovText").textContent=text;
+    $("ov").classList.add("show");
   }
+  $("ovBtn").onclick=()=>$("ov").classList.remove("show");
 
-  function nextLevel(){
-    $("overlay").classList.remove("show");
-    level++;
-    if(level>6){ level=1; }   // 계속 순환 (난이도 최고 유지)
-    setupLevel();
-  }
-
-  // ---- 이벤트 ----
-  $("payBtn").onclick=pay;
-  $("resetBtn").onclick=()=>{ cart=[]; sDrop(); renderWish(); renderCart(); say("장바구니를 비웠어요! 다시 담아볼까요? 😊"); };
-  $("nextBtn").onclick=nextLevel;
-
-  // 시작!
-  setupLevel();
+  // ---------- 시작 ----------
+  renderAll();
 })();
 </script>
 </body>
