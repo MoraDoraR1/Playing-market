@@ -15,7 +15,7 @@ export const PLACES = {
   },
   sea: {
     name: "🌊 바닷가", desc: "낚시로 물고기를 잡아요",
-    bg: "linear-gradient(180deg,#a5d8ff,#4dabf7)", hero: "🎣", verb: "낚시하기",
+    bg: "linear-gradient(180deg,#a5d8ff,#4dabf7)", hero: "🎣", verb: "낚시하기", minigame: true,
     loot: [
       { id: "anchovy", pic: "🐟", nm: "멸치", pr: 14, w: 5 },
       { id: "shell", pic: "🐚", nm: "조개", pr: 26, w: 3 },
@@ -25,7 +25,7 @@ export const PLACES = {
   },
   mine: {
     name: "⛏️ 광산", desc: "광석을 캐내요",
-    bg: "linear-gradient(180deg,#ced4da,#868e96)", hero: "👷", verb: "채광하기",
+    bg: "linear-gradient(180deg,#ced4da,#868e96)", hero: "👷", verb: "채광하기", minigame: true,
     loot: [
       { id: "stone", pic: "🪨", nm: "돌멩이", pr: 8, w: 5 },
       { id: "copper", pic: "🟤", nm: "구리", pr: 30, w: 3 },
@@ -42,6 +42,36 @@ export const PLACES = {
       { id: "meat", pic: "🍖", nm: "고기", pr: 40, w: 2 },
     ],
     rare: { id: "goldegg", pic: "🥚", nm: "황금알", pr: 340, rare: true },
+  },
+  river: {
+    name: "🏞️ 강가", desc: "민물에서 낚시해요",
+    bg: "linear-gradient(180deg,#b2f2bb,#63e6be)", hero: "🎣", verb: "낚시하기", minigame: true,
+    loot: [
+      { id: "loach", pic: "🐡", nm: "미꾸라지", pr: 16, w: 5 },
+      { id: "crayfish", pic: "🦐", nm: "가재", pr: 28, w: 3 },
+      { id: "carp", pic: "🐟", nm: "잉어", pr: 46, w: 2 },
+    ],
+    rare: { id: "goldcarp", pic: "🐠", nm: "황금잉어", pr: 380, rare: true },
+  },
+  dump: {
+    name: "🗑️ 쓰레기장", desc: "고물을 주워 재활용해요",
+    bg: "linear-gradient(180deg,#e9ecef,#adb5bd)", hero: "🧹", verb: "고물줍기",
+    loot: [
+      { id: "scrap", pic: "🔩", nm: "고철", pr: 10, w: 5 },
+      { id: "bottle", pic: "🍶", nm: "빈병", pr: 14, w: 3 },
+      { id: "radio", pic: "📻", nm: "고장난 라디오", pr: 32, w: 2 },
+    ],
+    rare: { id: "record", pic: "💿", nm: "희귀 음반", pr: 260, rare: true },
+  },
+  pirate: {
+    name: "🏴‍☠️ 해적선", desc: "보물을 찾아 탐험해요 (상인 계급부터)",
+    bg: "linear-gradient(180deg,#845ef7,#5f3dc4)", hero: "🏴‍☠️", verb: "탐험하기", minReq: 3,
+    loot: [
+      { id: "coin", pic: "🪙", nm: "금화", pr: 60, w: 4 },
+      { id: "map", pic: "🗺️", nm: "낡은 지도", pr: 90, w: 3 },
+      { id: "rum", pic: "🍾", nm: "럼주", pr: 55, w: 2 },
+    ],
+    rare: { id: "chest", pic: "🧰", nm: "보물상자", pr: 650, rare: true },
   },
   heaven: {
     name: "☁️ 하늘나라", desc: "선행을 쌓은 자만의 낙원!",

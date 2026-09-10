@@ -106,3 +106,9 @@ img{user-select:none;}
   box-shadow:0 10px 0 rgba(0,0,0,.2); transform:scale(.85); transition:.25s;}
 .ov.show .modal{transform:scale(1);}
 .modal .em{font-size:52px;} .modal h2{margin:6px 0; font-size:24px;} .modal p{color:#7a6650; font-size:14px; margin:4px 0 14px;}
+
+/* 타이밍 미니게임 */
+.mgtrack{position:relative; height:26px; border-radius:13px; margin:10px 0 14px;
+  background:linear-gradient(90deg,#ffd6d6,#fff3bf,#ffd6d6); overflow:hidden; border:3px solid #fff; box-shadow:inset 0 2px 4px rgba(0,0,0,.1);}
+.mgzone{position:absolute; left:38%; width:24%; top:0; bottom:0; background:rgba(32,191,107,.55); border-left:2px solid #20bf6b; border-right:2px solid #20bf6b;}
+.mgmarker{position:absolute; top:-2px; width:8px; height:30px; background:var(--ink); border-radius:4px; transform:translateX(-50%); box-shadow:0 0 0 2px #fff;}

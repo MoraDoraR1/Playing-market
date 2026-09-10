@@ -9,8 +9,9 @@ import { $, sprite, say, toast } from "./view.js";
 
 // 시스템 로직 (버튼 핸들러용) — 런타임 호출이라 순환참조 안전
 import { doWork } from "../systems/gather.js";
-import { pickFoe, startBattle, battleAttack, usePotion, fleeBattle } from "../systems/battle.js";
-import { sellTotal, sellOne, sellAll, toolCost, buyTool, weaponCost, buyWeapon, buyPotion } from "../systems/economy.js";
+import { pickFoe, startBattle, startBoss, battleAttack, strongAttack, usePotion, fleeBattle } from "../systems/battle.js";
+import { availableBoss } from "../data/monsters.js";
+import { sellTotal, sellOne, sellAll, toolCost, buyTool, weaponCost, buyWeapon, armorCost, buyArmor, buyPotion } from "../systems/economy.js";
 import { donate } from "../systems/progress.js";
 import { doSleep, buyBed } from "../systems/rest.js";
 import { craft, cook, plant, harvest, hasItems, needsText } from "../systems/home.js";
@@ -111,6 +112,14 @@ function renderBattleScene(sc, p) {
     b.onclick = () => startBattle(foe);
     if (S.fatigue >= 100 || S.hp <= 0) b.disabled = true;
     $("act").appendChild(b);
+    const boss = availableBoss(S.rankIdx);
+    if (boss) {
+      const bb = document.createElement("button");
+      bb.className = "btn give"; bb.textContent = `🔥 보스 도전 (${boss.pic}${boss.nm})`;
+      bb.onclick = startBoss;
+      if (S.fatigue >= 100 || S.hp <= 0) bb.disabled = true;
+      $("act").appendChild(bb);
+    }
   } else {
     const f = S.foe;
     sc.innerHTML = `
@@ -122,6 +131,7 @@ function renderBattleScene(sc, p) {
       <div class="act" id="act"></div>`;
     const act = $("act");
     const atk = document.createElement("button"); atk.className = "btn work"; atk.textContent = "🗡️ 공격!"; atk.onclick = battleAttack; act.appendChild(atk);
+    const str = document.createElement("button"); str.className = "btn up"; str.textContent = "💥 강공격"; str.onclick = strongAttack; if (S.fatigue >= 100) str.disabled = true; act.appendChild(str);
     const pot = document.createElement("button"); pot.className = "btn sleep"; pot.textContent = `🧪 물약(${S.potions})`; pot.onclick = usePotion; if (S.potions <= 0) pot.disabled = true; act.appendChild(pot);
     const run = document.createElement("button"); run.className = "btn give"; run.textContent = "🏃 도망"; run.onclick = fleeBattle; act.appendChild(run);
   }
@@ -139,9 +149,10 @@ export function renderPanel() {
       <div class="inv">
         <div class="slot">❤️ 체력 <span class="cnt">${S.hp}/${S.maxHp}</span></div>
         <div class="slot">🗡️ 공격력 <span class="cnt">${playerAtk()}</span></div>
+        <div class="slot">🛡️ 방어 <span class="cnt">${S.armor}</span></div>
         <div class="slot">🧪 물약 <span class="cnt">${S.potions}개</span></div>
       </div>
-      <div class="muted" style="margin-top:7px">몬스터를 이기면 <b>전리품·게임머니·내공</b>을 얻어요! 무기와 물약은 🏪상점에서 준비하고, 체력은 🏠집에서 회복하세요. 계급이 오르면 더 강한 몬스터가 나타나요!</div>`;
+      <div class="muted" style="margin-top:7px">몬스터를 이기면 <b>전리품·게임머니·내공</b>을 얻어요! <b>💥강공격</b>은 2배 피해(피로↑). 방어구를 입으면 피해가 줄어요. 계급이 오르면 <b>🔥보스</b>에 도전할 수 있어요!</div>`;
   }
   else {
     pan.innerHTML = `<h3>🧭 활동 안내</h3>
@@ -169,6 +180,9 @@ function renderShop(pan) {
   html += `<h3 style="margin-top:12px">🗡️ 무기 강화 <span class="muted">Lv.${S.weapon}</span></h3>
     <div class="row"><span>공격력 +4 (현재 공격 ${playerAtk()})</span>
     <button id="buyWeapon">${won(weaponCost())}</button></div>`;
+  html += `<h3 style="margin-top:12px">🛡️ 방어구 강화 <span class="muted">Lv.${S.armor}</span></h3>
+    <div class="row"><span>받는 피해 -3 (현재 감소 ${S.armor * 3})</span>
+    <button id="buyArmor">${won(armorCost())}</button></div>`;
   html += `<h3 style="margin-top:12px">🧪 회복 물약 <span class="muted">보유 ${S.potions}개</span></h3>
     <div class="row"><span>전투 중 체력 35 회복</span>
     <button id="buyPotion">${won(200)}</button></div>`;
@@ -177,6 +191,7 @@ function renderShop(pan) {
   pan.querySelectorAll("[data-sell]").forEach((b) => (b.onclick = () => sellOne(b.getAttribute("data-sell"))));
   $("buyTool").onclick = buyTool;
   $("buyWeapon").onclick = buyWeapon;
+  $("buyArmor").onclick = buyArmor;
   $("buyPotion").onclick = buyPotion;
 }
 
@@ -286,19 +301,23 @@ export function renderNav() {
   const nav = $("nav");
   const items = [
     { k: "forest", ic: "🌲", t: "숲" }, { k: "sea", ic: "🌊", t: "바다" },
-    { k: "mine", ic: "⛏️", t: "광산" }, { k: "field", ic: "🌾", t: "들판" },
-    { k: "battle", ic: "⚔️", t: "던전" }, { k: "shop", ic: "🏪", t: "상점" },
-    { k: "home", ic: "🏠", t: "집" }, { k: "donate", ic: "❤️", t: "기부소" },
-    { k: "heaven", ic: "☁️", t: "하늘나라" },
+    { k: "river", ic: "🏞️", t: "강" }, { k: "mine", ic: "⛏️", t: "광산" },
+    { k: "field", ic: "🌾", t: "들판" }, { k: "dump", ic: "🗑️", t: "쓰레기장" },
+    { k: "pirate", ic: "🏴‍☠️", t: "해적선", minReq: 3 }, { k: "battle", ic: "⚔️", t: "던전" },
+    { k: "shop", ic: "🏪", t: "상점" }, { k: "home", ic: "🏠", t: "집" },
+    { k: "donate", ic: "❤️", t: "기부소" }, { k: "heaven", ic: "☁️", t: "하늘나라" },
   ];
   nav.innerHTML = "";
   items.forEach((it) => {
     const b = document.createElement("button");
-    const locked = it.k === "heaven" && !S.heavenOpen;
+    const rankLocked = it.minReq != null && S.rankIdx < it.minReq;
+    const heavenLocked = it.k === "heaven" && !S.heavenOpen;
+    const locked = rankLocked || heavenLocked;
     b.className = (S.place === it.k ? "on " : "") + (locked ? "lock" : "");
     b.innerHTML = `<span class="ic">${it.ic}</span>${locked ? "🔒" : it.t}`;
     b.onclick = () => {
-      if (locked) { sfx.bad(); toast(`선행 ${HEAVEN_DEED}점을 모아야 열려요! (지금 ${S.deed}점)`); return; }
+      if (heavenLocked) { sfx.bad(); toast(`선행 ${HEAVEN_DEED}점을 모아야 열려요! (지금 ${S.deed}점)`); return; }
+      if (rankLocked) { sfx.bad(); toast(`상인 계급부터 갈 수 있어요! 계급을 올려봐요~`); return; }
       go(it.k);
     };
     nav.appendChild(b);

@@ -19,6 +19,7 @@ export function defaultState() {
     // 장비
     tool: 1,             // 도구 레벨(수확량)
     weapon: 1,           // 무기 레벨(공격력)
+    armor: 0,            // 방어구 레벨(피해 감소)
     potions: 0,          // 회복 물약
     bed: false,          // 푹신침대 보유
     // 인벤토리

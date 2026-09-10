@@ -47,6 +47,16 @@ export function buyWeapon() {
   renderHud(); renderPanel();
 }
 
+export function armorCost() { return 900 + S.armor * 800; }
+export function buyArmor() {
+  const c = armorCost();
+  if (S.money < c) { sfx.bad(); toast("돈이 부족해요!"); say("방어구 살 돈이 모자라요~ 더 벌어봐요! 💸"); return; }
+  S.money -= c; S.armor++; sfx.up();
+  toast(`방어구 강화! Lv.${S.armor}`);
+  say(`방어구를 강화했어요! 이제 받는 피해가 ${S.armor * 3}만큼 줄어요! 🛡️`);
+  renderHud(); renderPanel();
+}
+
 export function buyPotion() {
   if (S.money < 200) { sfx.bad(); toast("돈이 부족해요!"); return; }
   S.money -= 200; S.potions++; sfx.sell();
