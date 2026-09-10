@@ -8,6 +8,7 @@ import { playTiming } from "../ui/minigame.js";
 import { renderHud, renderInv, renderScene, renderPanel } from "../ui/render.js";
 import { checkRankUp } from "./progress.js";
 import { onProductionAction } from "./home.js";
+import { discoverItem, recordStat, questProgress } from "./meta.js";
 
 export function doWork() {
   const p = PLACES[S.place];
@@ -45,6 +46,9 @@ function doHarvest(p, tier) {
   gongGain += S.mods.gongBonus || 0;
   S.gong += gongGain;
   S.fatigue = Math.min(100, S.fatigue + gatherFatigue());
+  got.forEach((g) => discoverItem(g.id));
+  recordStat("gather", got.length);
+  questProgress("gather", got.length);
   onProductionAction();
 
   floatLoot(got);

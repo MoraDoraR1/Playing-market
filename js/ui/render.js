@@ -11,11 +11,15 @@ import { $, sprite, say, toast } from "./view.js";
 import { doWork } from "../systems/gather.js";
 import { pickFoe, startBattle, startBoss, battleAttack, strongAttack, usePotion, fleeBattle } from "../systems/battle.js";
 import { availableBoss } from "../data/monsters.js";
-import { sellTotal, sellOne, sellAll, toolCost, buyTool, weaponCost, buyWeapon, armorCost, buyArmor, buyPotion } from "../systems/economy.js";
+import { sellTotal, unitPrice, sellOne, sellAll, toolCost, buyTool, weaponCost, buyWeapon, armorCost, buyArmor, buyPotion } from "../systems/economy.js";
 import { donate } from "../systems/progress.js";
 import { doSleep, buyBed } from "../systems/rest.js";
 import { craft, cook, plant, harvest, hasItems, needsText } from "../systems/home.js";
 import { CRAFT, COOK, CROPS, MAX_PLOTS } from "../data/recipes.js";
+import { claimQuest, buyStar, achievementsStatus } from "../systems/meta.js";
+import { STAR_SHOP } from "../data/meta.js";
+import { ITEM_INDEX, itemDef } from "../data/items.js";
+import { MONSTERS } from "../data/monsters.js";
 
 // ---------- HUD ----------
 export function renderHud() {
@@ -35,6 +39,7 @@ export function renderHud() {
   $("fatTxt").textContent = Math.round(fp) + "%";
   $("money").textContent = won(S.money);
   $("deed").textContent = S.deed + "점";
+  if ($("star")) $("star").textContent = S.starMoney;
 }
 
 // ---------- 인벤토리 ----------
@@ -57,10 +62,18 @@ export function renderInv() {
 // ---------- 씬 ----------
 // PLACES에 없는 기능 화면(상점/집/기부소)의 씬 표시용
 const SCREENS = {
-  shop:   { name: "🏪 상점",    desc: "모은 자원을 팔고 장비를 사요", bg: "linear-gradient(180deg,#ffe8b0,#ffd166)", hero: "🧑‍🍳" },
-  home:   { name: "🏠 우리 집",  desc: "쉬면서 피로와 체력을 회복해요", bg: "linear-gradient(180deg,#ffd6e7,#ffa8c5)", hero: "🛏️" },
-  donate: { name: "❤️ 기부소",   desc: "착한 일로 선행점수를 쌓아요",   bg: "linear-gradient(180deg,#ffc9c9,#ff8787)", hero: "💝" },
+  shop:    { name: "🏪 상점",     desc: "모은 자원을 팔고 장비를 사요", bg: "linear-gradient(180deg,#ffe8b0,#ffd166)", hero: "🧑‍🍳" },
+  home:    { name: "🏠 우리 집",   desc: "쉬면서 피로와 체력을 회복해요", bg: "linear-gradient(180deg,#ffd6e7,#ffa8c5)", hero: "🛏️" },
+  donate:  { name: "❤️ 기부소",    desc: "착한 일로 선행점수를 쌓아요",   bg: "linear-gradient(180deg,#ffc9c9,#ff8787)", hero: "💝" },
+  journal: { name: "📋 모험수첩",  desc: "퀘스트·도감·업적·별상점",       bg: "linear-gradient(180deg,#d0ebff,#a5d8ff)", hero: "📖" },
 };
+
+// 도감 '자원' 전체 개수 (장소에서 얻는 자원만)
+const GATHERABLE_IDS = (() => {
+  const set = new Set();
+  Object.values(PLACES).forEach((p) => { (p.loot || []).forEach((x) => set.add(x.id)); if (p.rare) set.add(p.rare.id); });
+  return [...set];
+})();
 
 function sceneBackground(key, p) {
   const sc = $("scene");
@@ -144,6 +157,7 @@ export function renderPanel() {
   if (pl === "shop") { renderShop(pan); }
   else if (pl === "home") { renderHome(pan); }
   else if (pl === "donate") { renderDonate(pan); }
+  else if (pl === "journal") { renderJournal(pan); }
   else if (pl === "battle") {
     pan.innerHTML = `<h3>⚔️ 나의 전투 정보</h3>
       <div class="inv">
@@ -162,15 +176,20 @@ export function renderPanel() {
 
 function renderShop(pan) {
   const slots = invSlots();
+  const m = S.market || { mult: 1, hotItem: null };
+  const trend = m.mult > 1.05 ? "📈 호황! (비싸게 팔려요)" : m.mult < 0.95 ? "📉 불황… (값이 낮아요)" : "➖ 보통";
+  const hotNm = m.hotItem && itemDef(m.hotItem) ? itemDef(m.hotItem).nm : null;
   let html = `<h3>🏪 상점 <span class="muted">자원을 팔아요</span></h3>`;
+  html += `<div class="muted" style="margin-bottom:8px">오늘의 시세: <b>×${m.mult}</b> ${trend}${hotNm ? ` · 인기품목 <b>${itemDef(m.hotItem).pic}${hotNm}</b>(+30%)` : ""}</div>`;
   if (slots.length === 0) {
     html += `<div class="muted">팔 자원이 없어요~ 먼저 자원을 모아오세요!</div>`;
   } else {
     html += `<div style="margin-bottom:8px"><button class="btn sell" id="sellAll" style="width:100%;box-shadow:0 4px 0 rgba(0,0,0,.15)">💰 전부 팔기 (${won(sellTotal())})</button></div>`;
     html += `<div class="shopgrid">`;
     slots.forEach((x) => {
+      const hot = m.hotItem === x.id;
       html += `<div class="row"><span>${sprite("items", x.id, x.pic)}${x.nm} <span class="muted">×${x.count}</span></span>
-        <button data-sell="${x.id}">${won(x.pr)}</button></div>`;
+        <button data-sell="${x.id}"${hot ? ' style="background:var(--red)"' : ""}>${won(unitPrice(x))}</button></div>`;
     });
     html += `</div>`;
   }
@@ -296,6 +315,64 @@ function renderDonate(pan) {
   pan.querySelectorAll("[data-give]").forEach((b) => (b.onclick = () => donate(+b.getAttribute("data-give"), +b.getAttribute("data-deed"))));
 }
 
+// ---------- 모험수첩 (퀘스트/도감/업적/별상점) ----------
+function renderJournal(pan) {
+  const tab = S.journalTab || "quest";
+  const tabs = [["quest", "📜 퀘스트"], ["codex", "📖 도감"], ["achieve", "🏆 업적"], ["star", "⭐ 별상점"]];
+  let html = `<h3>📋 모험수첩 <span class="muted">오늘의 할 일과 수집</span></h3>`;
+  html += `<div class="tabs">` + tabs.map(([k, t]) => `<button class="tab${tab === k ? " on" : ""}" data-jtab="${k}">${t}</button>`).join("") + `</div>`;
+  html += `<div class="homebody">` + journalBody(tab) + `</div>`;
+  pan.innerHTML = html;
+  pan.querySelectorAll("[data-jtab]").forEach((b) => (b.onclick = () => { S.journalTab = b.getAttribute("data-jtab"); renderPanel(); }));
+  if (tab === "quest") pan.querySelectorAll("[data-claim]").forEach((b) => (b.onclick = () => claimQuest(+b.getAttribute("data-claim"))));
+  if (tab === "star") pan.querySelectorAll("[data-star]").forEach((b) => (b.onclick = () => buyStar(b.getAttribute("data-star"))));
+}
+
+function journalBody(tab) {
+  if (tab === "quest") {
+    const list = S.quests.list || [];
+    if (!list.length) return `<div class="muted">오늘의 퀘스트를 준비 중이에요~</div>`;
+    return list.map((q, i) => {
+      const pct = Math.min(100, (q.progress / q.goal) * 100);
+      const reward = `${won(q.rewardMoney)}${q.rewardStar ? ` +⭐${q.rewardStar}` : ""}`;
+      let btn;
+      if (q.claimed) btn = `<button disabled style="background:#ccc">완료 ✓</button>`;
+      else if (q.done) btn = `<button data-claim="${i}" style="background:var(--green)">보상받기</button>`;
+      else btn = `<button disabled style="background:#ccc">${q.progress}/${q.goal}${q.unit}</button>`;
+      return `<div class="row" style="flex-wrap:wrap;gap:4px"><span style="flex:1 1 58%">📜 ${q.nm} <span class="muted">· 목표 ${q.goal}${q.unit} · 보상 ${reward}</span>
+        <div class="bar" style="height:8px;margin-top:4px;width:140px"><i style="display:block;height:100%;width:${pct}%;background:var(--gold);border-radius:8px"></i></div></span>${btn}</div>`;
+    }).join("");
+  }
+  if (tab === "codex") {
+    const iF = S.codex.items.length, iT = GATHERABLE_IDS.length;
+    const mF = S.codex.monsters.length, mT = MONSTERS.length;
+    let h = `<div class="muted" style="margin-bottom:6px">자원 도감 <b>${iF}/${iT}</b> · 몬스터 도감 <b>${mF}/${mT}</b></div>`;
+    h += `<h3>🎒 자원</h3><div class="inv">` + GATHERABLE_IDS.map((id) => {
+      const f = S.codex.items.includes(id), d = itemDef(id);
+      return `<div class="slot"${f ? "" : ' style="opacity:.35;filter:grayscale(1)"'}>${f ? d.pic : "❔"} ${f ? d.nm : "???"}</div>`;
+    }).join("") + `</div>`;
+    h += `<h3 style="margin-top:10px">👾 몬스터</h3><div class="inv">` + MONSTERS.map((mo) => {
+      const f = S.codex.monsters.includes(mo.id);
+      return `<div class="slot"${f ? "" : ' style="opacity:.35;filter:grayscale(1)"'}>${f ? mo.pic : "❔"} ${f ? mo.nm : "???"}</div>`;
+    }).join("") + `</div>`;
+    return h;
+  }
+  if (tab === "achieve") {
+    return achievementsStatus().map((a) =>
+      `<div class="row"><span>${a.done ? a.pic : "🔒"} <b>${a.nm}</b> <span class="muted">· ${a.desc}</span></span><span>${a.done ? "✅" : "…"}</span></div>`
+    ).join("");
+  }
+  if (tab === "star") {
+    let h = `<div class="muted" style="margin-bottom:6px">별머니 <b>⭐${S.starMoney}</b> · 보스·퀘스트로 모아요</div>`;
+    h += STAR_SHOP.map((it) =>
+      `<div class="row"><span>${it.pic}${it.nm} <span class="muted">· ${it.desc}</span></span>
+        <button data-star="${it.id}"${S.starMoney < it.cost ? " disabled" : ""} style="background:${S.starMoney < it.cost ? "#ccc" : "#b197fc"}">⭐${it.cost}</button></div>`
+    ).join("");
+    return h;
+  }
+  return "";
+}
+
 // ---------- 내비게이션 ----------
 export function renderNav() {
   const nav = $("nav");
@@ -305,7 +382,8 @@ export function renderNav() {
     { k: "field", ic: "🌾", t: "들판" }, { k: "dump", ic: "🗑️", t: "쓰레기장" },
     { k: "pirate", ic: "🏴‍☠️", t: "해적선", minReq: 3 }, { k: "battle", ic: "⚔️", t: "던전" },
     { k: "shop", ic: "🏪", t: "상점" }, { k: "home", ic: "🏠", t: "집" },
-    { k: "donate", ic: "❤️", t: "기부소" }, { k: "heaven", ic: "☁️", t: "하늘나라" },
+    { k: "donate", ic: "❤️", t: "기부소" }, { k: "journal", ic: "📋", t: "수첩" },
+    { k: "heaven", ic: "☁️", t: "하늘나라" },
   ];
   nav.innerHTML = "";
   items.forEach((it) => {
@@ -334,5 +412,6 @@ export function go(k) {
   else if (k === "shop") say("어서오세요~ 모은 자원을 팔아볼까요? 🏪");
   else if (k === "home") say("우리 집이다! 피곤하면 푹 쉬어요~ 😴");
   else if (k === "donate") say("착한 일을 하면 복이 와요~ 선행점수를 쌓아봐요! ❤️");
+  else if (k === "journal") say("모험수첩이에요! 오늘의 퀘스트와 도감을 확인해봐요~ 📋");
   else if (p && p.combat) say(`${p.name}! 몬스터가 기다리고 있어요~ ⚔️`);
 }

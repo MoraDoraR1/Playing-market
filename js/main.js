@@ -5,6 +5,7 @@ import { setMuted, toggleMuted } from "./core/audio.js";
 import { renderAll } from "./ui/render.js";
 import { hideModal } from "./ui/view.js";
 import { maybeTutorial } from "./ui/tutorial.js";
+import { ensureDaily } from "./systems/meta.js";
 
 function $(id) { return document.getElementById(id); }
 
@@ -17,6 +18,7 @@ function init() {
   // 저장된 진행 불러오기
   load();
   setMuted(!S.settings.sound);
+  ensureDaily(); // 날짜 바뀌면 퀘스트·시세 갱신
 
   renderAll();
 
@@ -37,6 +39,7 @@ function init() {
     if (!confirm("정말 처음부터 다시 시작할까요? 모은 자원과 계급이 모두 사라져요!")) return;
     hardReset();
     setMuted(!S.settings.sound);
+    ensureDaily();
     renderAll();
     updateMuteBtn();
     maybeTutorial();

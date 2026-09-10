@@ -30,6 +30,12 @@ export function defaultState() {
     foodBuff: null,      // {id,nm,stat,amount,turns} 요리 일시 버프
     farm: [],            // [{cropId, progress}]
     homeTab: "rest",     // 집 화면 탭
+    // 메타 (P4)
+    stats: { gather: 0, kills: 0, bossKills: 0, sold: 0, cook: 0, harvest: 0, craft: 0 },
+    codex: { items: [], monsters: [], recipes: [] }, // 발견 목록
+    quests: { date: "", list: [] },                  // 일일 퀘스트
+    market: { date: "", mult: 1, hotItem: null },    // 상점 시세
+    journalTab: "quest", // 모험수첩 탭
     // 진행
     place: "forest",
     heavenOpen: false,
@@ -55,6 +61,10 @@ export function applyState(obj) {
   S.furniture = (obj && obj.furniture) || [];
   S.farm = (obj && obj.farm) || [];
   S.foodBuff = (obj && obj.foodBuff) || null;
+  S.stats = Object.assign({}, fresh.stats, (obj && obj.stats) || {});
+  S.codex = Object.assign({ items: [], monsters: [], recipes: [] }, (obj && obj.codex) || {});
+  S.quests = (obj && obj.quests) || { date: "", list: [] };
+  S.market = (obj && obj.market) || { date: "", mult: 1, hotItem: null };
   S.foe = null; // 전투 상태는 복원하지 않음
 }
 

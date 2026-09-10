@@ -5,6 +5,7 @@ import { itemDef } from "../data/items.js";
 import { sfx } from "../core/audio.js";
 import { say, toast, showModal } from "../ui/view.js";
 import { renderHud, renderInv, renderScene, renderPanel } from "../ui/render.js";
+import { recordStat, questProgress, discoverRecipe } from "./meta.js";
 
 // ---- 인벤토리 재료 확인/차감 ----
 export function hasItems(needs) {
@@ -50,6 +51,7 @@ export function craft(recipeId) {
     sfx.up();
     showModal(r.pic, `${r.nm} 완성!`, `${r.desc}. 집이 더 좋아졌어요! 🛋️`);
   }
+  recordStat("craft", 1); discoverRecipe(r.id);
   renderHud(); renderInv(); renderPanel();
 }
 
@@ -78,6 +80,7 @@ export function cook(recipeId) {
     S.foodBuff = { id: c.id, nm: c.nm, pic: c.pic, stat: c.stat, amount: c.amount, turns: c.turns };
     say(`${c.pic}${c.nm}을(를) 먹었어요! ${c.desc} 💪`);
   }
+  recordStat("cook", 1); questProgress("cook", 1);
   renderHud(); renderInv(); renderPanel();
 }
 
@@ -103,6 +106,7 @@ export function harvest(index) {
   c.yield.forEach((y) => { for (let i = 0; i < y.qty; i++) addItem(y); msg.push(`${y.pic}${y.nm}×${y.qty}`); });
   S.farm.splice(index, 1);
   sfx.up(); toast(`수확! ${msg.join(", ")}`);
+  recordStat("harvest", 1); questProgress("harvest", 1);
   say(`${c.pic}${c.nm}을(를) 수확했어요! ${msg.join(", ")} 획득! 🧺`);
   renderHud(); renderInv(); renderPanel();
 }

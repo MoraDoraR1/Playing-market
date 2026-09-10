@@ -4,15 +4,19 @@ import { won } from "../core/format.js";
 import { sfx } from "../core/audio.js";
 import { say, toast } from "../ui/view.js";
 import { renderHud, renderInv, renderPanel } from "../ui/render.js";
+import { sellPrice, recordStat, questProgress } from "./meta.js";
 
-export function sellTotal() { return invSlots().reduce((s, x) => s + x.pr * x.count, 0); }
+// 시세가 적용된 개당 판매가
+export function unitPrice(it) { return sellPrice(it); }
+export function sellTotal() { return invSlots().reduce((s, x) => s + unitPrice(x) * x.count, 0); }
 
 export function sellOne(id) {
   const it = S.inv[id];
   if (!it || it.count <= 0) return;
-  const gain = it.pr * it.count; S.money += gain;
+  const gain = unitPrice(it) * it.count; S.money += gain;
   toast(`${it.pic}${it.nm} ×${it.count} → +${won(gain)}`);
   it.count = 0; sfx.sell();
+  recordStat("sold", gain); questProgress("sell", gain);
   renderHud(); renderInv(); renderPanel();
   say(`${it.nm}을(를) 팔아서 ${won(gain)} 벌었어요! 💰`);
 }
@@ -23,6 +27,7 @@ export function sellAll() {
   S.money += total;
   Object.values(S.inv).forEach((x) => (x.count = 0));
   sfx.sell(); toast(`전부 팔았어요! +${won(total)}`);
+  recordStat("sold", total); questProgress("sell", total);
   say(`자원을 몽땅 팔아서 ${won(total)} 벌었어요! 부자 되는 중~ 🤑`);
   renderHud(); renderInv(); renderPanel();
 }

@@ -8,6 +8,7 @@ import { say, toast, showModal, shake } from "../ui/view.js";
 import { renderHud, renderInv, renderScene, renderPanel, renderNav } from "../ui/render.js";
 import { checkRankUp } from "./progress.js";
 import { onProductionAction } from "./home.js";
+import { discoverMonster, recordStat, questProgress } from "./meta.js";
 
 // 계급이 오를수록 강한 몬스터가 등장
 export function pickFoe() {
@@ -95,6 +96,10 @@ function winBattle() {
   S.money += f.gold;
   S.gong += f.gong;
   if (boss && f.star) S.starMoney += f.star;
+  discoverMonster(f.id);
+  recordStat("kills", 1);
+  if (boss) recordStat("bossKills", 1);
+  questProgress("kill", 1);
   S.fatigue = Math.min(100, S.fatigue + (boss ? 20 : 12));
   S.foe = null; sfx.up();
   if (boss) {
