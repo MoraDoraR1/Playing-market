@@ -41,7 +41,7 @@ export function defaultState() {
     heavenOpen: false,
     foe: null,           // 전투 중 몬스터(저장하지 않음)
     flags: { tutorialDone: false },
-    settings: { sound: true },
+    settings: { sound: true, bgm: false },
   };
 }
 

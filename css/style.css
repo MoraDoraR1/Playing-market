@@ -86,10 +86,24 @@ img{user-select:none;}
 .nav button:active{transform:translateY(2px);}
 
 /* footer (설정) */
-.footer{display:flex; gap:8px; justify-content:center; margin-top:12px;}
+.footer{display:flex; gap:8px; justify-content:center; margin-top:12px; flex-wrap:wrap;}
 .footer button{border:none; background:#fff; color:#9b8468; border-radius:12px; padding:7px 12px;
   font-size:12px; cursor:pointer; box-shadow:0 2px 0 rgba(0,0,0,.08);}
 .footer button:active{transform:translateY(2px);}
+
+/* 키보드 힌트 (PC 전용 표시) */
+.kbdhint{display:none; text-align:center; font-size:11px; color:#c3ad95; margin-top:8px;}
+.kbdhint b{background:#f0e6d6; color:#7a6650; border-radius:5px; padding:0 5px;}
+@media (hover:hover) and (pointer:fine){ .kbdhint{display:block;} }
+
+/* 접근성: 키보드 포커스 표시 */
+button:focus-visible, .tab:focus-visible{ outline:3px solid var(--blue); outline-offset:2px; }
+/* 모션 민감 사용자 배려 */
+@media (prefers-reduced-motion: reduce){
+  *{ animation-duration:.001ms !important; transition-duration:.001ms !important; }
+}
+/* 도움말 등 여러 줄 모달 */
+.modal p{ white-space:pre-line; }
 
 /* floats + toast */
 .float{position:absolute; font-size:20px; pointer-events:none; animation:fl 1s ease-out forwards; z-index:5;}
