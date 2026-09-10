@@ -1,11 +1,12 @@
 // 채집/낚시/채광/사냥 — 생산 활동 로직
-import { S, addItem } from "../core/state.js";
+import { S, addItem, gatherFatigue, gatherBonus } from "../core/state.js";
 import { PLACES } from "../data/places.js";
 import { rnd, weighted } from "../core/rng.js";
 import { sfx } from "../core/audio.js";
 import { say, floatLoot, shake } from "../ui/view.js";
 import { renderHud, renderInv, renderScene, renderPanel } from "../ui/render.js";
 import { checkRankUp } from "./progress.js";
+import { onProductionAction } from "./home.js";
 
 export function doWork() {
   const p = PLACES[S.place];
@@ -17,8 +18,8 @@ export function doWork() {
   }
   shake("hero");
 
-  // 수확량: 1 ~ (1+도구레벨)
-  const amount = 1 + rnd(1 + S.tool);
+  // 수확량: 1 ~ (1+도구레벨) + 가구/요리 보너스
+  const amount = 1 + rnd(1 + S.tool) + gatherBonus();
   let got = [], gongGain = 0, rareHit = false;
   for (let i = 0; i < amount; i++) {
     // 레어 확률: 4% + 도구레벨*1.5%
@@ -29,8 +30,10 @@ export function doWork() {
       addItem(it); got.push(it); gongGain += 2;
     }
   }
+  gongGain += S.mods.gongBonus || 0;      // 가구(책장) 보너스
   S.gong += gongGain;
-  S.fatigue = Math.min(100, S.fatigue + 12);
+  S.fatigue = Math.min(100, S.fatigue + gatherFatigue());
+  onProductionAction();                    // 요리 버프 경과 + 농작물 성장
 
   floatLoot(got);
   if (rareHit) {

@@ -62,6 +62,14 @@ img{user-select:none;}
 .slot .cnt{background:var(--brown); color:#fff; border-radius:9px; font-size:12px; padding:0 5px;}
 .slot.rare{box-shadow:0 0 0 2px var(--gold), 0 2px 0 rgba(0,0,0,.1);}
 .muted{color:#b3a082; font-size:13px;}
+
+/* home tabs */
+.tabs{display:flex; gap:4px; flex-wrap:wrap; margin-bottom:8px;}
+.tab{border:none; background:#fff; color:#9b8468; border-radius:12px; padding:6px 9px; font-size:12px;
+  cursor:pointer; box-shadow:0 2px 0 rgba(0,0,0,.08);}
+.tab.on{background:var(--brown); color:#fff;}
+.tab:active{transform:translateY(2px);}
+.homebody .row{margin-bottom:6px;}
 .shopgrid{display:grid; grid-template-columns:1fr 1fr; gap:7px;}
 .row{display:flex; justify-content:space-between; align-items:center; background:#fff; border-radius:12px;
   padding:6px 8px; font-size:14px; box-shadow:0 2px 0 rgba(0,0,0,.07);}

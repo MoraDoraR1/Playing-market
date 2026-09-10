@@ -7,6 +7,7 @@ import { sfx } from "../core/audio.js";
 import { say, toast, showModal, shake } from "../ui/view.js";
 import { renderHud, renderInv, renderScene, renderPanel, renderNav } from "../ui/render.js";
 import { checkRankUp } from "./progress.js";
+import { onProductionAction } from "./home.js";
 
 // 계급이 오를수록 강한 몬스터가 등장
 export function pickFoe() {
@@ -28,6 +29,7 @@ export function battleAttack() {
   const dmg = playerAtk() + rnd(6);
   f.hp -= dmg; sfx.hit(); shake("fHero");
   S.fatigue = Math.min(100, S.fatigue + 5);
+  onProductionAction();                    // 요리 버프 경과 + 농작물 성장
 
   if (f.hp <= 0) { winBattle(); return; }
 

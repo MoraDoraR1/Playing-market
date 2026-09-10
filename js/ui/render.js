@@ -13,6 +13,8 @@ import { pickFoe, startBattle, battleAttack, usePotion, fleeBattle } from "../sy
 import { sellTotal, sellOne, sellAll, toolCost, buyTool, weaponCost, buyWeapon, buyPotion } from "../systems/economy.js";
 import { donate } from "../systems/progress.js";
 import { doSleep, buyBed } from "../systems/rest.js";
+import { craft, cook, plant, harvest, hasItems, needsText } from "../systems/home.js";
+import { CRAFT, COOK, CROPS, MAX_PLOTS } from "../data/recipes.js";
 
 // ---------- HUD ----------
 export function renderHud() {
@@ -179,17 +181,93 @@ function renderShop(pan) {
 }
 
 function renderHome(pan) {
-  let html = `<h3>🏠 우리 집 <span class="muted">쉬어서 피로와 체력을 회복해요</span></h3>`;
-  html += `<div class="muted" style="margin-bottom:8px">피로도 <b>${Math.round(S.fatigue)}%</b> · 체력 <b>❤️${S.hp}/${S.maxHp}</b> · 잠을 자면 함께 회복돼요.</div>`;
-  html += `<div class="row"><span>😴 잠자기 (피로도 ${S.bed ? "전부" : "70"} 회복)</span><button id="sleepBtn" style="background:var(--blue)">쉬기</button></div>`;
-  if (!S.bed) {
-    html += `<div class="row" style="margin-top:7px"><span>🛏️ 푹신침대 사기 (한 번에 완전 회복)</span><button id="bedBtn" style="background:var(--brown)">${won(1500)}</button></div>`;
-  } else {
-    html += `<div class="row" style="margin-top:7px"><span>🛏️ 푹신침대 보유중! 잠자면 완전 회복 😊</span><button disabled style="background:#ccc">완료</button></div>`;
-  }
+  const tab = S.homeTab || "rest";
+  const tabs = [["rest", "😴 휴식"], ["craft", "🔨 작업대"], ["cook", "🍳 부엌"], ["farm", "🌱 농지"], ["deco", "🛋️ 꾸미기"]];
+  let html = `<h3>🏠 우리 집 <span class="muted">무엇을 해볼까요?</span></h3>`;
+  html += `<div class="tabs">` + tabs.map(([k, t]) => `<button class="tab${tab === k ? " on" : ""}" data-tab="${k}">${t}</button>`).join("") + `</div>`;
+  html += `<div class="homebody">` + homeBody(tab) + `</div>`;
   pan.innerHTML = html;
-  $("sleepBtn").onclick = doSleep;
-  if ($("bedBtn")) $("bedBtn").onclick = buyBed;
+  pan.querySelectorAll("[data-tab]").forEach((b) => (b.onclick = () => { S.homeTab = b.getAttribute("data-tab"); renderPanel(); }));
+  wireHome(tab, pan);
+}
+
+function homeBody(tab) {
+  if (tab === "rest") {
+    let h = `<div class="muted" style="margin-bottom:8px">피로도 <b>${Math.round(S.fatigue)}%</b> · 체력 <b>❤️${S.hp}/${S.maxHp}</b>${S.foodBuff ? ` · 버프 <b>${S.foodBuff.pic}${S.foodBuff.nm}</b>(${S.foodBuff.turns}회)` : ""}</div>`;
+    h += `<div class="row"><span>😴 잠자기 (피로도 ${S.bed ? "전부" : "70"} 회복)</span><button id="sleepBtn" style="background:var(--blue)">쉬기</button></div>`;
+    if (!S.bed) h += `<div class="row" style="margin-top:7px"><span>🛏️ 푹신침대 사기 (완전 회복)</span><button id="bedBtn" style="background:var(--brown)">${won(1500)}</button></div>`;
+    else h += `<div class="row" style="margin-top:7px"><span>🛏️ 푹신침대 보유중! 😊</span><button disabled style="background:#ccc">완료</button></div>`;
+    return h;
+  }
+  if (tab === "craft") {
+    let h = `<div class="muted" style="margin-bottom:6px">나뭇가지로 합판을 만들고, 합판으로 가구를 제작해요!</div>`;
+    h += CRAFT.map(craftRow).join("");
+    return h;
+  }
+  if (tab === "cook") {
+    let h = `<div class="muted" style="margin-bottom:6px">재료를 모아 음식을 만들면 체력 회복·버프를 얻어요!${S.foodBuff ? ` (지금: ${S.foodBuff.pic}${S.foodBuff.nm} ${S.foodBuff.turns}회)` : ""}</div>`;
+    h += COOK.map(cookRow).join("");
+    return h;
+  }
+  if (tab === "farm") {
+    let h = `<div class="muted" style="margin-bottom:6px">밭 ${S.farm.length}/${MAX_PLOTS} · 활동(채집·전투)하면 자라요</div>`;
+    if (S.farm.length === 0) h += `<div class="muted">아직 심은 게 없어요~ 아래에서 씨앗을 심어봐요!</div>`;
+    S.farm.forEach((p, i) => {
+      const c = CROPS[p.cropId];
+      const ready = p.progress >= c.grow;
+      const pct = Math.min(100, (p.progress / c.grow) * 100);
+      h += `<div class="row"><span style="flex:1">${c.pic}${c.nm} ${ready ? "🌟 다 자랐어요!" : `<span class="muted">(${p.progress}/${c.grow})</span>`}
+        <div class="bar" style="height:8px;margin-top:4px;width:130px"><i style="display:block;height:100%;width:${pct}%;background:var(--green);border-radius:8px"></i></div></span>
+        <button data-harvest="${i}" ${ready ? "" : "disabled"} style="background:${ready ? "var(--green)" : "#ccc"}">수확</button></div>`;
+    });
+    h += `<h3 style="margin-top:10px">🌱 씨앗 심기</h3>`;
+    Object.values(CROPS).forEach((c) => {
+      h += `<div class="row"><span>${c.pic}${c.nm} <span class="muted">· ${c.grow}회 성장 → ${c.yield.map((y) => y.pic + y.nm + "×" + y.qty).join(",")}</span></span>
+        <button data-plant="${c.id}" style="background:var(--green)">${won(c.seedCost)}</button></div>`;
+    });
+    return h;
+  }
+  if (tab === "deco") {
+    const score = S.furniture.reduce((s, id) => { const r = CRAFT.find((x) => x.id === id); return s + (r ? r.deco || 0 : 0); }, 0);
+    let h = `<div class="muted">집 꾸미기 점수: <b>⭐ ${score}</b></div>`;
+    if (S.furniture.length === 0) h += `<div class="muted" style="margin-top:6px">아직 가구가 없어요~ 작업대에서 만들어 꾸며봐요!</div>`;
+    else h += `<div class="inv" style="margin-top:8px">` + S.furniture.map((id) => { const r = CRAFT.find((x) => x.id === id); return `<div class="slot">${r.pic} ${r.nm}</div>`; }).join("") + `</div>`;
+    return h;
+  }
+  return "";
+}
+
+function craftRow(r) {
+  const owned = !r.makesItem && S.furniture.includes(r.id);
+  const can = hasItems(r.needs);
+  const label = owned ? "보유중" : (r.makesItem ? "만들기" : "제작");
+  const dis = owned || !can ? "disabled" : "";
+  const style = owned || !can ? "background:#ccc" : "background:var(--brown)";
+  return `<div class="row" style="flex-wrap:wrap;gap:4px">
+    <span style="flex:1 1 58%">${r.pic}${r.nm} <span class="muted">· ${r.desc}</span><br><span class="muted">재료: ${needsText(r.needs)}</span></span>
+    <button data-craft="${r.id}" ${dis} style="${style}">${label}</button></div>`;
+}
+
+function cookRow(c) {
+  const can = hasItems(c.needs);
+  const style = can ? "background:var(--gold)" : "background:#ccc";
+  return `<div class="row" style="flex-wrap:wrap;gap:4px">
+    <span style="flex:1 1 58%">${c.pic}${c.nm} <span class="muted">· ${c.desc}</span><br><span class="muted">재료: ${needsText(c.needs)}</span></span>
+    <button data-cook="${c.id}" ${can ? "" : "disabled"} style="${style}">요리</button></div>`;
+}
+
+function wireHome(tab, pan) {
+  if (tab === "rest") {
+    if ($("sleepBtn")) $("sleepBtn").onclick = doSleep;
+    if ($("bedBtn")) $("bedBtn").onclick = buyBed;
+  } else if (tab === "craft") {
+    pan.querySelectorAll("[data-craft]").forEach((b) => (b.onclick = () => craft(b.getAttribute("data-craft"))));
+  } else if (tab === "cook") {
+    pan.querySelectorAll("[data-cook]").forEach((b) => (b.onclick = () => cook(b.getAttribute("data-cook"))));
+  } else if (tab === "farm") {
+    pan.querySelectorAll("[data-plant]").forEach((b) => (b.onclick = () => plant(b.getAttribute("data-plant"))));
+    pan.querySelectorAll("[data-harvest]").forEach((b) => (b.onclick = () => harvest(+b.getAttribute("data-harvest"))));
+  }
 }
 
 function renderDonate(pan) {
