@@ -39,7 +39,6 @@ export function renderHud() {
   $("fatTxt").textContent = Math.round(fp) + "%";
   $("money").textContent = won(S.money);
   $("deed").textContent = S.deed + "점";
-  if ($("star")) $("star").textContent = S.starMoney;
 }
 
 // ---------- 인벤토리 ----------
@@ -166,7 +165,7 @@ export function renderPanel() {
         <div class="slot">🛡️ 방어 <span class="cnt">${S.armor}</span></div>
         <div class="slot">🧪 물약 <span class="cnt">${S.potions}개</span></div>
       </div>
-      <div class="muted" style="margin-top:7px">몬스터를 이기면 <b>전리품·게임머니·내공</b>을 얻어요! <b>💥강공격</b>은 2배 피해(피로↑). 방어구를 입으면 피해가 줄어요. 계급이 오르면 <b>🔥보스</b>에 도전할 수 있어요!</div>`;
+      <div class="muted" style="margin-top:7px">몬스터를 이기면 <b>전리품·별머니·내공</b>을 얻어요! <b>💥강공격</b>은 2배 피해(피로↑). 방어구를 입으면 피해가 줄어요. 계급이 오르면 <b>🔥보스</b>에 도전할 수 있어요!</div>`;
   }
   else {
     pan.innerHTML = `<h3>🧭 활동 안내</h3>
@@ -318,7 +317,7 @@ function renderDonate(pan) {
 // ---------- 모험수첩 (퀘스트/도감/업적/별상점) ----------
 function renderJournal(pan) {
   const tab = S.journalTab || "quest";
-  const tabs = [["quest", "📜 퀘스트"], ["codex", "📖 도감"], ["achieve", "🏆 업적"], ["star", "⭐ 별상점"]];
+  const tabs = [["quest", "📜 퀘스트"], ["codex", "📖 도감"], ["achieve", "🏆 업적"], ["star", "🛒 특수샵"]];
   let html = `<h3>📋 모험수첩 <span class="muted">오늘의 할 일과 수집</span></h3>`;
   html += `<div class="tabs">` + tabs.map(([k, t]) => `<button class="tab${tab === k ? " on" : ""}" data-jtab="${k}">${t}</button>`).join("") + `</div>`;
   html += `<div class="homebody">` + journalBody(tab) + `</div>`;
@@ -334,7 +333,7 @@ function journalBody(tab) {
     if (!list.length) return `<div class="muted">오늘의 퀘스트를 준비 중이에요~</div>`;
     return list.map((q, i) => {
       const pct = Math.min(100, (q.progress / q.goal) * 100);
-      const reward = `${won(q.rewardMoney)}${q.rewardStar ? ` +⭐${q.rewardStar}` : ""}`;
+      const reward = `${won(q.rewardMoney)}`;
       let btn;
       if (q.claimed) btn = `<button disabled style="background:#ccc">완료 ✓</button>`;
       else if (q.done) btn = `<button data-claim="${i}" style="background:var(--green)">보상받기</button>`;
@@ -363,10 +362,10 @@ function journalBody(tab) {
     ).join("");
   }
   if (tab === "star") {
-    let h = `<div class="muted" style="margin-bottom:6px">별머니 <b>⭐${S.starMoney}</b> · 보스·퀘스트로 모아요</div>`;
+    let h = `<div class="muted" style="margin-bottom:6px">🛒 특수아이템샵 · 보유 별머니 <b>${won(S.money)}</b> · 원작처럼 고가의 사기템을 팔아요!</div>`;
     h += STAR_SHOP.map((it) =>
-      `<div class="row"><span>${it.pic}${it.nm} <span class="muted">· ${it.desc}</span></span>
-        <button data-star="${it.id}"${S.starMoney < it.cost ? " disabled" : ""} style="background:${S.starMoney < it.cost ? "#ccc" : "#b197fc"}">⭐${it.cost}</button></div>`
+      `<div class="row" style="flex-wrap:wrap;gap:4px"><span style="flex:1 1 55%">${it.pic}${it.nm} <span class="muted">· ${it.desc}</span></span>
+        <button data-star="${it.id}"${S.money < it.cost ? " disabled" : ""} style="background:${S.money < it.cost ? "#ccc" : "#b197fc"}">${won(it.cost)}</button></div>`
     ).join("");
     return h;
   }

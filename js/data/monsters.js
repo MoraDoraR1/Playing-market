@@ -9,11 +9,11 @@ export const MONSTERS = [
   { id: "dragon", pic: "🐉", nm: "드래곤",   hp: 230, atk: 32, gong: 110, gold: 600, drop: { id: "scale",   pic: "🐲", nm: "용비늘",     pr: 520 } },
 ];
 
-// 보스 — 계급 관문마다 도전할 수 있는 강력한 적. 처치 시 큰 보상 + 별머니.
+// 보스 — 계급 관문마다 도전할 수 있는 강력한 적. 처치 시 큰 별머니 보상.
 export const BOSSES = [
-  { id: "kingslime", pic: "👑", nm: "슬라임 왕",  hp: 260,  atk: 16, gong: 150, gold: 600,  star: 1, reqRank: 2, drop: { id: "crown",    pic: "👑", nm: "왕관",          pr: 700 } },
-  { id: "kraken",    pic: "🐙", nm: "크라켄",     hp: 480,  atk: 26, gong: 320, gold: 1300, star: 2, reqRank: 4, drop: { id: "tentacle", pic: "🦑", nm: "크라켄 촉수",    pr: 1300 } },
-  { id: "darklord",  pic: "😈", nm: "마왕",       hp: 820,  atk: 40, gong: 600, gold: 2800, star: 4, reqRank: 6, drop: { id: "darkgem",  pic: "🟣", nm: "마왕의 보석",    pr: 2800 } },
+  { id: "kingslime", pic: "👑", nm: "슬라임 왕",  hp: 260,  atk: 16, gong: 150, gold: 600,  boss: true, reqRank: 2, drop: { id: "crown",    pic: "👑", nm: "왕관",          pr: 700 } },
+  { id: "kraken",    pic: "🐙", nm: "크라켄",     hp: 480,  atk: 26, gong: 320, gold: 1300, boss: true, reqRank: 4, drop: { id: "tentacle", pic: "🦑", nm: "크라켄 촉수",    pr: 1300 } },
+  { id: "darklord",  pic: "😈", nm: "마왕",       hp: 820,  atk: 40, gong: 600, gold: 2800, boss: true, reqRank: 6, drop: { id: "darkgem",  pic: "🟣", nm: "마왕의 보석",    pr: 2800 } },
 ];
 
 // 현재 계급에서 도전 가능한 가장 높은 보스

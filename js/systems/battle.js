@@ -19,7 +19,7 @@ export function pickFoe() {
 export function startBattle(foe) {
   if (S.hp <= 0) { sfx.bad(); say("체력이 없어요! 🏠집에서 쉬고 와야 해요~"); return; }
   if (S.fatigue >= 100) { sfx.bad(); say("너무 지쳤어요! 싸우려면 먼저 쉬어야 해요~ 😵"); return; }
-  S.foe = { ref: foe, hp: foe.hp, boss: !!foe.star };
+  S.foe = { ref: foe, hp: foe.hp, boss: !!foe.boss };
   say(`${foe.pic}${foe.nm}와(과)의 전투 시작! 공격 버튼을 눌러요! ⚔️`);
   renderScene(); renderPanel();
 }
@@ -95,7 +95,6 @@ function winBattle() {
   addItem(f.drop);
   S.money += f.gold;
   S.gong += f.gong;
-  if (boss && f.star) S.starMoney += f.star;
   discoverMonster(f.id);
   recordStat("kills", 1);
   if (boss) recordStat("bossKills", 1);
@@ -103,7 +102,7 @@ function winBattle() {
   S.fatigue = Math.min(100, S.fatigue + (boss ? 20 : 12));
   S.foe = null; sfx.up();
   if (boss) {
-    showModal("🏆", `보스 ${f.nm} 격파!`, `대단해요!! 전리품 ${f.drop.pic}${f.drop.nm} + ${won(f.gold)} + 내공 ${f.gong}${f.star ? ` + 별머니 ⭐${f.star}` : ""} 획득! 🎉`);
+    showModal("🏆", `보스 ${f.nm} 격파!`, `대단해요!! 전리품 ${f.drop.pic}${f.drop.nm} + ${won(f.gold)} + 내공 ${f.gong} 획득! 🎉`);
   } else {
     say(`${f.pic}${f.nm} 처치! 전리품 ${f.drop.pic}${f.drop.nm} + ${won(f.gold)} + 내공 ${f.gong} 획득! 🎉`);
     toast(`승리! +${won(f.gold)} / 내공 +${f.gong}`);
@@ -116,6 +115,6 @@ function loseBattle() {
   const lost = Math.floor(S.money * 0.1);
   S.money -= lost; S.foe = null; S.hp = S.maxHp; S.place = "home";
   sfx.bad();
-  showModal("😵", "기절했어요...", `몬스터에게 졌어요! 게임머니 ${won(lost)}을 떨어뜨렸지만, 착한 이웃이 집으로 데려다줬어요. 체력은 회복됐으니 다시 도전! 💪`);
+  showModal("😵", "기절했어요...", `몬스터에게 졌어요! ${won(lost)}을 떨어뜨렸지만, 착한 이웃이 집으로 데려다줬어요. 체력은 회복됐으니 다시 도전! 💪`);
   renderHud(); renderScene(); renderPanel(); renderNav();
 }

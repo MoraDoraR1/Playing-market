@@ -7,9 +7,8 @@ export const SAVE_VERSION = 1;
 export function defaultState() {
   return {
     version: SAVE_VERSION,
-    // 재화 & 성장
-    money: 0,
-    starMoney: 0,        // 별머니(인게임 프리미엄, 현금결제 없음) — P4에서 활용
+    // 재화 & 성장 (단일 통화: 별머니)
+    money: 0,            // 별머니 잔액 (게임의 유일한 통화)
     gong: 0,             // 내공점수(계급 경험치)
     deed: 0,             // 선행점수
     rankIdx: 0,

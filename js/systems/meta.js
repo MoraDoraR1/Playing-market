@@ -38,24 +38,23 @@ export function claimQuest(index) {
   const q = S.quests.list[index];
   if (!q || !q.done || q.claimed) return;
   S.money += q.rewardMoney;
-  if (q.rewardStar) S.starMoney += q.rewardStar;
   q.claimed = true;
   sfx.up();
-  toast(`보상 획득! +${q.rewardMoney.toLocaleString("ko-KR")}원${q.rewardStar ? ` +⭐${q.rewardStar}` : ""}`);
+  toast(`보상 획득! +${q.rewardMoney.toLocaleString("ko-KR")}별`);
   say(`퀘스트 보상을 받았어요! 내일 또 새로운 퀘스트가 와요~ 📜`);
   renderHud(); renderPanel();
 }
 
-// ---- 별머니 상점 ----
+// ---- 특수아이템샵 (별머니로 고가 사기템 구매) ----
 export function buyStar(id) {
   const item = STAR_SHOP.find((x) => x.id === id);
   if (!item) return;
-  if (S.starMoney < item.cost) { sfx.bad(); toast("별머니가 부족해요!"); say("별머니는 보스를 잡거나 퀘스트로 모아요~ ⭐"); return; }
-  S.starMoney -= item.cost;
+  if (S.money < item.cost) { sfx.bad(); toast("별머니가 부족해요!"); say("최고급 사기템은 엄청 비싸요~ 자원을 팔고 보스를 잡아 모아봐요! ⭐"); return; }
+  S.money -= item.cost;
   item.apply(S);
   sfx.up();
-  toast(`${item.pic}${item.nm} 사용!`);
-  say(`${item.pic}${item.nm}을(를) 얻었어요! ${item.desc} ✨`);
+  toast(`${item.pic}${item.nm} 구매!`);
+  say(`${item.pic}${item.nm}을(를) 샀어요! ${item.desc} ✨`);
   renderHud(); renderPanel();
 }
 
