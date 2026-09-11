@@ -49,6 +49,18 @@ img{user-select:none;}
 .btn.work{background:var(--green);} .btn.sell{background:var(--gold);}
 .btn.sleep{background:var(--blue);} .btn.give{background:var(--red);} .btn.up{background:var(--brown);}
 
+/* 월드 맵 캔버스 */
+.world{display:block; width:100%; height:auto; border-radius:14px; touch-action:none; background:#a8e6a1;}
+/* 터치용 방향 패드 (모바일에서만 표시) */
+.dpad{position:absolute; left:50%; bottom:8px; transform:translateX(-50%); display:none;
+  grid-template-columns:repeat(3,42px); grid-template-rows:repeat(3,42px); gap:4px; z-index:6; opacity:.9;}
+.dpad .dbtn{border:none; border-radius:10px; background:rgba(46,38,32,.55); color:#fff; font-size:18px;
+  cursor:pointer; touch-action:none; -webkit-user-select:none; user-select:none;}
+.dpad .dbtn.up{grid-area:1/2/2/3;} .dpad .dbtn.left{grid-area:2/1/3/2;}
+.dpad .dbtn.act{grid-area:2/2/3/3; background:var(--green);} .dpad .dbtn.right{grid-area:2/3/3/4;}
+.dpad .dbtn.down{grid-area:3/2/4/3;}
+@media (pointer:coarse){ .dpad{display:grid;} }
+
 /* talk */
 .talk{background:#fffbe9; border:3px solid #ffe08a; border-radius:14px; padding:9px 11px;
   font-size:14px; text-align:center; min-height:20px; margin-bottom:10px;}

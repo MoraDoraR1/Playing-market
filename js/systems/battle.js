@@ -113,7 +113,7 @@ function winBattle() {
 
 function loseBattle() {
   const lost = Math.floor(S.money * 0.1);
-  S.money -= lost; S.foe = null; S.hp = S.maxHp; S.place = "home";
+  S.money -= lost; S.foe = null; S.hp = S.maxHp; S.place = "home"; S.mode = "world";
   sfx.bad();
   showModal("😵", "기절했어요...", `몬스터에게 졌어요! ${won(lost)}을 떨어뜨렸지만, 착한 이웃이 집으로 데려다줬어요. 체력은 회복됐으니 다시 도전! 💪`);
   renderHud(); renderScene(); renderPanel(); renderNav();

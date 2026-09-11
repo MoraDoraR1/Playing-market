@@ -36,7 +36,8 @@ export function defaultState() {
     market: { date: "", mult: 1, hotItem: null },    // 상점 시세
     journalTab: "quest", // 모험수첩 탭
     // 진행
-    place: "forest",
+    place: "forest",     // 현재 상호작용 중인 장소/건물 컨텍스트
+    mode: "world",       // "world"(맵을 걸어다님) | "battle"(전투 화면)
     heavenOpen: false,
     foe: null,           // 전투 중 몬스터(저장하지 않음)
     flags: { tutorialDone: false },
@@ -64,7 +65,8 @@ export function applyState(obj) {
   S.codex = Object.assign({ items: [], monsters: [], recipes: [] }, (obj && obj.codex) || {});
   S.quests = (obj && obj.quests) || { date: "", list: [] };
   S.market = (obj && obj.market) || { date: "", mult: 1, hotItem: null };
-  S.foe = null; // 전투 상태는 복원하지 않음
+  S.foe = null;      // 전투 상태는 복원하지 않음
+  S.mode = "world";  // 항상 월드에서 시작
 }
 
 export function resetState() {

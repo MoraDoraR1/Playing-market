@@ -6,6 +6,7 @@ import { renderAll } from "./ui/render.js";
 import { hideModal, showModal } from "./ui/view.js";
 import { maybeTutorial } from "./ui/tutorial.js";
 import { ensureDaily } from "./systems/meta.js";
+import * as world from "./ui/world.js";
 
 function $(id) { return document.getElementById(id); }
 
@@ -17,9 +18,10 @@ const KEYMAP = {
 };
 
 const HELP_TEXT =
-  "이동: 1숲 2바다 3강 4광산 5들판 · 6던전 7상점 8집 9수첩 0기부소 · Y쓰레기장 P해적선 V하늘나라\n" +
-  "행동: Space 또는 Enter (채집·공격·미니게임 잡기)\n" +
-  "닫기: Esc (창/모달 닫기)";
+  "걷기: 방향키 / WASD / 마우스 클릭 (캐릭터가 직접 걸어가요)\n" +
+  "상호작용: 다가가서 Space 또는 Enter (채집·건물 입장·공격)\n" +
+  "빠른 이동(숫자키): 1숲 2바다 3강 4광산 5들판 · 6던전 7상점 8집 9수첩 0기부소 · Y쓰레기장 P해적선 V하늘나라\n" +
+  "닫기: Esc";
 
 function overlayShown(id) { const e = $(id); return e && e.classList.contains("show"); }
 
@@ -47,10 +49,11 @@ function handleKey(e) {
   }
   // 도움말
   if (k === "?") { e.preventDefault(); showHelp(); return; }
-  // 주요 행동 (씬의 첫 활동 버튼)
+  // 주요 행동: 월드에서는 상호작용, 전투에서는 공격 버튼
   if (k === " " || k === "Enter") {
-    const b = document.querySelector("#act .btn.work");
-    if (b && !b.disabled) { e.preventDefault(); b.click(); }
+    e.preventDefault();
+    if (S.mode === "world") { world.interact(); }
+    else { const b = document.querySelector("#act .btn.work"); if (b && !b.disabled) b.click(); }
     return;
   }
   // 장소 이동 단축키

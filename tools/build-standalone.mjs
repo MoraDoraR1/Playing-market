@@ -1,11 +1,12 @@
-// 모듈형 게임을 단일 HTML 파일로 번들링 (더블클릭/공유용)
+// 모듈형 게임을 단일 HTML로 번들링 (더블클릭/공유/아티팩트용)
 // 사용: 저장소 루트에서  `node tools/build-standalone.mjs`
-//  → dist/kidszzang-standalone.html 생성
+//  → dist/kidszzang-standalone.html (완전한 단일 HTML, 더블클릭 실행)
+//  → dist/artifact.html          (아티팩트 발행용: doctype/head/body 없음)
 import fs from "fs";
 const ROOT = process.cwd();
 const R = (p) => fs.readFileSync(ROOT + "/" + p, "utf8");
 
-// 최상위 const 초기화 의존성 안전 순서
+// 최상위 const 초기화 의존성 안전 순서 (world는 render보다 먼저)
 const ORDER = [
   "js/core/format.js", "js/core/rng.js",
   "js/data/ranks.js", "js/data/places.js", "js/data/monsters.js",
@@ -14,7 +15,7 @@ const ORDER = [
   "js/ui/view.js", "js/ui/minigame.js",
   "js/systems/gather.js", "js/systems/battle.js", "js/systems/economy.js",
   "js/systems/progress.js", "js/systems/rest.js", "js/systems/home.js", "js/systems/meta.js",
-  "js/ui/render.js", "js/ui/tutorial.js", "js/main.js",
+  "js/ui/world.js", "js/ui/render.js", "js/ui/tutorial.js", "js/main.js",
 ];
 
 function strip(src, file) {
@@ -25,14 +26,18 @@ function strip(src, file) {
   }).filter((l) => l !== null).join("\n");
 }
 
-const bundle = ORDER.map((f) => `\n// ===== ${f} =====\n` + strip(R(f), f)).join("\n");
-const css = R("css/style.css");
+let bundle = ORDER.map((f) => `\n// ===== ${f} =====\n` + strip(R(f), f)).join("\n");
+// `import * as world` 네임스페이스를 대체하는 shim (world.js의 export 함수들을 모음)
+bundle += `\n// ===== world 네임스페이스 shim =====\nvar world = { ensureMounted, unmount, interact, goTo, enterDungeon, exitDungeon };\n`;
 
+const css = R("css/style.css");
 let html = R("index.html");
 let body = html.slice(html.indexOf("<body>") + 6, html.indexOf("</body>"));
 body = body.replace(/<script type="module"[^>]*><\/script>/g, "").trim();
 
-const out =
+const scriptBlock = `<script>\n(function(){\n"use strict";\n${bundle}\n})();\n</script>`;
+
+const standalone =
 `<!doctype html>
 <html lang="ko">
 <head>
@@ -45,16 +50,21 @@ ${css}
 </head>
 <body>
 ${body}
-<script>
-(function(){
-"use strict";
-${bundle}
-})();
-</script>
+${scriptBlock}
 </body>
 </html>
 `;
 
+const artifact =
+`<title>키즈짱 시장놀이</title>
+<style>
+${css}
+</style>
+${body}
+${scriptBlock}
+`;
+
 fs.mkdirSync(ROOT + "/dist", { recursive: true });
-fs.writeFileSync(ROOT + "/dist/kidszzang-standalone.html", out);
-console.log("dist/kidszzang-standalone.html 생성 완료 ·", out.length, "bytes");
+fs.writeFileSync(ROOT + "/dist/kidszzang-standalone.html", standalone);
+fs.writeFileSync(ROOT + "/dist/artifact.html", artifact);
+console.log("dist/kidszzang-standalone.html", standalone.length, "· dist/artifact.html", artifact.length);

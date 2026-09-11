@@ -20,6 +20,7 @@ import { claimQuest, buyStar, achievementsStatus } from "../systems/meta.js";
 import { STAR_SHOP } from "../data/meta.js";
 import { ITEM_INDEX, itemDef } from "../data/items.js";
 import { MONSTERS } from "../data/monsters.js";
+import * as world from "./world.js";
 
 // ---------- HUD ----------
 export function renderHud() {
@@ -84,23 +85,14 @@ function sceneBackground(key, p) {
 }
 
 export function renderScene() {
-  const key = S.place;
   const sc = $("scene");
-  const p = PLACES[key] || SCREENS[key];
-  if (!p) { sc.style.background = "#eee"; sc.innerHTML = ""; return; }
-  sceneBackground(key, p);
-
-  if (p.combat) { renderBattleScene(sc, p); return; }
-
-  sc.style.color = "";
-  sc.innerHTML = `<div class="placeName">${p.name}</div><div class="placeDesc">${p.desc}</div>
-    <div class="hero" id="hero">${sprite("heroes", key, p.hero, "spr-hero")}</div><div class="act" id="act"></div>`;
-  if (p.loot) {
-    const b = document.createElement("button");
-    b.className = "btn work"; b.textContent = "⛏️ " + p.verb;
-    b.onclick = doWork;
-    if (S.fatigue >= 100) b.disabled = true;
-    $("act").appendChild(b);
+  if (S.mode === "battle") {
+    world.unmount();
+    sceneBackground("battle", PLACES.battle);
+    renderBattleScene(sc, PLACES.battle);
+  } else {
+    // 월드 모드: 캐릭터를 걸어다니는 맵 (캔버스는 유지)
+    world.ensureMounted(sc);
   }
 }
 
@@ -132,6 +124,10 @@ function renderBattleScene(sc, p) {
       if (S.fatigue >= 100 || S.hp <= 0) bb.disabled = true;
       $("act").appendChild(bb);
     }
+    const out = document.createElement("button");
+    out.className = "btn sleep"; out.textContent = "🚪 마을로 나가기";
+    out.onclick = world.exitDungeon;
+    $("act").appendChild(out);
   } else {
     const f = S.foe;
     sc.innerHTML = `
@@ -403,14 +399,7 @@ export function renderNav() {
 
 export function renderAll() { renderHud(); renderScene(); renderPanel(); renderInv(); renderNav(); }
 
+// 내비게이션 = 빠른 이동: 캐릭터를 해당 위치로 보내고 상호작용
 export function go(k) {
-  S.place = k;
-  renderScene(); renderPanel(); renderNav();
-  const p = PLACES[k];
-  if (p && !p.combat) say(`${p.name}에 왔어요! ${p.desc} 😊`);
-  else if (k === "shop") say("어서오세요~ 모은 자원을 팔아볼까요? 🏪");
-  else if (k === "home") say("우리 집이다! 피곤하면 푹 쉬어요~ 😴");
-  else if (k === "donate") say("착한 일을 하면 복이 와요~ 선행점수를 쌓아봐요! ❤️");
-  else if (k === "journal") say("모험수첩이에요! 오늘의 퀘스트와 도감을 확인해봐요~ 📋");
-  else if (p && p.combat) say(`${p.name}! 몬스터가 기다리고 있어요~ ⚔️`);
+  world.goTo(k);
 }
