@@ -12,11 +12,12 @@ const ORDER = [
   "js/data/ranks.js", "js/data/places.js", "js/data/monsters.js",
   "js/data/recipes.js", "js/data/items.js", "js/data/assets.js", "js/data/meta.js",
   "js/core/audio.js", "js/core/state.js", "js/core/save.js",
-  "js/ui/view.js", "js/ui/minigame.js",
+  "js/ui/view.js", "js/ui/minigame.js", "js/ui/sprites.js",
   "js/systems/gather.js", "js/systems/battle.js", "js/systems/economy.js",
   "js/systems/progress.js", "js/systems/rest.js", "js/systems/home.js", "js/systems/meta.js",
   "js/ui/world.js", "js/ui/render.js", "js/ui/tutorial.js", "js/main.js",
 ];
+const FONT = '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jua&display=swap" />';
 
 function strip(src, file) {
   return src.split("\n").map((line) => {
@@ -44,6 +45,7 @@ const standalone =
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
 <title>키즈짱 시장놀이</title>
+${FONT}
 <style>
 ${css}
 </style>
@@ -57,6 +59,7 @@ ${scriptBlock}
 
 const artifact =
 `<title>키즈짱 시장놀이</title>
+${FONT}
 <style>
 ${css}
 </style>

@@ -1,105 +1,106 @@
-// 월드 맵: 맵별로 분리된 화면. 캐릭터를 방향키/WASD/마우스로 움직여
-// 자원·건물에 다가가 Space로 상호작용하고, 길을 따라 맵 끝에 닿으면 옆 맵으로 전환.
+// 월드 맵(맵별 분리 · SVG 스프라이트). 방향키/WASD/마우스로 이동,
+// 다가가 Space로 상호작용, 길을 따라 맵 끝에 닿으면 옆 맵으로 전환.
 import { S } from "../core/state.js";
 import { PLACES } from "../data/places.js";
 import { HEAVEN_DEED } from "../data/ranks.js";
 import { sfx } from "../core/audio.js";
 import { say, toast } from "./view.js";
 import { doWork } from "../systems/gather.js";
-import { renderScene, renderPanel, renderNav } from "./render.js";
+import { renderScene, renderPanel, renderNav, openPopup } from "./render.js";
+import { getSprite, preloadSprites } from "./sprites.js";
 
-const W = 480, H = 320;
-const SPEED = 2.6, REACH = 46, EDGE = 16, ALIGN = 60;
+const W = 600, H = 440;
+const SPEED = 3.0, REACH = 58, EDGE = 22, ALIGN = 72;
 
-// 맵 정의: objects(자원/건물/던전/포탈) + exits(가장자리 길 → 연결 맵)
+const ART = {
+  forest: "tree", sea: "fishspot", river: "fishspot", mine: "ore", field: "wheat",
+  dump: "trash", pirate: "pirate", heaven: "cloud", battle: "cave",
+  shop: "b_shop", home: "b_home", donate: "b_donate", journal: "b_journal",
+};
+
 const MAPS = {
   village: {
-    name: "🏘️ 마을 광장", ground: "#a8e6a1",
+    name: "🏘️ 마을 광장", ground: ["#bff0b4", "#9fe08f"],
     objects: [
-      { kind: "build", place: "shop",   x: 108, y: 116, pic: "🏪", label: "상점" },
-      { kind: "build", place: "home",   x: 372, y: 116, pic: "🏠", label: "집" },
-      { kind: "build", place: "donate", x: 108, y: 214, pic: "❤️", label: "기부소" },
-      { kind: "build", place: "journal",x: 372, y: 214, pic: "📋", label: "수첩" },
-      { kind: "portal",place: "heaven", x: 430, y: 60,  pic: "☁️", label: "하늘나라", heaven: true, to: "heaven" },
+      { kind: "build", place: "shop",    x: 132, y: 150, label: "상점" },
+      { kind: "build", place: "home",    x: 468, y: 150, label: "집" },
+      { kind: "build", place: "donate",  x: 132, y: 302, label: "기부소" },
+      { kind: "build", place: "journal", x: 468, y: 302, label: "수첩" },
+      { kind: "portal",place: "heaven",  x: 540, y: 84,  label: "하늘나라", heaven: true, to: "heaven" },
     ],
-    exits: [
-      { dir: "N", to: "sea", label: "바닷가" },
-      { dir: "W", to: "forest", label: "숲" },
-      { dir: "E", to: "mine", label: "광산" },
-      { dir: "S", to: "field", label: "들판" },
-    ],
+    exits: [{ dir: "N", to: "sea", label: "바닷가" }, { dir: "W", to: "forest", label: "숲" },
+            { dir: "E", to: "mine", label: "광산" }, { dir: "S", to: "field", label: "들판" }],
   },
   sea: {
-    name: "🌊 바닷가", ground: "#8fd0f0",
-    objects: [
-      { kind: "gather", place: "sea", x: 240, y: 170, pic: "🎣", label: "낚시터" },
-      { kind: "gather", place: "pirate", x: 240, y: 66, pic: "🏴‍☠️", label: "해적선", minReq: 3 },
-    ],
+    name: "🌊 바닷가", ground: ["#a9dcf5", "#7ec2ea"],
+    objects: [{ kind: "gather", place: "sea", x: 300, y: 250, label: "낚시터" },
+              { kind: "gather", place: "pirate", x: 300, y: 96, label: "해적선", minReq: 3 }],
     exits: [{ dir: "S", to: "village", label: "마을" }, { dir: "E", to: "river", label: "강가" }],
   },
   river: {
-    name: "🏞️ 강가", ground: "#8fe0c0",
-    objects: [{ kind: "gather", place: "river", x: 240, y: 160, pic: "🎣", label: "민물 낚시" }],
-    exits: [{ dir: "W", to: "sea", label: "바닷가" }],
+    name: "🏞️ 강가", ground: ["#a9edd0", "#7fdcb4"],
+    objects: [{ kind: "gather", place: "river", x: 300, y: 236, label: "민물 낚시" }],
+    exits: [{ dir: "W", to: "sea", label: "바닷가" }, { dir: "N", to: "mine", label: "광산" }],
   },
   forest: {
-    name: "🌲 숲속", ground: "#8ce09a",
-    objects: [{ kind: "gather", place: "forest", x: 240, y: 160, pic: "🌳", label: "채집터" }],
+    name: "🌲 숲속", ground: ["#a6ecab", "#82d68c"],
+    objects: [{ kind: "gather", place: "forest", x: 300, y: 236, label: "채집터" }],
     exits: [{ dir: "E", to: "village", label: "마을" }, { dir: "W", to: "dungeon", label: "던전" }],
   },
   dungeon: {
-    name: "⚔️ 던전 입구", ground: "#8a8f98",
-    objects: [{ kind: "dungeon", place: "battle", x: 240, y: 160, pic: "🕳️", label: "던전 입구" }],
+    name: "⚔️ 던전 입구", ground: ["#9aa0a8", "#7c828c"],
+    objects: [{ kind: "dungeon", place: "battle", x: 300, y: 236, label: "던전 입구" }],
     exits: [{ dir: "E", to: "forest", label: "숲" }],
   },
   mine: {
-    name: "⛏️ 광산", ground: "#b7bcc4",
-    objects: [{ kind: "gather", place: "mine", x: 240, y: 160, pic: "⛏️", label: "광맥" }],
-    exits: [{ dir: "W", to: "village", label: "마을" }],
+    name: "⛏️ 광산", ground: ["#cdd2d8", "#aeb4bc"],
+    objects: [{ kind: "gather", place: "mine", x: 300, y: 236, label: "광맥" }],
+    exits: [{ dir: "W", to: "village", label: "마을" }, { dir: "S", to: "river", label: "강가" }],
   },
   field: {
-    name: "🌾 들판", ground: "#ffe08a",
-    objects: [{ kind: "gather", place: "field", x: 240, y: 160, pic: "🌾", label: "사냥터" }],
+    name: "🌾 들판", ground: ["#ffe9a0", "#ffd76a"],
+    objects: [{ kind: "gather", place: "field", x: 300, y: 236, label: "사냥터" }],
     exits: [{ dir: "N", to: "village", label: "마을" }, { dir: "E", to: "dump", label: "쓰레기장" }],
   },
   dump: {
-    name: "🗑️ 쓰레기장", ground: "#c8ccc0",
-    objects: [{ kind: "gather", place: "dump", x: 240, y: 160, pic: "🗑️", label: "고물 더미" }],
+    name: "🗑️ 쓰레기장", ground: ["#d5d9cf", "#b8bdb0"],
+    objects: [{ kind: "gather", place: "dump", x: 300, y: 236, label: "고물 더미" }],
     exits: [{ dir: "W", to: "field", label: "들판" }],
   },
   heaven: {
-    name: "☁️ 하늘나라", ground: "#cdb8ff",
-    objects: [{ kind: "gather", place: "heaven", x: 240, y: 160, pic: "😇", label: "별밭" }],
+    name: "☁️ 하늘나라", ground: ["#e0d4ff", "#c3aaff"],
+    objects: [{ kind: "gather", place: "heaven", x: 300, y: 236, label: "별밭" }],
     exits: [{ dir: "S", to: "village", label: "마을" }],
   },
 };
 
-const HERO = "🧑‍🌾";
-const char = { x: 240, y: 250, bob: 0 };
+const char = { x: 300, y: 344, bob: 0 };
 const held = new Set();
 let target = null, active = null;
 let canvas = null, ctx = null, raf = null, keysBound = false;
 
 function map() { return MAPS[S.mapId] || MAPS.village; }
+function blocked() {
+  return ["popup", "ov", "tutOv", "mgOv"].some((id) => { const e = document.getElementById(id); return e && e.classList.contains("show"); });
+}
 function locked(o) {
   if (o.minReq != null && S.rankIdx < o.minReq) return "rank";
   if (o.heaven && !S.heavenOpen) return "heaven";
   return null;
 }
 
-// ---- 입력 ----
 function bindKeys() {
   if (keysBound) return; keysBound = true;
+  preloadSprites();
   const m = { ArrowUp: "up", ArrowDown: "down", ArrowLeft: "left", ArrowRight: "right", w: "up", s: "down", a: "left", d: "right", W: "up", S: "down", A: "left", D: "right" };
-  window.addEventListener("keydown", (e) => { if (S.mode !== "world") return; const d = m[e.key]; if (d) { held.add(d); target = null; e.preventDefault(); } });
+  window.addEventListener("keydown", (e) => { if (S.mode !== "world" || blocked()) return; const d = m[e.key]; if (d) { held.add(d); target = null; e.preventDefault(); } });
   window.addEventListener("keyup", (e) => { const d = m[e.key]; if (d) held.delete(d); });
 }
 
-// ---- 마운트 ----
 export function ensureMounted(sc) {
   bindKeys();
   if (canvas && sc.contains(canvas)) { start(); return; }
-  sc.style.color = ""; sc.innerHTML = "";
+  sc.innerHTML = "";
   canvas = document.createElement("canvas");
   canvas.width = W; canvas.height = H; canvas.className = "world";
   canvas.setAttribute("aria-label", "게임 월드 지도. 방향키/WASD/마우스로 이동, Space로 상호작용, 길 끝으로 가면 다음 맵");
@@ -117,12 +118,11 @@ function onTap(e) {
   const r = canvas.getBoundingClientRect();
   target = {
     x: Math.max(EDGE, Math.min(W - EDGE, (e.clientX - r.left) * (W / r.width))),
-    y: Math.max(EDGE, Math.min(H - 12, (e.clientY - r.top) * (H / r.height))),
+    y: Math.max(EDGE, Math.min(H - 16, (e.clientY - r.top) * (H / r.height))),
   };
   held.clear();
 }
 
-// ---- 루프 ----
 function loop() {
   raf = null;
   if (!canvas || S.mode !== "world") return;
@@ -142,18 +142,16 @@ function update() {
   }
   if (dx || dy) {
     const len = Math.hypot(dx, dy) || 1;
-    char.x = Math.max(12, Math.min(W - 12, char.x + (dx / len) * SPEED));
-    char.y = Math.max(14, Math.min(H - 12, char.y + (dy / len) * SPEED));
+    char.x = Math.max(10, Math.min(W - 10, char.x + (dx / len) * SPEED));
+    char.y = Math.max(10, Math.min(H - 10, char.y + (dy / len) * SPEED));
     char.bob += 0.3;
   }
-  // 길을 따라 가장자리 도달 → 맵 전환
   for (const ex of map().exits) {
     if (ex.dir === "W" && char.x <= EDGE && Math.abs(char.y - H / 2) < ALIGN) return changeMap(ex, "W");
     if (ex.dir === "E" && char.x >= W - EDGE && Math.abs(char.y - H / 2) < ALIGN) return changeMap(ex, "E");
     if (ex.dir === "N" && char.y <= EDGE && Math.abs(char.x - W / 2) < ALIGN) return changeMap(ex, "N");
     if (ex.dir === "S" && char.y >= H - EDGE && Math.abs(char.x - W / 2) < ALIGN) return changeMap(ex, "S");
   }
-  // 상호작용 대상
   active = null; let best = REACH;
   for (const o of map().objects) {
     const d = Math.hypot(o.x - char.x, o.y - char.y);
@@ -163,118 +161,128 @@ function update() {
 
 function changeMap(ex, dir) {
   S.mapId = ex.to; held.clear(); target = null; active = null;
-  if (dir === "W") { char.x = W - 40; char.y = H / 2; }
-  else if (dir === "E") { char.x = 40; char.y = H / 2; }
-  else if (dir === "N") { char.x = W / 2; char.y = H - 40; }
-  else { char.x = W / 2; char.y = 40; }
+  if (dir === "W") { char.x = W - 44; char.y = H / 2; }
+  else if (dir === "E") { char.x = 44; char.y = H / 2; }
+  else if (dir === "N") { char.x = W / 2; char.y = H - 44; }
+  else { char.x = W / 2; char.y = 44; }
   sfx.get();
-  say(`${map().name}에 도착했어요! 표지판을 보고 이동해봐요~`);
+  say(`${map().name}에 도착! 표지판을 보고 이동해봐요~`);
 }
 
 // ---- 그리기 ----
 function roundRect(x, y, w, h, r) {
-  ctx.beginPath();
-  ctx.moveTo(x + r, y);
+  ctx.beginPath(); ctx.moveTo(x + r, y);
   ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r);
-  ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r);
-  ctx.closePath();
+  ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath();
+}
+function drawSprite(name, x, y, size) {
+  const img = getSprite(name);
+  if (img && img.complete && img.naturalWidth) ctx.drawImage(img, x - size / 2, y - size / 2, size, size);
 }
 
 function draw() {
   const M = map();
-  ctx.fillStyle = M.ground; ctx.fillRect(0, 0, W, H);
+  const g = ctx.createLinearGradient(0, 0, 0, H);
+  g.addColorStop(0, M.ground[0]); g.addColorStop(1, M.ground[1]);
+  ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+  // 잔디 점무늬
+  ctx.fillStyle = "rgba(255,255,255,.10)";
+  for (let i = 0; i < 60; i++) ctx.fillRect((i * 97) % W, (i * 53) % H, 3, 3);
 
-  // 길(가장자리 방향으로) — 있는 출구 방향만
-  ctx.fillStyle = "rgba(210,190,140,.9)";
+  // 길
+  const RW = 46;
   for (const ex of M.exits) {
-    if (ex.dir === "N") ctx.fillRect(W / 2 - 20, 0, 40, H / 2);
-    if (ex.dir === "S") ctx.fillRect(W / 2 - 20, H / 2, 40, H / 2);
-    if (ex.dir === "W") ctx.fillRect(0, H / 2 - 20, W / 2, 40);
-    if (ex.dir === "E") ctx.fillRect(W / 2, H / 2 - 20, W / 2, 40);
+    ctx.fillStyle = "#d8c48c";
+    if (ex.dir === "N") ctx.fillRect(W / 2 - RW / 2, 0, RW, H / 2);
+    if (ex.dir === "S") ctx.fillRect(W / 2 - RW / 2, H / 2, RW, H / 2);
+    if (ex.dir === "W") ctx.fillRect(0, H / 2 - RW / 2, W / 2, RW);
+    if (ex.dir === "E") ctx.fillRect(W / 2, H / 2 - RW / 2, W / 2, RW);
   }
+  // 길 가운데 점선
+  ctx.strokeStyle = "rgba(255,255,255,.5)"; ctx.lineWidth = 3; ctx.setLineDash([10, 10]);
+  for (const ex of M.exits) {
+    ctx.beginPath();
+    if (ex.dir === "N") { ctx.moveTo(W / 2, 0); ctx.lineTo(W / 2, H / 2); }
+    if (ex.dir === "S") { ctx.moveTo(W / 2, H); ctx.lineTo(W / 2, H / 2); }
+    if (ex.dir === "W") { ctx.moveTo(0, H / 2); ctx.lineTo(W / 2, H / 2); }
+    if (ex.dir === "E") { ctx.moveTo(W, H / 2); ctx.lineTo(W / 2, H / 2); }
+    ctx.stroke();
+  }
+  ctx.setLineDash([]);
 
-  // 맵 이름 배너
-  ctx.font = "bold 14px sans-serif"; ctx.textAlign = "left"; ctx.textBaseline = "top";
-  ctx.fillStyle = "rgba(46,38,32,.75)"; roundRect(8, 8, ctx.measureText(M.name).width + 16, 22, 8); ctx.fill();
-  ctx.fillStyle = "#fff"; ctx.fillText(M.name, 16, 12);
-
-  // 표지판(각 출구)
+  // 표지판
   ctx.textAlign = "center"; ctx.textBaseline = "middle";
   for (const ex of M.exits) drawSign(ex);
 
-  // 오브젝트
-  for (const o of M.objects) {
+  // 오브젝트 (뒤→앞 y정렬)
+  const objs = [...M.objects].sort((a, b) => a.y - b.y);
+  for (const o of objs) {
     const lk = locked(o);
-    ctx.globalAlpha = lk ? 0.5 : 1; ctx.font = "32px serif"; ctx.fillText(o.pic, o.x, o.y);
-    ctx.globalAlpha = 1; ctx.font = "12px sans-serif"; ctx.fillStyle = "#2e2620";
-    ctx.fillText((lk ? "🔒" : "") + o.label, o.x, o.y + 24);
+    ctx.globalAlpha = lk ? 0.55 : 1;
+    drawSprite(ART[o.place], o.x, o.y - 6, o.kind === "build" ? 84 : 76);
+    ctx.globalAlpha = 1;
+    // 라벨 칩
+    ctx.font = "bold 13px Jua, sans-serif";
+    const t = (lk ? "🔒" : "") + o.label, w = ctx.measureText(t).width + 14;
+    ctx.fillStyle = "rgba(255,255,255,.85)"; roundRect(o.x - w / 2, o.y + 26, w, 18, 9); ctx.fill();
+    ctx.fillStyle = "#2e2620"; ctx.fillText(t, o.x, o.y + 35);
   }
 
-  // 상호작용 프롬프트
+  // 프롬프트
   if (active) {
-    ctx.strokeStyle = "#ffd23f"; ctx.lineWidth = 3;
-    ctx.beginPath(); ctx.arc(active.x, active.y, 25, 0, Math.PI * 2); ctx.stroke();
+    ctx.strokeStyle = "#ffcf33"; ctx.lineWidth = 4;
+    ctx.beginPath(); ctx.arc(active.x, active.y - 6, 40, 0, Math.PI * 2); ctx.stroke();
     const msg = locked(active) ? "🔒 잠김" : "Space / Ⓐ";
-    ctx.font = "bold 11px sans-serif";
-    const w = ctx.measureText(msg).width + 12;
-    ctx.fillStyle = "#2e2620"; roundRect(active.x - w / 2, active.y - 46, w, 17, 8); ctx.fill();
-    ctx.fillStyle = "#fff"; ctx.fillText(msg, active.x, active.y - 37);
+    ctx.font = "bold 12px Jua, sans-serif";
+    const w = ctx.measureText(msg).width + 14;
+    ctx.fillStyle = "#2e2620"; roundRect(active.x - w / 2, active.y - 62, w, 19, 9); ctx.fill();
+    ctx.fillStyle = "#fff"; ctx.fillText(msg, active.x, active.y - 52);
   }
 
   // 캐릭터
-  ctx.font = "30px serif";
-  ctx.fillText(HERO, char.x, char.y + Math.sin(char.bob) * 2);
+  drawSprite("char", char.x, char.y - 10 + Math.sin(char.bob) * 2, 52);
 }
 
 function drawSign(ex) {
   const arrow = { N: "⬆", S: "⬇", W: "⬅", E: "➡" }[ex.dir];
   let x, y;
-  if (ex.dir === "N") { x = W / 2; y = 40; }
-  else if (ex.dir === "S") { x = W / 2; y = H - 40; }
-  else if (ex.dir === "W") { x = 46; y = H / 2 - 30; }
-  else { x = W - 46; y = H / 2 - 30; }
+  if (ex.dir === "N") { x = W / 2 + 60; y = 46; }
+  else if (ex.dir === "S") { x = W / 2 + 60; y = H - 46; }
+  else if (ex.dir === "W") { x = 60; y = H / 2 - 42; }
+  else { x = W - 60; y = H / 2 - 42; }
   const text = `${arrow} ${ex.label}`;
-  ctx.font = "bold 12px sans-serif";
-  const w = ctx.measureText(text).width + 16;
-  ctx.fillStyle = "#6b4a24"; ctx.fillRect(x - 2, y, 4, 26);          // 기둥
-  ctx.fillStyle = "#fff8e6"; ctx.strokeStyle = "#6b4a24"; ctx.lineWidth = 2;
-  roundRect(x - w / 2, y - 18, w, 20, 6); ctx.fill(); ctx.stroke();
-  ctx.fillStyle = "#3a2b1f"; ctx.fillText(text, x, y - 8);
+  ctx.font = "bold 13px Jua, sans-serif";
+  const w = ctx.measureText(text).width + 18;
+  ctx.fillStyle = "#7b4a2a"; ctx.fillRect(x - 3, y, 6, 30);
+  ctx.fillStyle = "#fff6e0"; ctx.strokeStyle = "#7b4a2a"; ctx.lineWidth = 2.5;
+  roundRect(x - w / 2, y - 20, w, 22, 7); ctx.fill(); ctx.stroke();
+  ctx.fillStyle = "#3a2b1f"; ctx.fillText(text, x, y - 9);
 }
 
 // ---- 상호작용 ----
 export function interact() { if (S.mode === "world" && active) doInteract(active); }
-
 function doInteract(o) {
   const lk = locked(o);
   if (lk === "rank") { sfx.bad(); toast("상인 계급부터 갈 수 있어요!"); return; }
   if (lk === "heaven") { sfx.bad(); toast(`선행 ${HEAVEN_DEED}점을 모아야 열려요! (지금 ${S.deed}점)`); return; }
-
-  if (o.kind === "gather") {
-    S.place = o.place; renderNav();
-    say(`${PLACES[o.place].name}에서 ${PLACES[o.place].verb}!`);
-    doWork();
-  } else if (o.kind === "dungeon") {
-    enterDungeon();
-  } else if (o.kind === "portal") {
-    changeToMap(o.to);
-  } else {
-    openBuilding(o.place);
-  }
+  if (o.kind === "gather") { S.place = o.place; renderNav(); say(`${PLACES[o.place].name}에서 ${PLACES[o.place].verb}!`); doWork(); }
+  else if (o.kind === "dungeon") { enterDungeon(); }
+  else if (o.kind === "portal") { changeToMap(o.to); }
+  else { openBuilding(o.place); }
 }
 
 function openBuilding(place) {
-  S.place = place; renderPanel(); renderNav();
+  S.place = place;
+  openPopup(place);   // 인게임 팝업 열기
   const names = { shop: "🏪 상점", home: "🏠 우리 집", donate: "❤️ 기부소", journal: "📋 모험수첩" };
-  say(`${names[place] || place}에 들어왔어요! 아래에서 이용해봐요~`);
+  say(`${names[place] || place}에 들어왔어요!`);
 }
 
-// 포탈/빠른이동으로 특정 맵의 특정 오브젝트 앞으로
 function changeToMap(mid, atPlace) {
   S.mapId = mid; held.clear(); target = null;
   const o = atPlace ? MAPS[mid].objects.find((x) => x.place === atPlace) : null;
-  if (o) { char.x = o.x; char.y = Math.min(H - 14, o.y + 34); active = o; }
-  else { char.x = W / 2; char.y = H - 40; active = null; }
+  if (o) { char.x = o.x; char.y = Math.min(H - 16, o.y + 46); active = o; }
+  else { char.x = W / 2; char.y = H - 44; active = null; }
 }
 
 export function enterDungeon() {
@@ -288,7 +296,6 @@ export function exitDungeon() {
   say("던전 입구로 나왔어요. 동쪽 길로 가면 숲이에요~ 🌲");
 }
 
-// 내비/숫자키 빠른 이동: 해당 장소 맵으로 이동 후 상호작용
 export function goTo(key) {
   for (const mid in MAPS) {
     const o = MAPS[mid].objects.find((x) => x.place === key);
@@ -301,7 +308,6 @@ export function goTo(key) {
   }
 }
 
-// 터치 방향 패드 + 액션 버튼
 function buildDpad() {
   const wrap = document.createElement("div");
   wrap.className = "dpad";
@@ -311,10 +317,8 @@ function buildDpad() {
     if (dir) {
       const on = (e) => { e.preventDefault(); held.add(dir); target = null; };
       const off = (e) => { e.preventDefault(); held.delete(dir); };
-      b.addEventListener("pointerdown", on);
-      b.addEventListener("pointerup", off);
-      b.addEventListener("pointerleave", off);
-      b.addEventListener("pointercancel", off);
+      b.addEventListener("pointerdown", on); b.addEventListener("pointerup", off);
+      b.addEventListener("pointerleave", off); b.addEventListener("pointercancel", off);
     } else b.addEventListener("click", (e) => { e.preventDefault(); interact(); });
     return b;
   };

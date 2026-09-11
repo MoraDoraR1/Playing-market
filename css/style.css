@@ -1,140 +1,147 @@
 :root{
-  --ink:#2e2620; --card:#fffdf8;
+  --ink:#2e2620; --cream:#fffdf5; --panel:#fff7e6;
   --gold:#f7b731; --green:#20bf6b; --blue:#3867d6; --red:#eb3b5a;
-  --brown:#a0642e; --sky:#a5d8ff; --grass:#8ce99a;
+  --brown:#a0642e; --purple:#b197fc;
+  --device:#ffd98a; --device2:#ffc35e; --bezel:#5a3e28;
   --shadow:0 6px 0 rgba(0,0,0,.14);
 }
 *{box-sizing:border-box; -webkit-tap-highlight-color:transparent; font-family:inherit;}
 html,body{margin:0; height:100%;}
 body{
-  font-family:"Jua","Baloo 2","Comic Sans MS",system-ui,sans-serif; color:var(--ink);
-  background:linear-gradient(160deg,#fff4d6,#ffe3c0); display:flex; justify-content:center;
-  min-height:100%; padding:10px; overflow-x:hidden;
+  font-family:"Jua","Comic Sans MS",system-ui,sans-serif; color:var(--ink);
+  background:radial-gradient(circle at 50% 0%, #ffe9c2, #f6b878 70%, #e79a58);
+  display:flex; align-items:flex-start; justify-content:center; min-height:100%;
+  padding:12px; overflow-x:hidden;
 }
-.frame{width:100%; max-width:540px; background:var(--card); border-radius:24px;
-  padding:14px 12px 16px; box-shadow:var(--shadow); position:relative; overflow:hidden;}
-h1{margin:0 0 2px; text-align:center; font-size:26px;}
-.sub{text-align:center; color:#b09070; font-size:12px; margin-bottom:10px;}
-
-/* 스프라이트(이미지 or 이모지 폴백) */
-.spr{display:inline-block; height:1.1em; width:auto; vertical-align:-0.18em;}
-.spr-hero{height:56px; width:auto; display:inline-block;}
-.hero img{height:56px; width:auto; display:inline-block;}
 img{user-select:none;}
 
-/* HUD */
-.hud{display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:10px;}
-.stat{background:#fff7e6; border:3px solid #fff; border-radius:14px; padding:7px 9px; box-shadow:0 3px 0 rgba(0,0,0,.07);}
-.stat .top{display:flex; justify-content:space-between; align-items:center; font-size:13px; color:#8a7355;}
-.stat .big{font-size:18px; line-height:1.15;}
-.bar{height:10px; border-radius:8px; background:#eadfce; overflow:hidden; margin-top:5px;}
-.bar > i{display:block; height:100%; width:0%; border-radius:8px; transition:width .3s;}
+/* ===== 콘솔 기기 프레임 ===== */
+.device{
+  position:relative; width:100%; max-width:640px;
+  background:linear-gradient(180deg,var(--device),var(--device2));
+  border:5px solid var(--bezel); border-radius:26px;
+  padding:12px; box-shadow:0 12px 30px rgba(90,62,40,.4), inset 0 2px 0 rgba(255,255,255,.4);
+  display:flex; flex-direction:column; gap:9px;
+}
+.brand{display:flex; align-items:center; gap:6px; font-size:16px; color:var(--bezel); padding:0 4px;}
+.brand b{margin-left:2px;}
+.brand .dot{width:9px; height:9px; border-radius:50%; box-shadow:inset 0 -1px 1px rgba(0,0,0,.25);}
+.brand .dot.r{background:#ff5a5a;} .brand .dot.y{background:#ffcf33;} .brand .dot.g{background:#4cd68a;}
+
+/* ===== HUD (인게임) ===== */
+.hud{display:flex; gap:6px; flex-wrap:wrap; background:rgba(90,62,40,.16); border-radius:14px; padding:7px;}
+.chip{display:flex; align-items:center; gap:6px; background:var(--cream); border-radius:11px;
+  padding:5px 9px; box-shadow:0 2px 0 rgba(0,0,0,.12); flex:1 1 auto; min-width:0;}
+.chip .ic{width:22px; height:22px; flex:none;}
+.chip .col{min-width:0;}
+.chip .k{font-size:10px; color:#a58b6f; line-height:1;}
+.chip .v{font-size:15px; line-height:1.15; white-space:nowrap;}
+.chip.rank{flex:1 1 130px;}
+.bar{height:8px; border-radius:6px; background:#e6dcc7; overflow:hidden; margin-top:3px; min-width:56px;}
+.bar > i{display:block; height:100%; width:0%; border-radius:6px; transition:width .3s;}
 .bar.gong > i{background:linear-gradient(90deg,#f7b731,#fa8231);}
 .bar.fatigue > i{background:linear-gradient(90deg,#20bf6b,#f7b731,#eb3b5a);}
 
-/* scene */
-.scene{position:relative; border-radius:18px; padding:16px 12px; text-align:center; margin-bottom:10px;
-  min-height:150px; display:flex; flex-direction:column; justify-content:center; align-items:center; overflow:hidden;
-  border:3px solid rgba(255,255,255,.7);}
-.scene .placeName{font-size:20px; margin-bottom:2px; text-shadow:0 2px 0 rgba(255,255,255,.5);}
-.scene .placeDesc{font-size:13px; color:rgba(0,0,0,.55); margin-bottom:10px;}
-.hero{font-size:56px; line-height:1; filter:drop-shadow(0 4px 2px rgba(0,0,0,.2)); transition:transform .12s;}
-.hero.work{animation:bob .4s ease-in-out;}
-@keyframes bob{0%,100%{transform:translateY(0) rotate(0)}25%{transform:translateY(-8px) rotate(-8deg)}75%{transform:translateY(-4px) rotate(8deg)}}
-.act{margin-top:12px; display:flex; gap:8px; flex-wrap:wrap; justify-content:center;}
-.btn{border:none; border-radius:16px; padding:12px 16px; font-size:16px; color:#fff; cursor:pointer;
-  box-shadow:0 5px 0 rgba(0,0,0,.18); transition:transform .07s, box-shadow .07s;}
-.btn:active{transform:translateY(4px); box-shadow:0 1px 0 rgba(0,0,0,.18);}
-.btn:disabled{filter:grayscale(.6) brightness(.9); opacity:.7; cursor:not-allowed;}
-.btn.work{background:var(--green);} .btn.sell{background:var(--gold);}
-.btn.sleep{background:var(--blue);} .btn.give{background:var(--red);} .btn.up{background:var(--brown);}
+/* ===== 월드 화면 ===== */
+.screen{position:relative; border-radius:16px; overflow:hidden; border:4px solid var(--bezel);
+  background:#9fe08f; box-shadow:inset 0 0 0 3px rgba(255,255,255,.35);}
+.scene{position:relative; display:block; line-height:0;}
+.world{display:block; width:100%; height:auto; touch-action:none;}
+.talk{position:absolute; left:8px; right:8px; bottom:8px; background:rgba(255,251,233,.94);
+  border:2px solid #ffe08a; border-radius:12px; padding:7px 11px; font-size:14px; text-align:center;
+  line-height:1.3; box-shadow:0 3px 8px rgba(0,0,0,.15);}
 
-/* 월드 맵 캔버스 */
-.world{display:block; width:100%; height:auto; border-radius:14px; touch-action:none; background:#a8e6a1;}
-/* 터치용 방향 패드 (모바일에서만 표시) */
-.dpad{position:absolute; left:50%; bottom:8px; transform:translateX(-50%); display:none;
-  grid-template-columns:repeat(3,42px); grid-template-rows:repeat(3,42px); gap:4px; z-index:6; opacity:.9;}
-.dpad .dbtn{border:none; border-radius:10px; background:rgba(46,38,32,.55); color:#fff; font-size:18px;
-  cursor:pointer; touch-action:none; -webkit-user-select:none; user-select:none;}
+/* 터치 방향패드 */
+.dpad{position:absolute; left:8px; bottom:52px; display:none;
+  grid-template-columns:repeat(3,44px); grid-template-rows:repeat(3,44px); gap:4px; z-index:6; opacity:.92;}
+.dpad .dbtn{border:none; border-radius:11px; background:rgba(46,38,32,.55); color:#fff; font-size:19px;
+  cursor:pointer; touch-action:none; user-select:none;}
 .dpad .dbtn.up{grid-area:1/2/2/3;} .dpad .dbtn.left{grid-area:2/1/3/2;}
-.dpad .dbtn.act{grid-area:2/2/3/3; background:var(--green);} .dpad .dbtn.right{grid-area:2/3/3/4;}
+.dpad .dbtn.act{grid-area:2/2/3/3; background:var(--green); font-size:22px;} .dpad .dbtn.right{grid-area:2/3/3/4;}
 .dpad .dbtn.down{grid-area:3/2/4/3;}
 @media (pointer:coarse){ .dpad{display:grid;} }
 
-/* talk */
-.talk{background:#fffbe9; border:3px solid #ffe08a; border-radius:14px; padding:9px 11px;
-  font-size:14px; text-align:center; min-height:20px; margin-bottom:10px;}
+/* ===== 액션 바 ===== */
+.actionbar{display:flex; gap:6px;}
+.abtn{position:relative; flex:1; border:none; border-radius:13px; padding:9px 4px; cursor:pointer;
+  background:var(--cream); color:var(--ink); font-size:13px; box-shadow:0 3px 0 rgba(0,0,0,.18);
+  display:flex; flex-direction:column; align-items:center; gap:1px; line-height:1;}
+.abtn .e{font-size:19px;}
+.abtn:active{transform:translateY(3px); box-shadow:0 0 0 rgba(0,0,0,.18);}
+.abtn .badge{position:absolute; top:3px; right:6px; background:var(--red); color:#fff;
+  border-radius:9px; font-size:10px; padding:0 5px; min-width:16px;}
 
-/* panels */
-.panel{background:#f6efe2; border-radius:16px; padding:10px; margin-bottom:10px; border:3px solid #fff;}
-.panel h3{margin:0 0 7px; font-size:15px; display:flex; justify-content:space-between; align-items:center;}
+/* ===== 공용 오버레이 ===== */
+.overlay{position:absolute; inset:0; background:rgba(46,38,32,.55); display:flex; align-items:center;
+  justify-content:center; padding:16px; opacity:0; pointer-events:none; transition:.2s; z-index:30;}
+.overlay.show{opacity:1; pointer-events:auto;}
+#battle{position:absolute; inset:0; border-radius:12px; z-index:20;}
+#battle .battlebox{width:100%;}
+
+.popcard{position:relative; background:var(--cream); border-radius:20px; padding:16px 14px;
+  max-width:420px; width:100%; max-height:88%; overflow:auto; box-shadow:0 12px 0 rgba(0,0,0,.2);
+  transform:scale(.9); transition:.2s; border:3px solid #fff;}
+.overlay.show .popcard{transform:scale(1);}
+.popclose{position:absolute; top:8px; right:8px; border:none; background:#eee; color:#666;
+  width:30px; height:30px; border-radius:50%; cursor:pointer; font-size:15px; box-shadow:0 2px 0 rgba(0,0,0,.12);}
+.popclose:active{transform:translateY(2px);}
+.popcard h2{margin:2px 0 10px; font-size:21px; padding-right:28px;}
+.popcard h3{margin:12px 0 7px; font-size:15px; display:flex; justify-content:space-between; align-items:center;}
+
+.modal{background:var(--cream); border-radius:22px; padding:22px 18px; text-align:center; max-width:330px;
+  width:100%; box-shadow:0 10px 0 rgba(0,0,0,.2); transform:scale(.85); transition:.25s; border:3px solid #fff;}
+.overlay.show .modal{transform:scale(1);}
+.modal .em{font-size:52px;} .modal h2{margin:6px 0; font-size:24px;} .modal p{color:#7a6650; font-size:14px; margin:4px 0 14px; white-space:pre-line;}
+
+/* ===== 버튼/리스트 공용(팝업 내용) ===== */
+.btn{border:none; border-radius:14px; padding:11px 15px; font-size:15px; color:#fff; cursor:pointer;
+  box-shadow:0 5px 0 rgba(0,0,0,.18); transition:transform .07s, box-shadow .07s;}
+.btn:active{transform:translateY(4px); box-shadow:0 1px 0 rgba(0,0,0,.18);}
+.btn:disabled{filter:grayscale(.6) brightness(.95); opacity:.7; cursor:not-allowed;}
+.btn.work{background:var(--green);} .btn.sell{background:var(--gold);} .btn.sleep{background:var(--blue);}
+.btn.give{background:var(--red);} .btn.up{background:var(--brown);}
+.act{margin-top:12px; display:flex; gap:8px; flex-wrap:wrap; justify-content:center;}
+.muted{color:#b3a082; font-size:13px;}
 .inv{display:flex; flex-wrap:wrap; gap:6px; min-height:30px; align-items:center;}
 .slot{background:#fff; border-radius:12px; padding:4px 8px; font-size:15px; box-shadow:0 2px 0 rgba(0,0,0,.08);
   display:flex; align-items:center; gap:4px;}
 .slot .cnt{background:var(--brown); color:#fff; border-radius:9px; font-size:12px; padding:0 5px;}
 .slot.rare{box-shadow:0 0 0 2px var(--gold), 0 2px 0 rgba(0,0,0,.1);}
-.muted{color:#b3a082; font-size:13px;}
-
-/* home tabs */
+.shopgrid{display:grid; grid-template-columns:1fr 1fr; gap:7px;}
+.row{display:flex; justify-content:space-between; align-items:center; background:#fff; border-radius:12px;
+  padding:6px 8px; font-size:14px; box-shadow:0 2px 0 rgba(0,0,0,.07); margin-bottom:6px;}
+.row button{border:none; background:var(--gold); color:#fff; border-radius:10px; padding:5px 9px; font-size:13px; cursor:pointer; box-shadow:0 3px 0 rgba(0,0,0,.15);}
+.row button:active{transform:translateY(2px); box-shadow:0 1px 0 rgba(0,0,0,.15);}
 .tabs{display:flex; gap:4px; flex-wrap:wrap; margin-bottom:8px;}
 .tab{border:none; background:#fff; color:#9b8468; border-radius:12px; padding:6px 9px; font-size:12px;
   cursor:pointer; box-shadow:0 2px 0 rgba(0,0,0,.08);}
 .tab.on{background:var(--brown); color:#fff;}
-.tab:active{transform:translateY(2px);}
-.homebody .row{margin-bottom:6px;}
-.shopgrid{display:grid; grid-template-columns:1fr 1fr; gap:7px;}
-.row{display:flex; justify-content:space-between; align-items:center; background:#fff; border-radius:12px;
-  padding:6px 8px; font-size:14px; box-shadow:0 2px 0 rgba(0,0,0,.07);}
-.row button{border:none; background:var(--gold); color:#fff; border-radius:10px; padding:5px 9px; font-size:13px; cursor:pointer; box-shadow:0 3px 0 rgba(0,0,0,.15);}
-.row button:active{transform:translateY(2px); box-shadow:0 1px 0 rgba(0,0,0,.15);}
+.spr{display:inline-block; height:1.1em; width:auto; vertical-align:-0.18em;}
 
-/* nav */
-.nav{display:grid; grid-template-columns:repeat(4,1fr); gap:6px;}
-.nav button{border:none; border-radius:14px; padding:9px 4px; font-size:12px; cursor:pointer;
-  background:#fff; box-shadow:0 3px 0 rgba(0,0,0,.1); color:var(--ink); line-height:1.3;}
-.nav button .ic{font-size:20px; display:block;}
-.nav button.on{background:var(--gold); color:#fff;}
-.nav button.lock{filter:grayscale(1); opacity:.55;}
-.nav button:active{transform:translateY(2px);}
+/* 전투 씬 */
+.bfield{display:flex; justify-content:space-around; align-items:flex-end; padding:10px; background:linear-gradient(180deg,#3a4149,#20252b);
+  border-radius:12px; color:#fff;}
+.bfield .who{text-align:center;} .bfield .em{font-size:46px;}
 
-/* footer (설정) */
-.footer{display:flex; gap:8px; justify-content:center; margin-top:12px; flex-wrap:wrap;}
-.footer button{border:none; background:#fff; color:#9b8468; border-radius:12px; padding:7px 12px;
-  font-size:12px; cursor:pointer; box-shadow:0 2px 0 rgba(0,0,0,.08);}
-.footer button:active{transform:translateY(2px);}
-
-/* 키보드 힌트 (PC 전용 표시) */
-.kbdhint{display:none; text-align:center; font-size:11px; color:#c3ad95; margin-top:8px;}
-.kbdhint b{background:#f0e6d6; color:#7a6650; border-radius:5px; padding:0 5px;}
-@media (hover:hover) and (pointer:fine){ .kbdhint{display:block;} }
-
-/* 접근성: 키보드 포커스 표시 */
-button:focus-visible, .tab:focus-visible{ outline:3px solid var(--blue); outline-offset:2px; }
-/* 모션 민감 사용자 배려 */
-@media (prefers-reduced-motion: reduce){
-  *{ animation-duration:.001ms !important; transition-duration:.001ms !important; }
-}
-/* 도움말 등 여러 줄 모달 */
-.modal p{ white-space:pre-line; }
-
-/* floats + toast */
-.float{position:absolute; font-size:20px; pointer-events:none; animation:fl 1s ease-out forwards; z-index:5;}
-@keyframes fl{from{transform:translate(0,0); opacity:1} to{transform:translate(var(--dx,0),-60px); opacity:0}}
-.toast{position:absolute; left:50%; top:14px; transform:translateX(-50%) translateY(-20px); background:var(--ink); color:#fff;
-  padding:8px 14px; border-radius:20px; font-size:14px; opacity:0; transition:.3s; z-index:20; pointer-events:none; white-space:nowrap;}
+/* 토스트 */
+.toast{position:absolute; left:50%; top:52px; transform:translateX(-50%) translateY(-20px); background:var(--ink);
+  color:#fff; padding:8px 14px; border-radius:20px; font-size:14px; opacity:0; transition:.3s; z-index:40;
+  pointer-events:none; white-space:nowrap;}
 .toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
 
-/* overlay modal (계급승급/이벤트/튜토리얼 공용) */
-.ov{position:absolute; inset:0; background:rgba(46,38,32,.6); display:flex; align-items:center; justify-content:center;
-  padding:20px; opacity:0; pointer-events:none; transition:.25s; z-index:30;}
-.ov.show{opacity:1; pointer-events:auto;}
-.modal{background:#fff; border-radius:22px; padding:22px 18px; text-align:center; max-width:320px; width:100%;
-  box-shadow:0 10px 0 rgba(0,0,0,.2); transform:scale(.85); transition:.25s;}
-.ov.show .modal{transform:scale(1);}
-.modal .em{font-size:52px;} .modal h2{margin:6px 0; font-size:24px;} .modal p{color:#7a6650; font-size:14px; margin:4px 0 14px;}
+/* 획득 이펙트 */
+.float{position:absolute; font-size:22px; pointer-events:none; animation:fl 1s ease-out forwards; z-index:5;}
+@keyframes fl{from{transform:translate(0,0); opacity:1} to{transform:translate(var(--dx,0),-60px); opacity:0}}
 
-/* 타이밍 미니게임 */
+/* 미니게임 트랙 */
 .mgtrack{position:relative; height:26px; border-radius:13px; margin:10px 0 14px;
-  background:linear-gradient(90deg,#ffd6d6,#fff3bf,#ffd6d6); overflow:hidden; border:3px solid #fff; box-shadow:inset 0 2px 4px rgba(0,0,0,.1);}
+  background:linear-gradient(90deg,#ffd6d6,#fff3bf,#ffd6d6); overflow:hidden; border:3px solid #fff;}
 .mgzone{position:absolute; left:38%; width:24%; top:0; bottom:0; background:rgba(32,191,107,.55); border-left:2px solid #20bf6b; border-right:2px solid #20bf6b;}
 .mgmarker{position:absolute; top:-2px; width:8px; height:30px; background:var(--ink); border-radius:4px; transform:translateX(-50%); box-shadow:0 0 0 2px #fff;}
+
+/* 힌트/접근성 */
+.kbdhint{display:none; text-align:center; font-size:11px; color:var(--bezel); opacity:.8;}
+.kbdhint b{background:rgba(255,255,255,.5); border-radius:5px; padding:0 5px;}
+@media (hover:hover) and (pointer:fine){ .kbdhint{display:block;} }
+button:focus-visible, .tab:focus-visible, .abtn:focus-visible{outline:3px solid var(--blue); outline-offset:2px;}
+@media (prefers-reduced-motion: reduce){ *{animation-duration:.001ms !important; transition-duration:.001ms !important;} }
