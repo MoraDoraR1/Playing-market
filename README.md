@@ -71,6 +71,9 @@ python3 -m http.server 8000
 **배포(GitHub Pages):** 저장소 Settings → Pages → 브랜치 선택 → `/ (root)` 게시.
 (`.nojekyll` 파일이 있어 `js/`·`css/`·`assets/` 폴더가 그대로 서빙됩니다.)
 
+**단일 파일(공유·오프라인용):** `node tools/build-standalone.mjs` → `dist/kidszzang-standalone.html`.
+모든 모듈·CSS를 한 파일로 합쳐서, 서버 없이 **더블클릭만으로** 실행돼요.
+
 ## 🎨 이미지 교체 (AI 생성 연동)
 
 이모지를 AI로 만든 이미지로 바꿀 수 있어요. 없으면 자동으로 이모지로 표시됩니다.
