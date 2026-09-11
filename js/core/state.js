@@ -37,6 +37,7 @@ export function defaultState() {
     journalTab: "quest", // 모험수첩 탭
     // 진행
     place: "forest",     // 현재 상호작용 중인 장소/건물 컨텍스트
+    mapId: "village",    // 현재 보고 있는 맵 (한 화면 = 한 맵)
     mode: "world",       // "world"(맵을 걸어다님) | "battle"(전투 화면)
     heavenOpen: false,
     foe: null,           // 전투 중 몬스터(저장하지 않음)
