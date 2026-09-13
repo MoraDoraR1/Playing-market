@@ -19,26 +19,27 @@ body{
 img{user-select:none;}
 
 /* ===== 콘솔 기기 프레임 ===== */
+/* 인게임 화면은 1920x1080(16:9)이 앵커 — 데스크톱에서 그 해상도까지 꽉 차게 커진다 */
 .device{
-  position:relative; width:100%; max-width:640px;
+  position:relative; width:100%; max-width:1920px;
   background:linear-gradient(180deg,var(--device),var(--device2));
   border:5px solid var(--bezel); border-radius:26px;
   padding:12px; box-shadow:0 12px 30px rgba(90,62,40,.4), inset 0 2px 0 rgba(255,255,255,.4);
   display:flex; flex-direction:column; gap:9px;
 }
-.brand{display:flex; align-items:center; gap:6px; font-size:16px; color:var(--bezel); padding:0 4px;}
+.brand{display:flex; align-items:center; gap:6px; font-size:clamp(16px,1.2vw,26px); color:var(--bezel); padding:0 4px;}
 .brand b{margin-left:2px;}
-.brand .dot{width:9px; height:9px; border-radius:50%; box-shadow:inset 0 -1px 1px rgba(0,0,0,.25);}
+.brand .dot{width:clamp(9px,0.6vw,14px); height:clamp(9px,0.6vw,14px); border-radius:50%; box-shadow:inset 0 -1px 1px rgba(0,0,0,.25);}
 .brand .dot.r{background:#ff5a5a;} .brand .dot.y{background:#ffcf33;} .brand .dot.g{background:#4cd68a;}
 
 /* ===== HUD (인게임) ===== */
 .hud{display:flex; gap:6px; flex-wrap:wrap; background:rgba(90,62,40,.16); border-radius:14px; padding:7px;}
 .chip{display:flex; align-items:center; gap:6px; background:var(--cream); border-radius:11px;
   padding:5px 9px; box-shadow:0 2px 0 rgba(0,0,0,.12); flex:1 1 auto; min-width:0;}
-.chip .ic{width:22px; height:22px; flex:none;}
+.chip .ic{width:clamp(22px,1.6vw,36px); height:clamp(22px,1.6vw,36px); flex:none;}
 .chip .col{min-width:0;}
-.chip .k{font-size:10px; color:#a58b6f; line-height:1;}
-.chip .v{font-size:15px; line-height:1.15; white-space:nowrap;}
+.chip .k{font-size:clamp(10px,0.7vw,16px); color:#a58b6f; line-height:1;}
+.chip .v{font-size:clamp(15px,1.1vw,26px); line-height:1.15; white-space:nowrap;}
 .chip.rank{flex:1 1 130px;}
 .bar{height:8px; border-radius:6px; background:#e6dcc7; overflow:hidden; margin-top:3px; min-width:56px;}
 .bar > i{display:block; height:100%; width:0%; border-radius:6px; transition:width .3s;}
@@ -51,7 +52,7 @@ img{user-select:none;}
 .scene{position:relative; display:block; line-height:0;}
 .world{display:block; width:100%; height:auto; touch-action:none;}
 .talk{background:#fffbe9; border:2px solid #ffe08a; border-radius:12px; padding:8px 11px;
-  font-size:14px; text-align:center; line-height:1.3; min-height:20px;
+  font-size:clamp(14px,1vw,20px); text-align:center; line-height:1.3; min-height:20px;
   box-shadow:0 2px 0 rgba(0,0,0,.08);}
 
 /* 터치 방향패드 */
@@ -67,9 +68,9 @@ img{user-select:none;}
 /* ===== 액션 바 ===== */
 .actionbar{display:flex; gap:6px;}
 .abtn{position:relative; flex:1; border:none; border-radius:13px; padding:9px 4px; cursor:pointer;
-  background:var(--cream); color:var(--ink); font-size:13px; box-shadow:0 3px 0 rgba(0,0,0,.18);
+  background:var(--cream); color:var(--ink); font-size:clamp(13px,0.9vw,20px); box-shadow:0 3px 0 rgba(0,0,0,.18);
   display:flex; flex-direction:column; align-items:center; gap:1px; line-height:1;}
-.abtn .e{font-size:19px;}
+.abtn .e{font-size:clamp(19px,1.5vw,32px);}
 .abtn:active{transform:translateY(3px); box-shadow:0 0 0 rgba(0,0,0,.18);}
 .abtn .badge{position:absolute; top:3px; right:6px; background:var(--red); color:#fff;
   border-radius:9px; font-size:10px; padding:0 5px; min-width:16px;}
@@ -1507,8 +1508,21 @@ function sellPrice(item) {
 // 월드 맵(맵별 분리 · SVG 스프라이트). 방향키/WASD/마우스로 이동,
 // 다가가 Space로 상호작용, 길을 따라 맵 끝에 닿으면 옆 맵으로 전환.
 
-const W = 600, H = 440;
-const SPEED = 1.9, REACH = 58, EDGE = 22, ALIGN = 72;
+// ---- 해상도: 1920x1080(16:9)을 앵커로 고정 ----
+// 캔버스 실물 해상도는 항상 1920x1080. 기존에 600x440 기준으로 튜닝된 모든 좌표·크기는
+// 세로 기준 균일 배율(SCALE)로 확대해 왜곡 없이 그대로 재사용하고(비율 유지),
+// 가로는 스케일 후 남는 여백만큼 콘텐츠를 화면 중앙에 배치한다(레터박스).
+const DESIGN_W = 600, DESIGN_H = 440;
+const CANVAS_W = 1920, CANVAS_H = 1080;
+const SCALE = CANVAS_H / DESIGN_H;                    // 세로를 정확히 채우는 균일 배율(비율 왜곡 없음)
+const s = (n) => n * SCALE;                            // 기존 튜닝값 → 새 해상도로 환산
+const W = Math.round(DESIGN_W * SCALE), H = CANVAS_H;  // 로직(콘텐츠) 공간 크기
+const OFFSET_X = (CANVAS_W - W) / 2;                   // 콘텐츠를 캔버스 중앙에 배치하기 위한 여백
+
+const SPEED = s(1.9), REACH = s(58), EDGE = s(22), ALIGN = s(72);
+const CS = s(74), COFF = s(18);   // 캐릭터 렌더 크기 / 발끝 보정
+const RW = s(46);                 // 길 폭
+const DOTS = Math.round(60 * SCALE * SCALE); // 잔디 점무늬 개수(면적 비례)
 
 const ART = {
   forest: "tree", sea: "fishspot", river: "fishspot", mine: "ore", field: "wheat",
@@ -1571,8 +1585,10 @@ const MAPS = {
     exits: [{ dir: "S", to: "village", label: "마을" }],
   },
 };
+// 위 좌표는 600x440 디자인 기준값 — 새 해상도로 일괄 환산(비율 왜곡 없이 균일 배율)
+for (const m of Object.values(MAPS)) for (const o of m.objects) { o.x = s(o.x); o.y = s(o.y); }
 
-const char = { x: 300, y: 344, bob: 0, dir: "down", step: 0, moving: false };
+const char = { x: W / 2, y: s(344), bob: 0, dir: "down", step: 0, moving: false };
 const held = new Set();
 let target = null, active = null;
 let gather = null;   // 채집 중: { place, prog(0~1), anim }
@@ -1601,7 +1617,7 @@ function ensureMounted(sc) {
   if (canvas && sc.contains(canvas)) { start(); return; }
   sc.innerHTML = "";
   canvas = document.createElement("canvas");
-  canvas.width = W; canvas.height = H; canvas.className = "world";
+  canvas.width = CANVAS_W; canvas.height = CANVAS_H; canvas.className = "world";
   canvas.setAttribute("aria-label", "게임 월드 지도. 방향키/WASD/마우스로 이동, Space로 상호작용, 길 끝으로 가면 다음 맵");
   sc.appendChild(canvas);
   ctx = canvas.getContext("2d");
@@ -1615,9 +1631,11 @@ function stop() { if (raf) { cancelAnimationFrame(raf); raf = null; } }
 
 function onTap(e) {
   const r = canvas.getBoundingClientRect();
+  const px = (e.clientX - r.left) * (CANVAS_W / r.width) - OFFSET_X;
+  const py = (e.clientY - r.top) * (CANVAS_H / r.height);
   target = {
-    x: Math.max(EDGE, Math.min(W - EDGE, (e.clientX - r.left) * (W / r.width))),
-    y: Math.max(EDGE, Math.min(H - 16, (e.clientY - r.top) * (H / r.height))),
+    x: Math.max(EDGE, Math.min(W - EDGE, px)),
+    y: Math.max(EDGE, Math.min(H - s(16), py)),
   };
   held.clear();
 }
@@ -1651,8 +1669,8 @@ function update() {
   char.moving = !!(dx || dy);
   if (dx || dy) {
     const len = Math.hypot(dx, dy) || 1;
-    char.x = Math.max(10, Math.min(W - 10, char.x + (dx / len) * SPEED));
-    char.y = Math.max(10, Math.min(H - 10, char.y + (dy / len) * SPEED));
+    char.x = Math.max(s(10), Math.min(W - s(10), char.x + (dx / len) * SPEED));
+    char.y = Math.max(s(10), Math.min(H - s(10), char.y + (dy / len) * SPEED));
     char.bob += 0.3; char.step++;
     if (Math.abs(dx) > Math.abs(dy)) char.dir = dx < 0 ? "left" : "right";
     else char.dir = dy < 0 ? "up" : "down";
@@ -1672,10 +1690,10 @@ function update() {
 
 function changeMap(ex, dir) {
   S.mapId = ex.to; held.clear(); target = null; active = null;
-  if (dir === "W") { char.x = W - 44; char.y = H / 2; }
-  else if (dir === "E") { char.x = 44; char.y = H / 2; }
-  else if (dir === "N") { char.x = W / 2; char.y = H - 44; }
-  else { char.x = W / 2; char.y = 44; }
+  if (dir === "W") { char.x = W - s(44); char.y = H / 2; }
+  else if (dir === "E") { char.x = s(44); char.y = H / 2; }
+  else if (dir === "N") { char.x = W / 2; char.y = H - s(44); }
+  else { char.x = W / 2; char.y = s(44); }
   sfx.get();
   say(`${map().name}에 도착! 표지판을 보고 이동해봐요~`);
 }
@@ -1693,15 +1711,19 @@ function drawSprite(name, x, y, size) {
 
 function draw() {
   const M = map();
-  const g = ctx.createLinearGradient(0, 0, 0, H);
+  // 배경은 캔버스 전체(레터박스 여백 포함)를 채워 여백이 비어 보이지 않게 함
+  const g = ctx.createLinearGradient(0, 0, 0, CANVAS_H);
   g.addColorStop(0, M.ground[0]); g.addColorStop(1, M.ground[1]);
-  ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+  ctx.fillStyle = g; ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
+
+  ctx.save();
+  ctx.translate(OFFSET_X, 0);   // 이후 모든 좌표는 로직 공간(W x H) 기준, 캔버스 중앙에 배치
+
   // 잔디 점무늬
   ctx.fillStyle = "rgba(255,255,255,.10)";
-  for (let i = 0; i < 60; i++) ctx.fillRect((i * 97) % W, (i * 53) % H, 3, 3);
+  for (let i = 0; i < DOTS; i++) ctx.fillRect((i * 97) % W, (i * 53) % H, s(3), s(3));
 
   // 길
-  const RW = 46;
   for (const ex of M.exits) {
     ctx.fillStyle = "#d8c48c";
     if (ex.dir === "N") ctx.fillRect(W / 2 - RW / 2, 0, RW, H / 2);
@@ -1710,7 +1732,7 @@ function draw() {
     if (ex.dir === "E") ctx.fillRect(W / 2, H / 2 - RW / 2, W / 2, RW);
   }
   // 길 가운데 점선
-  ctx.strokeStyle = "rgba(255,255,255,.5)"; ctx.lineWidth = 3; ctx.setLineDash([10, 10]);
+  ctx.strokeStyle = "rgba(255,255,255,.5)"; ctx.lineWidth = s(3); ctx.setLineDash([s(10), s(10)]);
   for (const ex of M.exits) {
     ctx.beginPath();
     if (ex.dir === "N") { ctx.moveTo(W / 2, 0); ctx.lineTo(W / 2, H / 2); }
@@ -1730,43 +1752,42 @@ function draw() {
   for (const o of objs) {
     const lk = locked(o);
     ctx.globalAlpha = lk ? 0.55 : 1;
-    drawSprite(ART[o.place], o.x, o.y - 6, o.kind === "build" ? 84 : 76);
+    drawSprite(ART[o.place], o.x, o.y - s(6), o.kind === "build" ? s(84) : s(76));
     ctx.globalAlpha = 1;
     // 라벨 칩
-    ctx.font = "bold 13px Jua, sans-serif";
-    const t = (lk ? "🔒" : "") + o.label, w = ctx.measureText(t).width + 14;
-    ctx.fillStyle = "rgba(255,255,255,.85)"; roundRect(o.x - w / 2, o.y + 26, w, 18, 9); ctx.fill();
-    ctx.fillStyle = "#2e2620"; ctx.fillText(t, o.x, o.y + 35);
+    ctx.font = `bold ${s(13)}px Jua, sans-serif`;
+    const t = (lk ? "🔒" : "") + o.label, w = ctx.measureText(t).width + s(14);
+    ctx.fillStyle = "rgba(255,255,255,.85)"; roundRect(o.x - w / 2, o.y + s(26), w, s(18), s(9)); ctx.fill();
+    ctx.fillStyle = "#2e2620"; ctx.fillText(t, o.x, o.y + s(35));
   }
 
   // 프롬프트
   if (active && !gather) {
-    ctx.strokeStyle = "#ffcf33"; ctx.lineWidth = 4;
-    ctx.beginPath(); ctx.arc(active.x, active.y - 6, 40, 0, Math.PI * 2); ctx.stroke();
+    ctx.strokeStyle = "#ffcf33"; ctx.lineWidth = s(4);
+    ctx.beginPath(); ctx.arc(active.x, active.y - s(6), s(40), 0, Math.PI * 2); ctx.stroke();
     const msg = locked(active) ? "🔒 잠김" : "Space / Ⓐ";
-    ctx.font = "bold 12px Jua, sans-serif";
-    const w = ctx.measureText(msg).width + 14;
-    ctx.fillStyle = "#2e2620"; roundRect(active.x - w / 2, active.y - 62, w, 19, 9); ctx.fill();
-    ctx.fillStyle = "#fff"; ctx.fillText(msg, active.x, active.y - 52);
+    ctx.font = `bold ${s(12)}px Jua, sans-serif`;
+    const w = ctx.measureText(msg).width + s(14);
+    ctx.fillStyle = "#2e2620"; roundRect(active.x - w / 2, active.y - s(62), w, s(19), s(9)); ctx.fill();
+    ctx.fillStyle = "#fff"; ctx.fillText(msg, active.x, active.y - s(52));
   }
 
   // 캐릭터 (512px PNG 구도에 맞춰 크게/오프셋)
-  const CS = 74, COFF = 18;   // 렌더 크기 / 발끝 보정
   if (gather) {
     // 채집 애니메이션 (도구 위아래) + 게이지
     const wf = Math.floor(gather.anim / 8) % 2;
     drawSprite("char_work_" + wf, char.x, char.y - COFF, CS);
     // 게이지 바
-    const gw = 56, gx = char.x - gw / 2, gy = char.y - 80;
-    ctx.fillStyle = "rgba(46,38,32,.75)"; roundRect(gx - 3, gy - 3, gw + 6, 14, 7); ctx.fill();
-    ctx.fillStyle = "#5a4a3a"; roundRect(gx, gy, gw, 8, 4); ctx.fill();
-    ctx.fillStyle = "#4cd68a"; roundRect(gx, gy, gw * Math.min(1, gather.prog), 8, 4); ctx.fill();
+    const gw = s(56), gx = char.x - gw / 2, gy = char.y - s(80);
+    ctx.fillStyle = "rgba(46,38,32,.75)"; roundRect(gx - s(3), gy - s(3), gw + s(6), s(14), s(7)); ctx.fill();
+    ctx.fillStyle = "#5a4a3a"; roundRect(gx, gy, gw, s(8), s(4)); ctx.fill();
+    ctx.fillStyle = "#4cd68a"; roundRect(gx, gy, gw * Math.min(1, gather.prog), s(8), s(4)); ctx.fill();
     // 반짝임
-    if (wf === 0) { ctx.font = "14px serif"; ctx.fillStyle = "#fff"; ctx.fillText("✨", char.x + 22, char.y - 24); }
+    if (wf === 0) { ctx.font = `${s(14)}px serif`; ctx.fillStyle = "#fff"; ctx.fillText("✨", char.x + s(22), char.y - s(24)); }
   } else {
     const frame = char.moving ? Math.floor(char.step / 9) % 2 : 0;
     // 발걸음에 맞춘 통통 바운스(떠다니는 sin 흔들림 대신)
-    const cy = char.y - COFF - (char.moving && frame ? 2 : 0);
+    const cy = char.y - COFF - (char.moving && frame ? s(2) : 0);
     if (char.dir === "right") {
       ctx.save(); ctx.translate(char.x, 0); ctx.scale(-1, 1);
       drawSprite("char_left_" + frame, 0, cy, CS); ctx.restore();
@@ -1774,22 +1795,24 @@ function draw() {
       drawSprite("char_" + (char.dir || "down") + "_" + frame, char.x, cy, CS);
     }
   }
+
+  ctx.restore();
 }
 
 function drawSign(ex) {
   const arrow = { N: "⬆", S: "⬇", W: "⬅", E: "➡" }[ex.dir];
   let x, y;
-  if (ex.dir === "N") { x = W / 2 + 60; y = 46; }
-  else if (ex.dir === "S") { x = W / 2 + 60; y = H - 46; }
-  else if (ex.dir === "W") { x = 60; y = H / 2 - 42; }
-  else { x = W - 60; y = H / 2 - 42; }
+  if (ex.dir === "N") { x = W / 2 + s(60); y = s(46); }
+  else if (ex.dir === "S") { x = W / 2 + s(60); y = H - s(46); }
+  else if (ex.dir === "W") { x = s(60); y = H / 2 - s(42); }
+  else { x = W - s(60); y = H / 2 - s(42); }
   const text = `${arrow} ${ex.label}`;
-  ctx.font = "bold 13px Jua, sans-serif";
-  const w = ctx.measureText(text).width + 18;
-  ctx.fillStyle = "#7b4a2a"; ctx.fillRect(x - 3, y, 6, 30);
-  ctx.fillStyle = "#fff6e0"; ctx.strokeStyle = "#7b4a2a"; ctx.lineWidth = 2.5;
-  roundRect(x - w / 2, y - 20, w, 22, 7); ctx.fill(); ctx.stroke();
-  ctx.fillStyle = "#3a2b1f"; ctx.fillText(text, x, y - 9);
+  ctx.font = `bold ${s(13)}px Jua, sans-serif`;
+  const w = ctx.measureText(text).width + s(18);
+  ctx.fillStyle = "#7b4a2a"; ctx.fillRect(x - s(3), y, s(6), s(30));
+  ctx.fillStyle = "#fff6e0"; ctx.strokeStyle = "#7b4a2a"; ctx.lineWidth = s(2.5);
+  roundRect(x - w / 2, y - s(20), w, s(22), s(7)); ctx.fill(); ctx.stroke();
+  ctx.fillStyle = "#3a2b1f"; ctx.fillText(text, x, y - s(9));
 }
 
 // ---- 상호작용 ----
@@ -1836,8 +1859,8 @@ function openBuilding(place) {
 function changeToMap(mid, atPlace) {
   S.mapId = mid; held.clear(); target = null;
   const o = atPlace ? MAPS[mid].objects.find((x) => x.place === atPlace) : null;
-  if (o) { char.x = o.x; char.y = Math.min(H - 16, o.y + 46); active = o; }
-  else { char.x = W / 2; char.y = H - 44; active = null; }
+  if (o) { char.x = o.x; char.y = Math.min(H - s(16), o.y + s(46)); active = o; }
+  else { char.x = W / 2; char.y = H - s(44); active = null; }
 }
 
 function enterDungeon() {
