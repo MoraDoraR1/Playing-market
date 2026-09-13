@@ -26,7 +26,7 @@
 광산: [x] `item/stone` 돌멩이 [x] `item/copper` 구리 [x] `item/iron` 철광석 [x] `item/gem` 보석
 들판: [x] `item/berry` 산딸기 [x] `item/grain` 곡식 [x] `item/meat` 고기 [x] `item/goldegg` 황금알
 쓰레기장: [x] `item/scrap` 고철 [x] `item/bottle` 빈병 [x] `item/radio` 고장난 라디오 [x] `item/record` 희귀음반
-해적선: [ ] `item/coin` 금화 [ ] `item/map` 낡은지도 [ ] `item/rum` 럼주 [ ] `item/chest` 보물상자
+해적선: [x] `item/coin` 금화 [x] `item/map` 낡은지도 [x] `item/rum` 럼주 [x] `item/chest` 보물상자
 하늘나라: [ ] `item/stardust` 별가루 [ ] `item/cloud` 무지개조각 [ ] `item/wing` 천사의날개
 가공: [ ] `item/plank` 합판
 전리품: [ ] `item/jelly` 슬라임젤리 [ ] `item/batwing` 박쥐날개 [ ] `item/tusk` 멧돼지엄니 [ ] `item/soul` 영혼구슬 [ ] `item/core` 골렘핵 [ ] `item/scale` 용비늘 [ ] `item/crown` 왕관 [ ] `item/tentacle` 크라켄촉수 [ ] `item/darkgem` 마왕의보석
