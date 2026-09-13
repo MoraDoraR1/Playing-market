@@ -1,74 +1,65 @@
-# ✅ 에셋 체크리스트 — 키즈짱 시장놀이
+# ✅ 에셋 체크리스트 (이미지 생성 목록) — 키즈짱 시장놀이
 
-> 게임에 들어가는 모든 UI·이미지 목록. **규격은 `docs/VISUAL_GUIDE.md`, 통합 규칙은 `AGENTS.md` §2 준수.**
-> 상태: `[x]` = 이미 SVG로 구현됨 · `[ ]` = 생성/교체 대상(현재 이모지이거나 미존재).
-> 완료 시 `[x]`로 갱신하고 PR에 Before/After 첨부.
+> 생성할 모든 이미지 목록. **모두 고품질 PNG(투명 배경)**, 규격은 `docs/VISUAL_GUIDE.md`.
+> 각 프롬프트 = "**주제(subject)** + §2 마스터 스타일 문구". 경로 규칙: `assets/sprites/<종류>/<id>.png`.
+> 상태: `[ ]` 미생성 · `[x]` 완료. (현재 코드의 SVG는 임시 플레이스홀더이며 전부 PNG로 대체)
 
-## A. 캐릭터 (js/ui/sprites.js)
-- [x] `char_down_0` / `char_down_1` — 정면 걷기 2프레임
-- [x] `char_up_0` / `char_up_1` — 뒷면(가방) 걷기 2프레임
-- [x] `char_left_0` / `char_left_1` — 옆모습 걷기 2프레임 (right=반전)
-- [x] `char_work_0` / `char_work_1` — 채집 2프레임
-- [ ] (선택) `char_idle` — 정지 시 숨쉬기/깜빡임 프레임
-- [ ] (선택) 표정/의상 배리에이션(계급별 외형 등)
+## A. 캐릭터 `char/` — 512×512, 투명
+동일 인물(밀짚모자 소년, 파란셔츠+남색바지). right는 left 반전이라 생성 X.
+- [ ] `char/down_0` `char/down_1` — 정면 걷기 2프레임 (다리 교차)
+- [ ] `char/up_0` `char/up_1` — 뒷면(뒤통수+작은 가방) 걷기 2프레임
+- [ ] `char/left_0` `char/left_1` — 옆모습(왼쪽) 걷기 2프레임
+- [ ] `char/work_0` `char/work_1` — 채집 2프레임 (도구 위로/아래로)
+- [ ] (선택) `char/idle` 정지 1프레임
+> 프롬프트 예: `a chubby 2-head cute boy in straw hat, blue shirt navy pants, top-down 3/4 view, walking, left foot forward` (+마스터 스타일)
 
-## B. 월드 오브젝트 (js/ui/sprites.js) — 이미 SVG, 필요 시 리파인
-- [x] `tree`(숲) [x] `fishspot`(바다·강) [x] `ore`(광산) [x] `wheat`(들판)
-- [x] `trash`(쓰레기장) [x] `pirate`(해적선) [x] `cave`(던전) [x] `cloud`(하늘나라)
-- [x] `b_shop` [x] `b_home` [x] `b_donate` [x] `b_journal`
-- [ ] 표지판 — 현재 캔버스 도형. SVG 스프라이트화(선택)
-- [ ] 맵별 바닥 타일/장식(풀·돌·물결 패턴)로 배경 리치하게(선택)
+## B. 몬스터/보스 `mon/` — 512×512, 투명
+- [ ] `mon/slime` 슬라임 - [ ] `mon/bat` 박쥐 - [ ] `mon/boar` 멧돼지
+- [ ] `mon/ghost` 유령 - [ ] `mon/golem` 바위골렘 - [ ] `mon/dragon` 아기 드래곤
+- [ ] `mon/kingslime` 슬라임 왕(보스) - [ ] `mon/kraken` 크라켄(보스) - [ ] `mon/darklord` 마왕(보스)
+> 보스는 더 크고 위엄 있게. 예: `cute round green slime monster, big shiny eyes` (+마스터 스타일)
 
-## C. 몬스터 (현재 이모지 → SVG 생성)  ※ 전투 화면 표시
-- [ ] `slime` 🟢 슬라임  - [ ] `bat` 🦇 박쥐  - [ ] `boar` 🐗 멧돼지
-- [ ] `ghost` 👻 유령  - [ ] `golem` 🗿 바위골렘  - [ ] `dragon` 🐉 드래곤
-### 보스
-- [ ] `kingslime` 👑 슬라임 왕  - [ ] `kraken` 🐙 크라켄  - [ ] `darklord` 😈 마왕
-> 전투 화면(`renderBattle`)은 현재 `f.ref.pic`(이모지)를 씀 → SVG로 표시하도록 렌더도 함께 연결.
+## C. 자원/전리품/가공품 `item/` — 512×512, 투명 (단일 오브젝트, 심플·굵게)
+숲: [ ] `item/branch` 나뭇가지 [ ] `item/mushroom` 버섯 [ ] `item/herb` 약초 [ ] `item/ginseng` 산삼
+바다: [ ] `item/anchovy` 멸치 [ ] `item/shell` 조개 [ ] `item/squid` 오징어 [ ] `item/pearl` 진주
+강: [ ] `item/loach` 미꾸라지 [ ] `item/crayfish` 가재 [ ] `item/carp` 잉어 [ ] `item/goldcarp` 황금잉어
+광산: [ ] `item/stone` 돌멩이 [ ] `item/copper` 구리 [ ] `item/iron` 철광석 [ ] `item/gem` 보석
+들판: [ ] `item/berry` 산딸기 [ ] `item/grain` 곡식 [ ] `item/meat` 고기 [ ] `item/goldegg` 황금알
+쓰레기장: [ ] `item/scrap` 고철 [ ] `item/bottle` 빈병 [ ] `item/radio` 고장난 라디오 [ ] `item/record` 희귀음반
+해적선: [ ] `item/coin` 금화 [ ] `item/map` 낡은지도 [ ] `item/rum` 럼주 [ ] `item/chest` 보물상자
+하늘나라: [ ] `item/stardust` 별가루 [ ] `item/cloud` 무지개조각 [ ] `item/wing` 천사의날개
+가공: [ ] `item/plank` 합판
+전리품: [ ] `item/jelly` 슬라임젤리 [ ] `item/batwing` 박쥐날개 [ ] `item/tusk` 멧돼지엄니 [ ] `item/soul` 영혼구슬 [ ] `item/core` 골렘핵 [ ] `item/scale` 용비늘 [ ] `item/crown` 왕관 [ ] `item/tentacle` 크라켄촉수 [ ] `item/darkgem` 마왕의보석
 
-## D. 자원 아이템 (현재 이모지 → SVG 생성)  ※ 가방·상점·도감 표시
-숲: [ ] 나뭇가지🪵 [ ] 버섯🍄 [ ] 약초🌿 [ ] 산삼🫚
-바다: [ ] 멸치🐟 [ ] 조개🐚 [ ] 오징어🦑 [ ] 진주🦪
-강: [ ] 미꾸라지🐡 [ ] 가재🦐 [ ] 잉어🐟 [ ] 황금잉어🐠
-광산: [ ] 돌멩이🪨 [ ] 구리🟤 [ ] 철광석⚙️ [ ] 보석💎
-들판: [ ] 산딸기🍓 [ ] 곡식🌾 [ ] 고기🍖 [ ] 황금알🥚
-쓰레기장: [ ] 고철🔩 [ ] 빈병🍶 [ ] 라디오📻 [ ] 희귀음반💿
-해적선: [ ] 금화🪙 [ ] 지도🗺️ [ ] 럼주🍾 [ ] 보물상자🧰
-하늘나라: [ ] 별가루✨ [ ] 무지개조각🌈 [ ] 천사의날개🪽
-가공품: [ ] 합판🟫
-### 전리품(몬스터 드롭)
-- [ ] 슬라임젤리🫧 [ ] 박쥐날개🪶 [ ] 멧돼지엄니🦷 [ ] 영혼구슬🔮 [ ] 골렘핵🟥 [ ] 용비늘🐲
-- [ ] 왕관👑 [ ] 크라켄촉수🦑 [ ] 마왕의보석🟣
+## D. 월드 오브젝트/건물 `obj/` — 512×512, 투명
+- [ ] `obj/tree` 채집터 나무 - [ ] `obj/fishspot` 낚시터 - [ ] `obj/ore` 광맥 - [ ] `obj/wheat` 밀밭
+- [ ] `obj/trash` 고물더미 - [ ] `obj/pirate` 해적선 - [ ] `obj/cave` 던전 입구 - [ ] `obj/cloud` 하늘나라 구름
+- [ ] `obj/b_shop` 상점 - [ ] `obj/b_home` 집 - [ ] `obj/b_donate` 기부소 - [ ] `obj/b_journal` 수첩(책 좌판)
+- [ ] `obj/sign` 표지판(나무 팻말) - [ ] (선택) `obj/portal` 하늘나라 포탈
 
-> ⚠️ 아이템 SVG는 `data/items.js`의 각 아이템 표시에 연결해야 함(가방/상점/도감 렌더가 현재 `x.pic` 이모지 사용).
-> 아이템 표시용 헬퍼(예: `sprite("items", id, emoji)` 유지)와 `SVGS` 키를 맞추는 방식으로 통합 — AGENTS §2대로 코드 안 SVG.
+## E. UI 아이콘 `ui/` — 256×256, 투명 (픽토그램·세트감)
+HUD: [ ] `ui/hud_rank` 계급메달 [ ] `ui/hud_star` 별머니 [ ] `ui/hud_hp` 체력하트 [ ] `ui/hud_fat` 피로 [ ] `ui/hud_deed` 선행선물
+액션바: [ ] `ui/bag` 가방 [ ] `ui/travel` 빠른이동(지도) [ ] `ui/manual` 설명서(책) [ ] `ui/gear` 설정
+기타: [ ] `ui/close` 닫기(✕) [ ] (선택) `ui/dpad` 방향버튼
 
-## E. HUD 아이콘 (index.html 인라인 SVG) — 있음, 통일 리파인 대상
-- [x] 계급(메달)  [x] 별머니(별)  [x] 체력(하트)  [x] 피로(zZ)  [x] 선행(선물)
-- [ ] 5종을 동일한 선 두께·모서리·채도로 리파인해 세트감 강화
+## F. 배경/타일 `bg/` (선택) — 1200×880, 불투명
+- [ ] 맵별 바닥/분위기 배경: `bg/village` `bg/forest` `bg/sea` `bg/river` `bg/mine` `bg/field` `bg/dump` `bg/pirate` `bg/dungeon` `bg/heaven`
 
-## F. 액션바 아이콘 (현재 이모지 → SVG 생성)
-- [ ] 🎒 가방  - [ ] 🗺️ 빠른이동  - [ ] 📖 설명서  - [ ] ⚙️ 설정
-> `index.html`의 `.abtn .e` 이모지를 인라인 SVG로 교체.
-
-## G. UI 컴포넌트/이펙트
-- [x] 버튼/칩/패널/팝업/바 스타일(css) — 필요 시 미세 폴리싱
-- [x] 채집 게이지 + ✨  [x] 획득 플로팅(현재 이모지 pic 사용 → 아이템 SVG 연동 시 자동 개선)
-- [ ] 팝업 닫기(✕) 아이콘 SVG  - [ ] 탭 on/off 시각 강화
-- [ ] 이펙트: 레벨업/보상/타격/승리 연출(간단 SVG/파티클, 선택)
-- [ ] 터치 D패드 방향 버튼 아이콘 SVG(현재 ▲◀▶▼ 문자)
-
-## H. 미니게임/전투 폴리시
-- [ ] 타이밍 미니게임 트랙/마커 시각 강화(현재 CSS 도형)
-- [ ] 전투 화면 배경/이펙트(현재 단색 그라데이션)
+## G. 이펙트(선택) `fx/` — 512×512, 투명
+- [ ] `fx/sparkle` 채집 반짝임 [ ] `fx/levelup` 승급 [ ] `fx/hit` 타격 [ ] `fx/win` 승리
 
 ---
 
-## 권장 진행 순서 (작은 PR 단위)
-1. **C. 몬스터+보스 9종** (전투 인상 큼)
-2. **D. 자원 아이템**(자주 노출, 가방/상점/도감) — 장소별로 나눠 PR
-3. **F. 액션바 아이콘 4종** + **E. HUD 리파인**
-4. **B. 표지판/바닥 타일** 리치화
-5. **G/H. 이펙트·미니게임·전투 폴리시**
+## 권장 생성 순서 (작은 배치)
+1. **A. 캐릭터 10프레임** (게임 중 항상 노출·통일성 기준점)
+2. **B. 몬스터/보스 9종**
+3. **C. 아이템**(장소별로 나눠서)
+4. **D. 월드/건물** → **E. UI 아이콘**
+5. **F/G. 배경·이펙트**(선택)
 
-각 PR: 비주얼 가이드 준수 → 빌드/문법/번들 검증 → 스크린샷 → 이 체크리스트 갱신.
+## ⚠️ 표시 연결(별도 구현 과제 — 규격만 정의)
+이미지가 준비되면 표시되려면 다음이 필요(현재 미구현):
+1. `js/data/assets.js`의 준비목록(`SPRITES_READY`)에 `"<종류>/<id>"` 추가
+2. 렌더가 이모지/SVG 대신 해당 PNG를 쓰도록 연결(캐릭터/월드/몬스터/아이템/아이콘)
+3. **플레이 링크용**: 빌드시 PNG를 **data URI로 인라인**(외부 파일 CSP 차단 회피)
+> 위 3번까지 되어야 배포 링크에서 이미지가 보인다. (이 문서는 "무엇을 어떤 규격으로 만들지"만 정의)
