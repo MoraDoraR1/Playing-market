@@ -1515,7 +1515,7 @@ function sellPrice(item) {
 // 다가가 Space로 상호작용, 길을 따라 맵 끝에 닿으면 옆 맵으로 전환.
 
 const W = 600, H = 440;
-const SPEED = 3.0, REACH = 58, EDGE = 22, ALIGN = 72;
+const SPEED = 1.9, REACH = 58, EDGE = 22, ALIGN = 72;
 
 const ART = {
   forest: "tree", sea: "fishspot", river: "fishspot", mine: "ore", field: "wheat",
@@ -1771,8 +1771,9 @@ function draw() {
     // 반짝임
     if (wf === 0) { ctx.font = "14px serif"; ctx.fillStyle = "#fff"; ctx.fillText("✨", char.x + 22, char.y - 24); }
   } else {
-    const frame = char.moving ? Math.floor(char.step / 6) % 2 : 0;
-    const cy = char.y - COFF + (char.moving ? Math.sin(char.bob) * 2 : 0);
+    const frame = char.moving ? Math.floor(char.step / 9) % 2 : 0;
+    // 발걸음에 맞춘 통통 바운스(떠다니는 sin 흔들림 대신)
+    const cy = char.y - COFF - (char.moving && frame ? 2 : 0);
     if (char.dir === "right") {
       ctx.save(); ctx.translate(char.x, 0); ctx.scale(-1, 1);
       drawSprite("char_left_" + frame, 0, cy, CS); ctx.restore();
