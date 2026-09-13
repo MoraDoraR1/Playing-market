@@ -74,7 +74,7 @@ const MAPS = {
   },
 };
 
-const char = { x: 300, y: 344, bob: 0 };
+const char = { x: 300, y: 344, bob: 0, dir: "down" };
 const held = new Set();
 let target = null, active = null;
 let canvas = null, ctx = null, raf = null, keysBound = false;
@@ -145,6 +145,8 @@ function update() {
     char.x = Math.max(10, Math.min(W - 10, char.x + (dx / len) * SPEED));
     char.y = Math.max(10, Math.min(H - 10, char.y + (dy / len) * SPEED));
     char.bob += 0.3;
+    if (Math.abs(dx) > Math.abs(dy)) char.dir = dx < 0 ? "left" : "right";
+    else char.dir = dy < 0 ? "up" : "down";
   }
   for (const ex of map().exits) {
     if (ex.dir === "W" && char.x <= EDGE && Math.abs(char.y - H / 2) < ALIGN) return changeMap(ex, "W");
@@ -239,8 +241,14 @@ function draw() {
     ctx.fillStyle = "#fff"; ctx.fillText(msg, active.x, active.y - 52);
   }
 
-  // 캐릭터
-  drawSprite("char", char.x, char.y - 10 + Math.sin(char.bob) * 2, 52);
+  // 캐릭터 (방향별). 오른쪽은 왼쪽 스프라이트를 좌우반전
+  const cy = char.y - 10 + Math.sin(char.bob) * 2;
+  if (char.dir === "right") {
+    ctx.save(); ctx.translate(char.x, 0); ctx.scale(-1, 1);
+    drawSprite("char_left", 0, cy, 52); ctx.restore();
+  } else {
+    drawSprite("char_" + (char.dir || "down"), char.x, cy, 52);
+  }
 }
 
 function drawSign(ex) {
