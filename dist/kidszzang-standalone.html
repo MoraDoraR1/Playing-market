@@ -1623,10 +1623,10 @@ function loop() {
 }
 
 function update() {
-  // 채집 중: 게이지 자동 충전(이동/전환 잠금)
+  // 채집 중: 게이지 자동 충전(시간 기반, 이동/전환 잠금)
   if (gather) {
     gather.anim++;
-    gather.prog += 0.02 + S.tool * 0.003;   // 약 1초, 도구 레벨↑ 빠름
+    gather.prog = (performance.now() - gather.start) / gather.dur;
     if (gather.prog >= 1) finishGather();
     char.moving = false;
     return;
@@ -1806,7 +1806,9 @@ function startGather(o) {
   const p = PLACES[o.place];
   S.place = o.place; renderNav();
   held.clear(); target = null;
-  gather = { place: o.place, prog: 0, anim: 0 };
+  // 기본 5초, 도구 레벨↑ 마다 0.4초 단축(최소 2.5초)
+  const dur = Math.max(2500, 5000 - (S.tool - 1) * 400);
+  gather = { place: o.place, prog: 0, anim: 0, start: performance.now(), dur };
   sfx.get();
   say(`${p.name}에서 ${p.verb} 중... ⏳`);
 }
