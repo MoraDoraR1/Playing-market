@@ -29,7 +29,7 @@ function open(idx) {
   if (!ov) {
     ov = document.createElement("div");
     ov.id = "tutOv";
-    ov.className = "ov show";
+    ov.className = "overlay show";
     document.getElementById("device").appendChild(ov);
   }
   const s = STEPS[idx];
