@@ -25,7 +25,7 @@
 강: [x] `item/loach` 미꾸라지 [x] `item/crayfish` 가재 [x] `item/carp` 잉어 [x] `item/goldcarp` 황금잉어
 광산: [x] `item/stone` 돌멩이 [x] `item/copper` 구리 [x] `item/iron` 철광석 [x] `item/gem` 보석
 들판: [x] `item/berry` 산딸기 [x] `item/grain` 곡식 [x] `item/meat` 고기 [x] `item/goldegg` 황금알
-쓰레기장: [ ] `item/scrap` 고철 [ ] `item/bottle` 빈병 [ ] `item/radio` 고장난 라디오 [ ] `item/record` 희귀음반
+쓰레기장: [x] `item/scrap` 고철 [x] `item/bottle` 빈병 [x] `item/radio` 고장난 라디오 [x] `item/record` 희귀음반
 해적선: [ ] `item/coin` 금화 [ ] `item/map` 낡은지도 [ ] `item/rum` 럼주 [ ] `item/chest` 보물상자
 하늘나라: [ ] `item/stardust` 별가루 [ ] `item/cloud` 무지개조각 [ ] `item/wing` 천사의날개
 가공: [ ] `item/plank` 합판
