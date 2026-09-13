@@ -20,7 +20,7 @@
 > 보스는 더 크고 위엄 있게. 예: `cute round green slime monster, big shiny eyes` (+마스터 스타일)
 
 ## C. 자원/전리품/가공품 `item/` — 512×512, 투명 (단일 오브젝트, 심플·굵게)
-숲: [ ] `item/branch` 나뭇가지 [ ] `item/mushroom` 버섯 [ ] `item/herb` 약초 [ ] `item/ginseng` 산삼
+숲: [x] `item/branch` 나뭇가지 [x] `item/mushroom` 버섯 [x] `item/herb` 약초 [x] `item/ginseng` 산삼
 바다: [ ] `item/anchovy` 멸치 [ ] `item/shell` 조개 [ ] `item/squid` 오징어 [ ] `item/pearl` 진주
 강: [ ] `item/loach` 미꾸라지 [ ] `item/crayfish` 가재 [ ] `item/carp` 잉어 [ ] `item/goldcarp` 황금잉어
 광산: [ ] `item/stone` 돌멩이 [ ] `item/copper` 구리 [ ] `item/iron` 철광석 [ ] `item/gem` 보석
