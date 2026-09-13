@@ -1,10 +1,11 @@
 // P4 메타 로직: 일일 퀘스트 / 도감 / 업적 / 별머니 상점 / 상점 시세
-import { S } from "../core/state.js";
+import { S, addMoney } from "../core/state.js";
 import { generateDailyQuests, generateMarket, STAR_SHOP, ACHIEVEMENTS } from "../data/meta.js";
 import { ITEM_INDEX } from "../data/items.js";
 import { sfx } from "../core/audio.js";
 import { say, toast } from "../ui/view.js";
 import { renderHud, renderPanel } from "../ui/render.js";
+import { won } from "../core/format.js";
 
 export function today() { return new Date().toISOString().slice(0, 10); }
 
@@ -37,10 +38,10 @@ export function discoverRecipe(id) { if (id && !S.codex.recipes.includes(id)) S.
 export function claimQuest(index) {
   const q = S.quests.list[index];
   if (!q || !q.done || q.claimed) return;
-  S.money += q.rewardMoney;
+  addMoney(q.rewardMoney);
   q.claimed = true;
   sfx.up();
-  toast(`보상 획득! +${q.rewardMoney.toLocaleString("ko-KR")}별`);
+  toast(`보상 획득! +${won(q.rewardMoney)}`);
   say(`퀘스트 보상을 받았어요! 내일 또 새로운 퀘스트가 와요~ 📜`);
   renderHud(); renderPanel();
 }

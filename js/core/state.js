@@ -2,6 +2,7 @@
 import { RANKS } from "../data/ranks.js";
 
 export const SAVE_VERSION = 1;
+export const MONEY_CAP = 1_000_000_000; // 최고 소지 금액(10억별) — 경제 전체가 이 상한에 맞춰 설계됨
 
 // 새 게임 기본 상태 (reset 시 이 값으로 되돌림)
 export function defaultState() {
@@ -94,6 +95,8 @@ export function gatherBonus() {
 }
 export function rankName() { return RANKS[S.rankIdx].n; }
 export function nextRank() { return RANKS[S.rankIdx + 1]; }
+
+export function addMoney(n) { S.money = Math.min(MONEY_CAP, S.money + n); }
 
 export function addItem(it) {
   if (!S.inv[it.id]) S.inv[it.id] = { id: it.id, pic: it.pic, nm: it.nm, pr: it.pr, count: 0, rare: !!it.rare };

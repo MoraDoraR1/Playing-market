@@ -22,3 +22,9 @@ export function availableBoss(rankIdx) {
   for (const b of BOSSES) if (rankIdx >= b.reqRank) boss = b;
   return boss;
 }
+
+// 최고 소지 금액 10억별에 맞춘 경제 재조정(×400, places.js ECON_SCALE과 동일 배율)
+for (const m of [...MONSTERS, ...BOSSES]) {
+  m.gold *= 400;
+  if (m.drop) m.drop.pr *= 400;
+}

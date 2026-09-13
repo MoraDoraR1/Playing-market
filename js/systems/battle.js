@@ -1,5 +1,5 @@
 // 몬스터 전투 — 턴제 로직 (보스·강공격·방어구 포함)
-import { S, addItem, playerAtk } from "../core/state.js";
+import { S, addItem, addMoney, playerAtk } from "../core/state.js";
 import { MONSTERS, availableBoss } from "../data/monsters.js";
 import { rnd } from "../core/rng.js";
 import { won } from "../core/format.js";
@@ -93,7 +93,7 @@ function winBattle() {
   const f = S.foe.ref;
   const boss = S.foe.boss;
   addItem(f.drop);
-  S.money += f.gold;
+  addMoney(f.gold);
   S.gong += f.gong;
   discoverMonster(f.id);
   recordStat("kills", 1);

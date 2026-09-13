@@ -16,9 +16,10 @@ export function doSleep() {
   renderHud(); renderScene(); renderPanel();
 }
 
+export const BED_COST = 600000;
 export function buyBed() {
-  if (S.money < 1500) { sfx.bad(); toast("돈이 부족해요!"); return; }
-  S.money -= 1500; S.bed = true; sfx.up();
+  if (S.money < BED_COST) { sfx.bad(); toast("돈이 부족해요!"); return; }
+  S.money -= BED_COST; S.bed = true; sfx.up();
   toast("푹신침대 구매!");
   say("푹신침대를 샀어요! 이제 자면 피로가 완전히 풀려요~ 🛏️");
   renderHud(); renderPanel();

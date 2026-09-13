@@ -105,3 +105,10 @@ export const PLACES = {
     bg: "linear-gradient(180deg,#495057,#212529)", hero: "🧑‍🚀", combat: true,
   },
 };
+// 위 pr(판매가)는 기존 밸런스 기준 원안값 — 최고 소지 금액 10억별에 맞춰 경제 전체를
+// ×400 배율로 재조정(도구·몬스터·퀘스트 등 다른 수치도 동일 배율 적용, meta.js 참고)
+export const ECON_SCALE = 400;
+for (const p of Object.values(PLACES)) {
+  (p.loot || []).forEach((x) => { x.pr *= ECON_SCALE; });
+  if (p.rare) p.rare.pr *= ECON_SCALE;
+}

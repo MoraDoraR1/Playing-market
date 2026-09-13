@@ -9,7 +9,8 @@ import { $, sprite, say, toast } from "./view.js";
 import { doWork } from "../systems/gather.js";
 import { pickFoe, startBattle, startBoss, battleAttack, strongAttack, usePotion, fleeBattle } from "../systems/battle.js";
 import { availableBoss } from "../data/monsters.js";
-import { sellTotal, unitPrice, sellOne, sellAll, weaponCost, buyWeapon, armorCost, buyArmor, buyPotion, nextTool, buyToolTier, buyBait } from "../systems/economy.js";
+import { sellTotal, unitPrice, sellOne, sellAll, weaponCost, buyWeapon, armorCost, buyArmor, buyPotion, POTION_COST, nextTool, buyToolTier, buyBait } from "../systems/economy.js";
+import { BED_COST } from "../systems/rest.js";
 import { TOOLS, TOOL_CATS, BAIT } from "../data/tools.js";
 import { donate } from "../systems/progress.js";
 import { doSleep, buyBed } from "../systems/rest.js";
@@ -199,7 +200,7 @@ function shopBody(tab) {
     return h;
   }
   if (tab === "supplies") {
-    let h = `<h3>🧪 회복 물약 <span class="muted">보유 ${S.potions}</span></h3><div class="row"><span>전투 중 체력 35 회복</span><button id="buyPotion">${won(200)}</button></div>`;
+    let h = `<h3>🧪 회복 물약 <span class="muted">보유 ${S.potions}</span></h3><div class="row"><span>전투 중 체력 35 회복</span><button id="buyPotion">${won(POTION_COST)}</button></div>`;
     h += `<h3>🎣 미끼 (5개 묶음)</h3>`;
     h += Object.entries(BAIT).map(([kind, b]) =>
       `<div class="row"><span>${b.pic}${b.nm} <span class="muted">보유 ${S.bait[kind] || 0}개</span></span><button data-buybait="${kind}">${won(b.price * 5)}</button></div>`).join("");
@@ -242,7 +243,7 @@ function homeBody(tab) {
     let h = `<div class="muted" style="margin-bottom:8px">피로도 <b>${Math.round(S.fatigue)}%</b> · 체력 <b>❤️${S.hp}/${S.maxHp}</b>${S.foodBuff ? ` · 버프 <b>${S.foodBuff.pic}${S.foodBuff.nm}</b>(${S.foodBuff.turns})` : ""}</div>`;
     h += `<div class="row"><span>😴 잠자기 (피로 ${S.bed ? "전부" : "70"} 회복)</span><button id="sleepBtn" style="background:var(--blue)">쉬기</button></div>`;
     h += S.bed ? `<div class="row"><span>🛏️ 푹신침대 보유중! 😊</span><button disabled style="background:#ccc">완료</button></div>`
-      : `<div class="row"><span>🛏️ 푹신침대 (완전 회복)</span><button id="bedBtn" style="background:var(--brown)">${won(1500)}</button></div>`;
+      : `<div class="row"><span>🛏️ 푹신침대 (완전 회복)</span><button id="bedBtn" style="background:var(--brown)">${won(BED_COST)}</button></div>`;
     return h;
   }
   if (tab === "craft") return `<div class="muted" style="margin-bottom:6px">나뭇가지→합판→가구를 만들어요!</div>` + CRAFT.map(craftRow).join("");
@@ -276,7 +277,7 @@ function cookRow(c) {
 // ---------- 기부소 ----------
 function renderDonate(pan) {
   let h = `<h2>❤️ 기부소</h2><div class="muted" style="margin-bottom:8px">기부하면 선행점수↑. <b>${HEAVEN_DEED}점</b>이면 ☁️하늘나라가 열려요! (현재 ${S.deed}점)</div>`;
-  [[100, 1], [500, 6], [1000, 14]].forEach(([m, d]) => { h += `<div class="row"><span>💝 ${won(m)} 기부 → 선행 +${d}점</span><button data-give="${m}" data-deed="${d}" style="background:var(--red)">기부</button></div>`; });
+  [[40000, 1], [200000, 6], [400000, 14]].forEach(([m, d]) => { h += `<div class="row"><span>💝 ${won(m)} 기부 → 선행 +${d}점</span><button data-give="${m}" data-deed="${d}" style="background:var(--red)">기부</button></div>`; });
   pan.innerHTML = h;
   pan.querySelectorAll("[data-give]").forEach((b) => (b.onclick = () => donate(+b.getAttribute("data-give"), +b.getAttribute("data-deed"))));
 }

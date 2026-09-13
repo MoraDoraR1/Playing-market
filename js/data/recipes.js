@@ -38,3 +38,8 @@ export const CROPS = {
   berry: { id: "berry", nm: "딸기",   pic: "🍓", seedCost: 60, grow: 5, yield: [{ id: "berry", pic: "🍓", nm: "산딸기", pr: 12, qty: 4 }] },
   herb:  { id: "herb",  nm: "약초",   pic: "🌿", seedCost: 80, grow: 6, yield: [{ id: "herb",  pic: "🌿", nm: "약초",   pr: 38, qty: 3 }] },
 };
+// 최고 소지 금액 10억별에 맞춘 경제 재조정(×400, places.js ECON_SCALE과 동일 배율)
+for (const c of Object.values(CROPS)) {
+  c.seedCost *= 400;
+  c.yield.forEach((y) => { y.pr *= 400; });
+}

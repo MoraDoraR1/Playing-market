@@ -1,5 +1,5 @@
 // 경제 — 판매 / 도구·무기 강화 / 물약 구매
-import { S, invSlots, playerAtk } from "../core/state.js";
+import { S, invSlots, playerAtk, addMoney } from "../core/state.js";
 import { won } from "../core/format.js";
 import { sfx } from "../core/audio.js";
 import { say, toast } from "../ui/view.js";
@@ -15,7 +15,7 @@ export function sellTotal() { return invSlots().reduce((s, x) => s + unitPrice(x
 export function sellOne(id) {
   const it = S.inv[id];
   if (!it || it.count <= 0) return;
-  const gain = unitPrice(it) * it.count; S.money += gain;
+  const gain = unitPrice(it) * it.count; addMoney(gain);
   toast(`${it.pic}${it.nm} ×${it.count} → +${won(gain)}`);
   it.count = 0; sfx.sell();
   recordStat("sold", gain); questProgress("sell", gain);
@@ -26,7 +26,7 @@ export function sellOne(id) {
 export function sellAll() {
   const total = sellTotal();
   if (total <= 0) return;
-  S.money += total;
+  addMoney(total);
   Object.values(S.inv).forEach((x) => (x.count = 0));
   sfx.sell(); toast(`전부 팔았어요! +${won(total)}`);
   recordStat("sold", total); questProgress("sell", total);
@@ -59,7 +59,7 @@ export function buyBait(kind) {
   renderHud(); renderPanel();
 }
 
-export function weaponCost() { return 1000 + (S.weapon - 1) * 900; }
+export function weaponCost() { return 400000 + (S.weapon - 1) * 360000; }
 export function buyWeapon() {
   const c = weaponCost();
   if (S.money < c) { sfx.bad(); toast("돈이 부족해요!"); say("무기 살 돈이 모자라요~ 더 벌어봐요! 💸"); return; }
@@ -69,7 +69,7 @@ export function buyWeapon() {
   renderHud(); renderPanel();
 }
 
-export function armorCost() { return 900 + S.armor * 800; }
+export function armorCost() { return 360000 + S.armor * 320000; }
 export function buyArmor() {
   const c = armorCost();
   if (S.money < c) { sfx.bad(); toast("돈이 부족해요!"); say("방어구 살 돈이 모자라요~ 더 벌어봐요! 💸"); return; }
@@ -79,9 +79,10 @@ export function buyArmor() {
   renderHud(); renderPanel();
 }
 
+export const POTION_COST = 80000;
 export function buyPotion() {
-  if (S.money < 200) { sfx.bad(); toast("돈이 부족해요!"); return; }
-  S.money -= 200; S.potions++; sfx.sell();
+  if (S.money < POTION_COST) { sfx.bad(); toast("돈이 부족해요!"); return; }
+  S.money -= POTION_COST; S.potions++; sfx.sell();
   toast(`물약 구매! (${S.potions}개)`);
   say(`회복 물약을 샀어요! 전투 중에 위험하면 써요~ 🧪`);
   renderHud(); renderPanel();

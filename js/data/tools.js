@@ -1,6 +1,10 @@
 // 도구 8단계 체계 — 도끼/곡괭이/낚싯대/낫/활
 // 등급: 나무→돌→철→강철→은→금→미스릴→천사(1~8단계). 등급이 높을수록 채집이 빠르고
 // 최대 수확량이 늘고 희귀 자원 확률이 올라간다. 가격은 카테고리마다 다른 곡선(균일 배율 X).
+// 아래 원안 가격은 기존 밸런스 기준값 — 최고 소지 금액 10억별에 맞춰 ECON_SCALE(×400,
+// places.js와 동일 배율)을 곱해 실제 가격으로 사용(가장 비싼 도구=낚싯대 8단계 8,800만별,
+// 10억별의 8.8% 수준으로 5종을 모두 최고 등급까지 올려도 캡의 1/3 정도만 쓰게 설계).
+import { ECON_SCALE } from "./places.js";
 const TIER_NAMES = ["나무", "돌", "철", "강철", "은", "금", "미스릴", "천사"];
 
 // 공통 성능 곡선(지수 감소/완만 증가) — 카테고리 상관없이 "등급 하나가 어느 정도 강한가"는 동일하게 유지
@@ -13,7 +17,7 @@ export const BAREHAND = { dur: 6000, rare: 0.030, amt: 0 };
 function tiers(pic, prices) {
   return TIER_NAMES.map((nm, i) => ({
     tier: i + 1, nm, label: `${nm} ${pic}`, pic,
-    price: prices[i], dur: DUR[i], rare: RARE[i], amt: AMT[i],
+    price: prices[i] * ECON_SCALE, dur: DUR[i], rare: RARE[i], amt: AMT[i],
   }));
 }
 
@@ -66,6 +70,6 @@ export const TOOL_CATS = Object.keys(TOOLS);
 
 // 미끼(낚시 소모품) — 바다/민물 별도, 낚시 1회(채집 1사이클)당 1개 소모
 export const BAIT = {
-  sea:   { id: "bait_sea",   nm: "새우 미끼",   pic: "🦐", price: 8,  place: "sea" },
-  river: { id: "bait_river", nm: "지렁이 미끼", pic: "🪱", price: 6,  place: "river" },
+  sea:   { id: "bait_sea",   nm: "새우 미끼",   pic: "🦐", price: 8 * ECON_SCALE,  place: "sea" },
+  river: { id: "bait_river", nm: "지렁이 미끼", pic: "🪱", price: 6 * ECON_SCALE,  place: "river" },
 };

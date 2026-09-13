@@ -17,8 +17,8 @@ Object.values(PLACES).forEach((p) => {
 });
 MONSTERS.forEach((m) => reg(m.drop));
 
-// 가공품(작업대 산출물)
-reg({ id: "plank", pic: "🟫", nm: "합판", pr: 45 });
+// 가공품(작업대 산출물) — 최고 소지 금액 10억별에 맞춘 경제 재조정(×400)
+reg({ id: "plank", pic: "🟫", nm: "합판", pr: 45 * 400 });
 
 export function itemDef(id) { return ITEM_INDEX[id] || { id, pic: "❔", nm: id, pr: 0 }; }
 export function itemName(id) { return itemDef(id).nm; }
