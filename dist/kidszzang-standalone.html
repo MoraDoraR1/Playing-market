@@ -1774,11 +1774,21 @@ function draw() {
     const frame = char.moving ? Math.floor(char.step / 9) % 2 : 0;
     // 발걸음에 맞춘 통통 바운스(떠다니는 sin 흔들림 대신)
     const cy = char.y - COFF - (char.moving && frame ? 2 : 0);
+    // 정면/뒷면 PNG는 두 프레임 다리 포즈 차이가 미세해서 그대로 쓰면 "미끄러지는" 것처럼 보임
+    // → frame 1은 좌우 반전으로 그려 반대쪽 다리가 앞으로 나온 것처럼 보이게(제자리 좌우 반전, 즉시 티나는 보행감)
     if (char.dir === "right") {
       ctx.save(); ctx.translate(char.x, 0); ctx.scale(-1, 1);
       drawSprite("char_left_" + frame, 0, cy, CS); ctx.restore();
+    } else if (char.dir === "left") {
+      drawSprite("char_left_" + frame, char.x, cy, CS);
     } else {
-      drawSprite("char_" + (char.dir || "down") + "_" + frame, char.x, cy, CS);
+      const base = "char_" + (char.dir || "down") + "_0";
+      if (frame) {
+        ctx.save(); ctx.translate(char.x, 0); ctx.scale(-1, 1);
+        drawSprite(base, 0, cy, CS); ctx.restore();
+      } else {
+        drawSprite(base, char.x, cy, CS);
+      }
     }
   }
 }
