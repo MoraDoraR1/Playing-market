@@ -10,20 +10,14 @@
 <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
-  <!-- 콘솔형 게임기 프레임: 모든 UI가 이 안에 있음. 게임 화면(.screen)이 창을 꽉 채우고
-       HUD/브랜드/액션바는 그 위에 오버레이로 얹힌다(실제 게임처럼) -->
+  <!-- 콘솔형 게임기 프레임: 모든 UI가 이 안에 있음. HUD/액션바는 게임 화면과 겹치지 않게
+       위아래에 자기 공간을 갖는다(오버레이로 얹으면 그 위 클릭이 캔버스로 안 가서
+       화면 가장자리 이동/상호작용이 막히는 문제가 있었음) -->
   <div class="device" id="device">
-    <!-- 월드 화면: .device 콘텐츠 영역 전체를 채움(16:9 유지, 레터박스) -->
-    <div class="screen">
-      <div class="scene" id="scene"></div>
-      <!-- 전투 오버레이 -->
-      <div class="overlay" id="battle"><div class="battlebox" id="battleBox"></div></div>
-    </div>
-
-    <!-- 상단 오버레이: 브랜드 + HUD -->
+    <!-- 상단: 브랜드+HUD 한 줄(공간 절약) -->
     <div class="topbar">
       <div class="brand"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
-        <b>🏘️ 키즈짱 시장놀이</b></div>
+        <b>🏘️</b></div>
 
       <!-- 인게임 HUD -->
       <div class="hud" id="hud">
@@ -50,17 +44,22 @@
       </div>
     </div>
 
-    <!-- 하단 오버레이: 메시지 + 액션바 + 키보드 힌트 -->
-    <div class="bottombar">
-      <div class="talk" id="talk">마을에 온 걸 환영해요! 걸어서 둘러봐요 🏘️ (도움말은 📖설명서)</div>
-      <div class="actionbar">
-        <button class="abtn" id="bagBtn"><span class="e">🎒</span>가방<span class="badge" id="bagCount">0</span></button>
-        <button class="abtn" id="travelBtn"><span class="e">🗺️</span>빠른이동</button>
-        <button class="abtn" id="manualBtn"><span class="e">📖</span>설명서</button>
-        <button class="abtn" id="gearBtn"><span class="e">⚙️</span>설정</button>
-      </div>
-      <div class="kbdhint" id="kbdhint">🕹️ <b>방향키·WASD·마우스</b>로 걷기 · 다가가 <b>Space</b> 상호작용 · <b>숫자키</b> 빠른이동 · <b>?</b> 설명서</div>
+    <!-- 월드 화면: 남는 세로 공간을 전부 차지(=최대한 크게), 위아래 UI와 겹치지 않음 -->
+    <div class="screen">
+      <div class="scene" id="scene"></div>
+      <!-- 전투 오버레이 -->
+      <div class="overlay" id="battle"><div class="battlebox" id="battleBox"></div></div>
     </div>
+
+    <!-- 하단: 메시지 + 액션바 + 키보드 힌트 -->
+    <div class="talk" id="talk">마을에 온 걸 환영해요! 걸어서 둘러봐요 🏘️ (도움말은 📖설명서)</div>
+    <div class="actionbar">
+      <button class="abtn" id="bagBtn"><span class="e">🎒</span>가방<span class="badge" id="bagCount">0</span></button>
+      <button class="abtn" id="travelBtn"><span class="e">🗺️</span>빠른이동</button>
+      <button class="abtn" id="manualBtn"><span class="e">📖</span>설명서</button>
+      <button class="abtn" id="gearBtn"><span class="e">⚙️</span>설정</button>
+    </div>
+    <div class="kbdhint" id="kbdhint">🕹️ <b>방향키·WASD·마우스</b>로 걷기 · 다가가 <b>Space</b> 상호작용 · <b>숫자키</b> 빠른이동 · <b>?</b> 설명서</div>
 
     <!-- 팝업 (인게임) -->
     <div class="overlay" id="popup"><div class="popcard"><button class="popclose" id="popClose" aria-label="닫기">✕</button><div id="popBody"></div></div></div>
