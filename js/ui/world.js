@@ -252,11 +252,12 @@ function draw() {
     ctx.fillStyle = "#fff"; ctx.fillText(msg, active.x, active.y - 52);
   }
 
-  // 캐릭터
+  // 캐릭터 (512px PNG 구도에 맞춰 크게/오프셋)
+  const CS = 74, COFF = 18;   // 렌더 크기 / 발끝 보정
   if (gather) {
     // 채집 애니메이션 (도구 위아래) + 게이지
     const wf = Math.floor(gather.anim / 8) % 2;
-    drawSprite("char_work_" + wf, char.x, char.y - 10, 52);
+    drawSprite("char_work_" + wf, char.x, char.y - COFF, CS);
     // 게이지 바
     const gw = 56, gx = char.x - gw / 2, gy = char.y - 52;
     ctx.fillStyle = "rgba(46,38,32,.75)"; roundRect(gx - 3, gy - 3, gw + 6, 14, 7); ctx.fill();
@@ -266,12 +267,12 @@ function draw() {
     if (wf === 0) { ctx.font = "14px serif"; ctx.fillStyle = "#fff"; ctx.fillText("✨", char.x + 22, char.y - 24); }
   } else {
     const frame = char.moving ? Math.floor(char.step / 6) % 2 : 0;
-    const cy = char.y - 10 + (char.moving ? Math.sin(char.bob) * 2 : 0);
+    const cy = char.y - COFF + (char.moving ? Math.sin(char.bob) * 2 : 0);
     if (char.dir === "right") {
       ctx.save(); ctx.translate(char.x, 0); ctx.scale(-1, 1);
-      drawSprite("char_left_" + frame, 0, cy, 52); ctx.restore();
+      drawSprite("char_left_" + frame, 0, cy, CS); ctx.restore();
     } else {
-      drawSprite("char_" + (char.dir || "down") + "_" + frame, char.x, cy, 52);
+      drawSprite("char_" + (char.dir || "down") + "_" + frame, char.x, cy, CS);
     }
   }
 }

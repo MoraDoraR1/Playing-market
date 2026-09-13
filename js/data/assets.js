@@ -1,31 +1,39 @@
 // =============================================================
-//  에셋 파이프라인 (외부 AI 이미지 연동용)
+//  에셋 파이프라인 (생성된 고품질 PNG 연동)
 // =============================================================
-//  그림이 준비되면 이곳 SPRITES_READY 에 "종류/아이디" 를 추가하세요.
-//  파일 위치 규칙:  assets/sprites/<종류>/<아이디>.png
-//  예)  영웅 숲 캐릭터  ->  assets/sprites/heroes/forest.png   ->  "heroes/forest"
-//       슬라임 몬스터    ->  assets/sprites/monsters/slime.png  ->  "monsters/slime"
-//       나뭇가지 아이템  ->  assets/sprites/items/branch.png    ->  "items/branch"
-//       숲 배경          ->  assets/sprites/places/forest.png   ->  "places/forest"
-//
-//  SET 에 없는 항목은 자동으로 이모지로 표시됩니다. (점진적 교체 가능)
-//  필요한 전체 목록과 생성 프롬프트는  assets/README.md  참고.
+//  런타임 규칙:
+//   - PNG 키 → 파일 경로는 아래 PNG 맵에 등록한다. (키: "<종류>_<아이디>")
+//   - 개발/GitHub Pages: 파일 경로로 로드.
+//   - 플레이 링크(아티팩트): 빌드가 globalThis.__SPRITE_DATA[key] 에 data URI를
+//     넣어두므로 그걸 우선 사용(외부 PNG는 CSP 차단).
+//  새 이미지를 붙일 때: assets/sprites/<종류>/<id>.png 커밋 + 아래 PNG 맵에 등록.
 // =============================================================
 
 export const SPRITE_BASE = "assets/sprites/";
 
-// 준비된 이미지 목록 (처음엔 비어있음 → 전부 이모지로 표시)
-export const SPRITES_READY = new Set([
-  // "heroes/forest",
-  // "monsters/slime",
-  // "items/branch",
-  // "places/forest",
-]);
+// 준비된 PNG:  키 "<종류>_<아이디>"  →  파일 경로
+export const PNG = {
+  // 캐릭터 (Codex 생성) — 걷기 2프레임 × 3방향 + 채집 2프레임
+  char_down_0: "assets/sprites/char/down_0.png",
+  char_down_1: "assets/sprites/char/down_1.png",
+  char_up_0:   "assets/sprites/char/up_0.png",
+  char_up_1:   "assets/sprites/char/up_1.png",
+  char_left_0: "assets/sprites/char/left_0.png",
+  char_left_1: "assets/sprites/char/left_1.png",
+  char_work_0: "assets/sprites/char/work_0.png",
+  char_work_1: "assets/sprites/char/work_1.png",
+};
 
-export function spritePath(kind, id) {
-  return `${SPRITE_BASE}${kind}/${id}.png`;
+export function hasPng(key) { return !!PNG[key]; }
+
+// 아티팩트(data URI) 우선, 없으면 파일 경로
+export function pngURL(key) {
+  const embedded = (typeof globalThis !== "undefined") && globalThis.__SPRITE_DATA;
+  if (embedded && embedded[key]) return embedded[key];
+  return PNG[key] || null;
 }
 
-export function hasSprite(kind, id) {
-  return id != null && SPRITES_READY.has(`${kind}/${id}`);
-}
+// ---- (구) 아이템용 kind/id 파이프라인 — 아직 사용, PNG 붙기 전까지 이모지 폴백 ----
+export const SPRITES_READY = new Set([]);
+export function spritePath(kind, id) { return `${SPRITE_BASE}${kind}/${id}.png`; }
+export function hasSprite(kind, id) { return id != null && SPRITES_READY.has(`${kind}/${id}`); }

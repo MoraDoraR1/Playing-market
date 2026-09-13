@@ -27,7 +27,26 @@ function strip(src, file) {
   }).filter((l) => l !== null).join("\n");
 }
 
-let bundle = ORDER.map((f) => `\n// ===== ${f} =====\n` + strip(R(f), f)).join("\n");
+// ---- PNG 에셋을 data URI로 임베드 (플레이 링크는 외부 이미지 CSP 차단) ----
+// assets/sprites/<종류>/<id>.png → 키 "<종류>_<id>"
+function collectPngs(dir, prefix, out) {
+  const abs = ROOT + "/" + dir;
+  if (!fs.existsSync(abs)) return;
+  for (const name of fs.readdirSync(abs)) {
+    const rel = dir + "/" + name;
+    const st = fs.statSync(ROOT + "/" + rel);
+    if (st.isDirectory()) collectPngs(rel, prefix + name + "_", out);
+    else if (name.toLowerCase().endsWith(".png")) {
+      const key = prefix + name.replace(/\.png$/i, "");
+      out[key] = "data:image/png;base64," + fs.readFileSync(ROOT + "/" + rel).toString("base64");
+    }
+  }
+}
+const spriteData = {};
+collectPngs("assets/sprites", "", spriteData);
+const spriteDataJs = `globalThis.__SPRITE_DATA = ${JSON.stringify(spriteData)};\n`;
+
+let bundle = spriteDataJs + ORDER.map((f) => `\n// ===== ${f} =====\n` + strip(R(f), f)).join("\n");
 // `import * as world` 네임스페이스를 대체하는 shim (world.js의 export 함수들을 모음)
 bundle += `\n// ===== world 네임스페이스 shim =====\nvar world = { ensureMounted, unmount, interact, goTo, enterDungeon, exitDungeon };\n`;
 

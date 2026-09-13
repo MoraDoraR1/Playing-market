@@ -4,12 +4,12 @@
 > 각 프롬프트 = "**주제(subject)** + §2 마스터 스타일 문구". 경로 규칙: `assets/sprites/<종류>/<id>.png`.
 > 상태: `[ ]` 미생성 · `[x]` 완료. (현재 코드의 SVG는 임시 플레이스홀더이며 전부 PNG로 대체)
 
-## A. 캐릭터 `char/` — 512×512, 투명
+## A. 캐릭터 `char/` — 512×512, 투명  ✅ 생성 + 게임 적용 완료(런타임·플레이링크)
 동일 인물(밀짚모자 소년, 파란셔츠+남색바지). right는 left 반전이라 생성 X.
-- [ ] `char/down_0` `char/down_1` — 정면 걷기 2프레임 (다리 교차)
-- [ ] `char/up_0` `char/up_1` — 뒷면(뒤통수+작은 가방) 걷기 2프레임
-- [ ] `char/left_0` `char/left_1` — 옆모습(왼쪽) 걷기 2프레임
-- [ ] `char/work_0` `char/work_1` — 채집 2프레임 (도구 위로/아래로)
+- [x] `char/down_0` `char/down_1` — 정면 걷기 2프레임 (다리 교차)
+- [x] `char/up_0` `char/up_1` — 뒷면(뒤통수+작은 가방) 걷기 2프레임
+- [x] `char/left_0` `char/left_1` — 옆모습(왼쪽) 걷기 2프레임
+- [x] `char/work_0` `char/work_1` — 채집 2프레임 (도구 위로/아래로)
 - [ ] (선택) `char/idle` 정지 1프레임
 > 프롬프트 예: `a chubby 2-head cute boy in straw hat, blue shirt navy pants, top-down 3/4 view, walking, left foot forward` (+마스터 스타일)
 

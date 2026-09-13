@@ -123,13 +123,19 @@ const SVGS = {
     <path d="M40 16 l3 6 -6 0Z" fill="#f2c14e"/>`),
 };
 
+import { hasPng, pngURL, PNG } from "../data/assets.js";
+
 const cache = {};
 export function getSprite(name) {
   if (cache[name]) return cache[name];
   const img = new Image();
-  img.src = "data:image/svg+xml;utf8," + encodeURIComponent(SVGS[name] || "");
+  // 준비된 고품질 PNG 우선, 없으면 임시 SVG 플레이스홀더
+  if (hasPng(name) && pngURL(name)) img.src = pngURL(name);
+  else img.src = "data:image/svg+xml;utf8," + encodeURIComponent(SVGS[name] || "");
   cache[name] = img;
   return img;
 }
-// 미리 로드
-export function preloadSprites() { Object.keys(SVGS).forEach(getSprite); }
+// 미리 로드 (SVG 키 + PNG 키)
+export function preloadSprites() {
+  new Set([...Object.keys(SVGS), ...Object.keys(PNG)]).forEach(getSprite);
+}
