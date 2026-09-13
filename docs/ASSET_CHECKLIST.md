@@ -4,14 +4,14 @@
 > 각 프롬프트 = "**주제(subject)** + §2 마스터 스타일 문구". 경로 규칙: `assets/sprites/<종류>/<id>.png`.
 > 상태: `[ ]` 미생성 · `[x]` 완료. (현재 코드의 SVG는 임시 플레이스홀더이며 전부 PNG로 대체)
 
-## A. 캐릭터 `char/` — 512×512, 투명  ✅ 생성 + 게임 적용 완료(런타임·플레이링크)
+## A. 캐릭터 `char/` — 512×512, 투명  ⚠️ 부분 재생성 필요
 동일 인물(밀짚모자 소년, 파란셔츠+남색바지). right는 left 반전이라 생성 X.
-- [x] `char/down_0` `char/down_1` — 정면 걷기 2프레임 (다리 교차)
-- [x] `char/up_0` `char/up_1` — 뒷면(뒤통수+작은 가방) 걷기 2프레임
-- [x] `char/left_0` `char/left_1` — 옆모습(왼쪽) 걷기 2프레임
-- [x] `char/work_0` `char/work_1` — 채집 2프레임 (도구 위로/아래로)
+- [ ] `char/down_0` `char/down_1` — 정면 걷기 2프레임 — **재생성 필요**: 1차 생성분은 두 프레임 다리 포즈가 거의 동일해 걷는 게 아니라 미끄러지는 것처럼 보임. `VISUAL_GUIDE.md` §5의 "명확히 다른 포즈" 지침(반대발/반대팔, 좌우 반전 수준 차이)으로 다시 생성.
+- [ ] `char/up_0` `char/up_1` — 뒷면(뒤통수+작은 가방) 걷기 2프레임 — **재생성 필요**(down과 동일 사유)
+- [x] `char/left_0` `char/left_1` — 옆모습(왼쪽) 걷기 2프레임 (다리 교차 뚜렷 — 통과, 재생성 불필요, 새 생성물도 이 수준 유지)
+- [x] `char/work_0` `char/work_1` — 채집 2프레임 (도구 위로/아래로 — 차이 뚜렷, 통과)
 - [ ] (선택) `char/idle` 정지 1프레임
-> 프롬프트 예: `a chubby 2-head cute boy in straw hat, blue shirt navy pants, top-down 3/4 view, walking, left foot forward` (+마스터 스타일)
+> 프롬프트 예: `a chubby 2-head cute boy in straw hat, blue shirt navy pants, top-down 3/4 view, walking, left foot forward` (+마스터 스타일). **정면/뒷면은 반드시 §5의 프레임별 포즈 지정을 그대로 따를 것.**
 
 ## B. 몬스터/보스 `mon/` — 512×512, 투명
 - [ ] `mon/slime` 슬라임 - [ ] `mon/bat` 박쥐 - [ ] `mon/boar` 멧돼지
