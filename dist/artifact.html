@@ -1757,7 +1757,7 @@ function draw() {
     const wf = Math.floor(gather.anim / 8) % 2;
     drawSprite("char_work_" + wf, char.x, char.y - COFF, CS);
     // 게이지 바
-    const gw = 56, gx = char.x - gw / 2, gy = char.y - 52;
+    const gw = 56, gx = char.x - gw / 2, gy = char.y - 80;
     ctx.fillStyle = "rgba(46,38,32,.75)"; roundRect(gx - 3, gy - 3, gw + 6, 14, 7); ctx.fill();
     ctx.fillStyle = "#5a4a3a"; roundRect(gx, gy, gw, 8, 4); ctx.fill();
     ctx.fillStyle = "#4cd68a"; roundRect(gx, gy, gw * Math.min(1, gather.prog), 8, 4); ctx.fill();
