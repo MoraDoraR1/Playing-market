@@ -14,9 +14,9 @@
 > 프롬프트 예: `a chubby 2-head cute boy in straw hat, blue shirt navy pants, top-down 3/4 view, walking, left foot forward` (+마스터 스타일). **정면/뒷면은 반드시 §5의 프레임별 포즈 지정을 그대로 따를 것.**
 
 ## B. 몬스터/보스 `mon/` — 512×512, 투명
-- [ ] `mon/slime` 슬라임 - [ ] `mon/bat` 박쥐 - [ ] `mon/boar` 멧돼지
-- [ ] `mon/ghost` 유령 - [ ] `mon/golem` 바위골렘 - [ ] `mon/dragon` 아기 드래곤
-- [ ] `mon/kingslime` 슬라임 왕(보스) - [ ] `mon/kraken` 크라켄(보스) - [ ] `mon/darklord` 마왕(보스)
+- [x] `mon/slime` 슬라임 - [x] `mon/bat` 박쥐 - [x] `mon/boar` 멧돼지
+- [x] `mon/ghost` 유령 - [x] `mon/golem` 바위골렘 - [x] `mon/dragon` 아기 드래곤
+- [x] `mon/kingslime` 슬라임 왕(보스) - [x] `mon/kraken` 크라켄(보스) - [x] `mon/darklord` 마왕(보스)
 > 보스는 더 크고 위엄 있게. 예: `cute round green slime monster, big shiny eyes` (+마스터 스타일)
 
 ## C. 자원/전리품/가공품 `item/` — 512×512, 투명 (단일 오브젝트, 심플·굵게)
