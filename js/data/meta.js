@@ -48,7 +48,8 @@ export const STAR_SHOP = [
   { id: "elixir",   nm: "만능 물약",   pic: "✨", cost: 3000,   desc: "체력·피로 완전 회복", apply: (S) => { S.hp = S.maxHp; S.fatigue = 0; } },
   { id: "fastfarm", nm: "성장촉진제",  pic: "🌱", cost: 2000,   desc: "모든 농작물 즉시 완성", apply: (S) => { S.farm.forEach((p) => { const c = CROPS[p.cropId]; if (c) p.progress = c.grow; }); } },
   { id: "medal",    nm: "명예 훈장",   pic: "🎖️", cost: 30000,  desc: "공격력 +3 (영구)",   apply: (S) => { S.mods.atkBonus += 3; } },
-  { id: "goldtool", nm: "황금 곡괭이", pic: "⛏️", cost: 50000,  desc: "도구 레벨 +1 (영구)", apply: (S) => { S.tool += 1; } },
+  { id: "goldtool", nm: "만능 공구함", pic: "🧰", cost: 50000,  desc: "보유한 모든 채집 도구 등급 +1 (영구, 최대 8단계)",
+    apply: (S) => { Object.keys(S.equip).forEach((k) => { S.equip[k] = Math.min(8, S.equip[k] + 1); }); } },
   { id: "charm",    nm: "행운의 부적", pic: "🍀", cost: 100000, desc: "채집 수확 +1 (영구) — 최고급 사기템!", apply: (S) => { S.mods.gatherBonus += 1; } },
 ];
 

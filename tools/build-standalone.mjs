@@ -9,7 +9,7 @@ const R = (p) => fs.readFileSync(ROOT + "/" + p, "utf8");
 // 최상위 const 초기화 의존성 안전 순서 (world는 render보다 먼저)
 const ORDER = [
   "js/core/format.js", "js/core/rng.js",
-  "js/data/ranks.js", "js/data/places.js", "js/data/monsters.js",
+  "js/data/ranks.js", "js/data/places.js", "js/data/monsters.js", "js/data/tools.js",
   "js/data/recipes.js", "js/data/items.js", "js/data/assets.js", "js/data/meta.js",
   "js/core/audio.js", "js/core/state.js", "js/core/save.js",
   "js/ui/view.js", "js/ui/minigame.js", "js/ui/sprites.js",

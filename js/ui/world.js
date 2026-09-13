@@ -8,6 +8,7 @@ import { say, toast } from "./view.js";
 import { doWork, doHarvest } from "../systems/gather.js";
 import { renderScene, renderPanel, renderNav, openPopup } from "./render.js";
 import { getSprite, preloadSprites } from "./sprites.js";
+import { TOOLS, BAIT, toolStat } from "../data/tools.js";
 
 // ---- 해상도: 1920x1080(16:9)을 앵커로 고정 ----
 // 캔버스 실물 해상도는 항상 1920x1080. 기존에 600x440 기준으로 튜닝된 모든 좌표·크기는
@@ -26,7 +27,8 @@ const RW = s(46);                 // 길 폭
 const DOTS = Math.round(60 * SCALE * SCALE); // 잔디 점무늬 개수(면적 비례)
 
 const ART = {
-  forest: "tree", sea: "fishspot", river: "fishspot", mine: "ore", field: "wheat",
+  forest: "tree", sea: "fishspot", river: "fishspot", mine: "ore",
+  gather: "wheat", hunt: null,
   dump: "trash", pirate: "pirate", heaven: "cloud", battle: "cave",
   shop: "b_shop", home: "b_home", donate: "b_donate", journal: "b_journal",
 };
@@ -47,17 +49,21 @@ const MAPS = {
   sea: {
     name: "🌊 바닷가", ground: ["#a9dcf5", "#7ec2ea"],
     objects: [{ kind: "gather", place: "sea", x: 300, y: 250, label: "낚시터" },
+              { kind: "gather", place: "sea", x: 470, y: 320, label: "먼바다" },
               { kind: "gather", place: "pirate", x: 300, y: 96, label: "해적선", minReq: 3 }],
     exits: [{ dir: "S", to: "village", label: "마을" }, { dir: "E", to: "river", label: "강가" }],
   },
   river: {
     name: "🏞️ 강가", ground: ["#a9edd0", "#7fdcb4"],
-    objects: [{ kind: "gather", place: "river", x: 300, y: 236, label: "민물 낚시" }],
+    objects: [{ kind: "gather", place: "river", x: 300, y: 236, label: "민물 낚시" },
+              { kind: "gather", place: "river", x: 150, y: 320, label: "여울목" }],
     exits: [{ dir: "W", to: "sea", label: "바닷가" }, { dir: "N", to: "mine", label: "광산" }],
   },
   forest: {
     name: "🌲 숲속", ground: ["#a6ecab", "#82d68c"],
-    objects: [{ kind: "gather", place: "forest", x: 300, y: 236, label: "채집터" }],
+    objects: [{ kind: "gather", place: "forest", x: 300, y: 236, label: "벌목터" },
+              { kind: "gather", place: "forest", x: 460, y: 150, label: "고목" },
+              { kind: "gather", place: "forest", x: 150, y: 330, label: "덤불숲" }],
     exits: [{ dir: "E", to: "village", label: "마을" }, { dir: "W", to: "dungeon", label: "던전" }],
   },
   dungeon: {
@@ -67,22 +73,27 @@ const MAPS = {
   },
   mine: {
     name: "⛏️ 광산", ground: ["#cdd2d8", "#aeb4bc"],
-    objects: [{ kind: "gather", place: "mine", x: 300, y: 236, label: "광맥" }],
+    objects: [{ kind: "gather", place: "mine", x: 300, y: 236, label: "광맥" },
+              { kind: "gather", place: "mine", x: 460, y: 150, label: "깊은 갱도" }],
     exits: [{ dir: "W", to: "village", label: "마을" }, { dir: "S", to: "river", label: "강가" }],
   },
   field: {
     name: "🌾 들판", ground: ["#ffe9a0", "#ffd76a"],
-    objects: [{ kind: "gather", place: "field", x: 300, y: 236, label: "사냥터" }],
+    objects: [{ kind: "gather", place: "gather", x: 210, y: 230, label: "채집터" },
+              { kind: "gather", place: "gather", x: 150, y: 340, label: "들꽃밭" },
+              { kind: "gather", place: "hunt",   x: 420, y: 250, label: "사냥터" }],
     exits: [{ dir: "N", to: "village", label: "마을" }, { dir: "E", to: "dump", label: "쓰레기장" }],
   },
   dump: {
     name: "🗑️ 쓰레기장", ground: ["#d5d9cf", "#b8bdb0"],
-    objects: [{ kind: "gather", place: "dump", x: 300, y: 236, label: "고물 더미" }],
+    objects: [{ kind: "gather", place: "dump", x: 300, y: 236, label: "고물 더미" },
+              { kind: "gather", place: "dump", x: 460, y: 150, label: "폐차더미" }],
     exits: [{ dir: "W", to: "field", label: "들판" }],
   },
   heaven: {
     name: "☁️ 하늘나라", ground: ["#e0d4ff", "#c3aaff"],
-    objects: [{ kind: "gather", place: "heaven", x: 300, y: 236, label: "별밭" }],
+    objects: [{ kind: "gather", place: "heaven", x: 300, y: 236, label: "별밭" },
+              { kind: "gather", place: "heaven", x: 460, y: 150, label: "구름밭" }],
     exits: [{ dir: "S", to: "village", label: "마을" }],
   },
 };
@@ -102,6 +113,11 @@ function blocked() {
 function locked(o) {
   if (o.minReq != null && S.rankIdx < o.minReq) return "rank";
   if (o.heaven && !S.heavenOpen) return "heaven";
+  if (o.kind === "gather") {
+    const p = PLACES[o.place];
+    if (p && p.toolRequired && !(S.equip[p.tool] > 0)) return "tool";
+    if (p && p.bait && !((S.bait[p.bait] || 0) > 0)) return "bait";
+  }
   return null;
 }
 
@@ -253,7 +269,9 @@ function draw() {
   for (const o of objs) {
     const lk = locked(o);
     ctx.globalAlpha = lk ? 0.55 : 1;
-    drawSprite(ART[o.place], o.x, o.y - s(6), o.kind === "build" ? s(84) : s(76));
+    const artKey = ART[o.place];
+    if (artKey) drawSprite(artKey, o.x, o.y - s(6), o.kind === "build" ? s(84) : s(76));
+    else { ctx.font = `${s(56)}px serif`; ctx.fillText((PLACES[o.place] || {}).hero || "❓", o.x, o.y - s(6)); }
     ctx.globalAlpha = 1;
     // 라벨 칩
     ctx.font = `bold ${s(13)}px Jua, sans-serif`;
@@ -316,6 +334,13 @@ function drawSign(ex) {
   ctx.fillStyle = "#3a2b1f"; ctx.fillText(text, x, y - s(9));
 }
 
+// 한글 받침 유무에 따라 "이/가" 조사 선택
+function ga(word) {
+  const c = word.charCodeAt(word.length - 1);
+  if (c < 0xac00 || c > 0xd7a3) return "가";
+  return (c - 0xac00) % 28 === 0 ? "가" : "이";
+}
+
 // ---- 상호작용 ----
 export function interact() { if (S.mode === "world" && !gather && active) doInteract(active); }
 function doInteract(o) {
@@ -323,6 +348,18 @@ function doInteract(o) {
   const lk = locked(o);
   if (lk === "rank") { sfx.bad(); toast("상인 계급부터 갈 수 있어요!"); return; }
   if (lk === "heaven") { sfx.bad(); toast(`선행 ${HEAVEN_DEED}점을 모아야 열려요! (지금 ${S.deed}점)`); return; }
+  if (lk === "tool") {
+    const p = PLACES[o.place], t = TOOLS[p.tool];
+    sfx.bad(); toast(`${t.pic} ${t.nm}이(가) 필요해요!`);
+    say(`${t.pic} ${t.nm}${ga(t.nm)} 있어야 여기서 활동할 수 있어요! 상점에서 구매해보세요~ 🏪`);
+    return;
+  }
+  if (lk === "bait") {
+    const p = PLACES[o.place], b = BAIT[p.bait];
+    sfx.bad(); toast(`${b.pic} ${b.nm}가 없어요!`);
+    say(`${b.pic} ${b.nm}${ga(b.nm)} 있어야 낚시할 수 있어요! 상점에서 구매해보세요~ 🏪`);
+    return;
+  }
   if (o.kind === "gather") {
     const p = PLACES[o.place];
     if (p.minigame) { S.place = o.place; renderNav(); say(`${p.name}에서 ${p.verb}!`); doWork(); }
@@ -339,8 +376,8 @@ function startGather(o) {
   const p = PLACES[o.place];
   S.place = o.place; renderNav();
   held.clear(); target = null;
-  // 기본 5초, 도구 레벨↑ 마다 0.4초 단축(최소 2.5초)
-  const dur = Math.max(2500, 5000 - (S.tool - 1) * 400);
+  // 장소가 요구하는 도구 카테고리의 현재 등급에 따라 채집 소요 시간 결정(등급↑ → 더 빠름)
+  const dur = toolStat(p.tool, p.tool ? S.equip[p.tool] : 0).dur;
   gather = { place: o.place, prog: 0, anim: 0, start: performance.now(), dur };
   sfx.get();
   say(`${p.name}에서 ${p.verb} 중... ⏳`);

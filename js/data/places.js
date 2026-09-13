@@ -2,10 +2,13 @@
 // loot 요소: {id, pic(이모지), nm(이름), pr(판매가), w(가중치)}
 // rare: 낮은 확률로 등장하는 귀한 자원
 // combat:true 인 장소는 전투 씬으로 렌더링됨
+// tool: 필요 도구 카테고리(data/tools.js) — required:true면 미보유 시 진입 불가
+// bait: "sea"|"river" — 해당 미끼가 있어야 함(낚시 전용)
 export const PLACES = {
   forest: {
-    name: "🌲 숲속", desc: "나무와 약초를 채집해요",
+    name: "🌲 숲속", desc: "도끼로 나무를 베어 채집해요",
     bg: "linear-gradient(180deg,#d3f9d8,#8ce99a)", hero: "🧑‍🌾", verb: "채집하기",
+    tool: "axe", toolRequired: true,
     loot: [
       { id: "branch", pic: "🪵", nm: "나뭇가지", pr: 10, w: 5 },
       { id: "mushroom", pic: "🍄", nm: "버섯", pr: 22, w: 3 },
@@ -14,8 +17,9 @@ export const PLACES = {
     rare: { id: "ginseng", pic: "🫚", nm: "산삼", pr: 320, rare: true },
   },
   sea: {
-    name: "🌊 바닷가", desc: "낚시로 물고기를 잡아요",
+    name: "🌊 바닷가", desc: "낚싯대+새우 미끼로 바다 낚시를 해요",
     bg: "linear-gradient(180deg,#a5d8ff,#4dabf7)", hero: "🎣", verb: "낚시하기", minigame: true,
+    tool: "rod", toolRequired: true, bait: "sea",
     loot: [
       { id: "anchovy", pic: "🐟", nm: "멸치", pr: 14, w: 5 },
       { id: "shell", pic: "🐚", nm: "조개", pr: 26, w: 3 },
@@ -24,8 +28,9 @@ export const PLACES = {
     rare: { id: "pearl", pic: "🦪", nm: "진주", pr: 360, rare: true },
   },
   mine: {
-    name: "⛏️ 광산", desc: "광석을 캐내요",
+    name: "⛏️ 광산", desc: "곡괭이로 광석을 캐내요",
     bg: "linear-gradient(180deg,#ced4da,#868e96)", hero: "👷", verb: "채광하기", minigame: true,
+    tool: "pickaxe", toolRequired: true,
     loot: [
       { id: "stone", pic: "🪨", nm: "돌멩이", pr: 8, w: 5 },
       { id: "copper", pic: "🟤", nm: "구리", pr: 30, w: 3 },
@@ -33,19 +38,32 @@ export const PLACES = {
     ],
     rare: { id: "gem", pic: "💎", nm: "보석", pr: 420, rare: true },
   },
-  field: {
-    name: "🌾 들판", desc: "열매를 따고 사냥해요",
-    bg: "linear-gradient(180deg,#ffec99,#ffd43b)", hero: "🏹", verb: "사냥하기",
+  gather: {
+    name: "🌿 채집터", desc: "맨손으로도 되지만, 낫이 있으면 더 빨라요",
+    bg: "linear-gradient(180deg,#ffec99,#ffd43b)", hero: "🧺", verb: "채집하기",
+    tool: "sickle", toolRequired: false,
     loot: [
       { id: "berry", pic: "🍓", nm: "산딸기", pr: 12, w: 5 },
       { id: "grain", pic: "🌾", nm: "곡식", pr: 24, w: 3 },
-      { id: "meat", pic: "🍖", nm: "고기", pr: 40, w: 2 },
+      { id: "flower", pic: "🌼", nm: "들꽃", pr: 20, w: 2 },
+    ],
+    rare: { id: "clover", pic: "🍀", nm: "네잎클로버", pr: 300, rare: true },
+  },
+  hunt: {
+    name: "🏹 사냥터", desc: "활이 있어야 사냥할 수 있어요",
+    bg: "linear-gradient(180deg,#ffd8a8,#ffa94d)", hero: "🏹", verb: "사냥하기",
+    tool: "bow", toolRequired: true,
+    loot: [
+      { id: "meat", pic: "🍖", nm: "고기", pr: 40, w: 5 },
+      { id: "feather", pic: "🪶", nm: "깃털", pr: 30, w: 3 },
+      { id: "bone", pic: "🦴", nm: "뼈", pr: 50, w: 2 },
     ],
     rare: { id: "goldegg", pic: "🥚", nm: "황금알", pr: 340, rare: true },
   },
   river: {
-    name: "🏞️ 강가", desc: "민물에서 낚시해요",
+    name: "🏞️ 강가", desc: "낚싯대+지렁이 미끼로 민물 낚시를 해요",
     bg: "linear-gradient(180deg,#b2f2bb,#63e6be)", hero: "🎣", verb: "낚시하기", minigame: true,
+    tool: "rod", toolRequired: true, bait: "river",
     loot: [
       { id: "loach", pic: "🐡", nm: "미꾸라지", pr: 16, w: 5 },
       { id: "crayfish", pic: "🦐", nm: "가재", pr: 28, w: 3 },

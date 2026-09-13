@@ -5,6 +5,8 @@ import { sfx } from "../core/audio.js";
 import { say, toast } from "../ui/view.js";
 import { renderHud, renderInv, renderPanel } from "../ui/render.js";
 import { sellPrice, recordStat, questProgress } from "./meta.js";
+import { TOOLS, BAIT, nextTierCost } from "../data/tools.js";
+import { PLACES } from "../data/places.js";
 
 // 시세가 적용된 개당 판매가
 export function unitPrice(it) { return sellPrice(it); }
@@ -32,13 +34,28 @@ export function sellAll() {
   renderHud(); renderInv(); renderPanel();
 }
 
-export function toolCost() { return 800 + (S.tool - 1) * 700; }
-export function buyTool() {
-  const c = toolCost();
-  if (S.money < c) { sfx.bad(); toast("돈이 부족해요!"); say("돈이 조금 모자라요~ 자원을 더 팔아봐요! 💸"); return; }
-  S.money -= c; S.tool++; sfx.up();
-  toast(`도구 강화! Lv.${S.tool}`);
-  say(`도구를 강화했어요! 이제 한 번에 최대 ${1 + S.tool}개까지 얻어요! 💪`);
+// 도구 카테고리(axe/pickaxe/rod/sickle/bow) 다음 단계 구매
+export function nextTool(cat) { return nextTierCost(cat, S.equip[cat] || 0); }
+export function buyToolTier(cat) {
+  const next = nextTool(cat);
+  if (!next) { toast("이미 최고 등급이에요!"); return; }
+  if (S.money < next.price) { sfx.bad(); toast("돈이 부족해요!"); say("돈이 조금 모자라요~ 자원을 더 팔아봐요! 💸"); return; }
+  S.money -= next.price; S.equip[cat] = next.tier; sfx.up();
+  const t = TOOLS[cat];
+  const placeNames = t.places.map((id) => (PLACES[id] ? PLACES[id].name : id)).join("·");
+  toast(`${t.nm} 강화! ${next.nm}등급`);
+  say(`${next.label} 장만했어요! 이제 ${placeNames}에서 더 빠르고 좋은 걸 얻을 수 있어요! 💪`);
+  renderHud(); renderPanel();
+}
+
+// 미끼(바다/민물) 구매 — 5개씩 구매
+export function buyBait(kind) {
+  const b = BAIT[kind]; if (!b) return;
+  const qty = 5, cost = b.price * qty;
+  if (S.money < cost) { sfx.bad(); toast("돈이 부족해요!"); return; }
+  S.money -= cost; S.bait[kind] = (S.bait[kind] || 0) + qty; sfx.sell();
+  toast(`${b.pic}${b.nm} ×${qty} 구매!`);
+  say(`${b.nm}를 챙겼어요! 이제 낚시하러 가볼까요? 🎣`);
   renderHud(); renderPanel();
 }
 

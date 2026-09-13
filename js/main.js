@@ -9,9 +9,9 @@ import { ensureDaily } from "./systems/meta.js";
 import * as world from "./ui/world.js";
 
 const KEYMAP = {
-  "1": "forest", "2": "sea", "3": "river", "4": "mine", "5": "field",
+  "1": "forest", "2": "sea", "3": "river", "4": "mine", "5": "gather",
   "6": "battle", "7": "shop", "8": "home", "9": "journal", "0": "donate",
-  "y": "dump", "p": "pirate", "v": "heaven",
+  "y": "dump", "p": "pirate", "v": "heaven", "h": "hunt",
 };
 
 function shown(id) { const e = $(id); return e && e.classList.contains("show"); }

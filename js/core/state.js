@@ -16,11 +16,13 @@ export function defaultState() {
     hp: 60, maxHp: 60,
     fatigue: 0,
     // 장비
-    tool: 1,             // 도구 레벨(수확량)
     weapon: 1,           // 무기 레벨(공격력)
     armor: 0,            // 방어구 레벨(피해 감소)
     potions: 0,          // 회복 물약
     bed: false,          // 푹신침대 보유
+    // 채집 도구(0=미보유/맨손). 도끼·곡괭이·낚싯대·활은 필수, 낫은 선택(맨손도 가능)
+    equip: { axe: 0, pickaxe: 0, rod: 0, sickle: 0, bow: 0 },
+    bait: { sea: 0, river: 0 }, // 낚시 미끼 보유 개수
     // 인벤토리
     inv: {},             // id -> {id,pic,nm,pr,count,rare}
     // 집 콘텐츠 (P2)
@@ -29,6 +31,8 @@ export function defaultState() {
     foodBuff: null,      // {id,nm,stat,amount,turns} 요리 일시 버프
     farm: [],            // [{cropId, progress}]
     homeTab: "rest",     // 집 화면 탭
+    shopTab: "sell",     // 상점 화면 탭
+    bagTab: "items",     // 가방 화면 탭(아이템/장비)
     // 메타 (P4)
     stats: { gather: 0, kills: 0, bossKills: 0, sold: 0, cook: 0, harvest: 0, craft: 0 },
     codex: { items: [], monsters: [], recipes: [] }, // 발견 목록
@@ -59,6 +63,8 @@ export function applyState(obj) {
   S.flags = Object.assign({}, fresh.flags, (obj && obj.flags) || {});
   S.settings = Object.assign({}, fresh.settings, (obj && obj.settings) || {});
   S.mods = Object.assign({}, fresh.mods, (obj && obj.mods) || {});
+  S.equip = Object.assign({}, fresh.equip, (obj && obj.equip) || {});
+  S.bait = Object.assign({}, fresh.bait, (obj && obj.bait) || {});
   S.furniture = (obj && obj.furniture) || [];
   S.farm = (obj && obj.farm) || [];
   S.foodBuff = (obj && obj.foodBuff) || null;

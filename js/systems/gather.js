@@ -1,6 +1,7 @@
 // 채집/낚시/채광/사냥 — 생산 활동 로직 (미니게임 지원)
 import { S, addItem, gatherFatigue, gatherBonus } from "../core/state.js";
 import { PLACES } from "../data/places.js";
+import { toolStat, BAIT } from "../data/tools.js";
 import { rnd, weighted } from "../core/rng.js";
 import { sfx } from "../core/audio.js";
 import { say, floatLoot, shake } from "../ui/view.js";
@@ -26,17 +27,26 @@ export function doWork() {
 }
 
 export function doHarvest(p, tier) {
+  // 미끼 소모(낚시 장소). 여기 도달했다는 건 이미 상호작용 시점에 보유를 확인했다는 뜻이지만,
+  // 방어적으로 한 번 더 체크(0개면 채집 자체를 취소).
+  if (p.bait) {
+    if ((S.bait[p.bait] || 0) <= 0) { sfx.bad(); say(`${BAIT[p.bait].pic} ${BAIT[p.bait].nm}가 없어요! 상점에서 사세요~`); return; }
+    S.bait[p.bait]--;
+  }
   shake("hero");
   const mult = tier.mult != null ? tier.mult : 1;
 
+  // 장소가 요구하는 도구 카테고리의 현재 등급 성능(속도는 world.js 게이지에서, 여기선 수확량·희귀확률)
+  const stat = toolStat(p.tool, p.tool ? S.equip[p.tool] : 0);
+
   // 수확량: 기본 × 성공도 배수
-  const base = 1 + rnd(1 + S.tool) + gatherBonus();
+  const base = 1 + rnd(1 + stat.amt) + gatherBonus();
   const amount = Math.max(1, Math.round(base * mult));
   const rareMul = tier.perfect ? 2 : 1;
 
   let got = [], gongGain = 0, rareHit = false;
   for (let i = 0; i < amount; i++) {
-    if (Math.random() < (0.04 + S.tool * 0.015) * rareMul) {
+    if (Math.random() < stat.rare * rareMul) {
       addItem(p.rare); got.push(p.rare); rareHit = true; gongGain += 8;
     } else {
       const it = weighted(p.loot);

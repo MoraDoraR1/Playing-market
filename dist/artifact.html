@@ -274,10 +274,13 @@ const HEAVEN_DEED = 50;
 // loot 요소: {id, pic(이모지), nm(이름), pr(판매가), w(가중치)}
 // rare: 낮은 확률로 등장하는 귀한 자원
 // combat:true 인 장소는 전투 씬으로 렌더링됨
+// tool: 필요 도구 카테고리(data/tools.js) — required:true면 미보유 시 진입 불가
+// bait: "sea"|"river" — 해당 미끼가 있어야 함(낚시 전용)
 const PLACES = {
   forest: {
-    name: "🌲 숲속", desc: "나무와 약초를 채집해요",
+    name: "🌲 숲속", desc: "도끼로 나무를 베어 채집해요",
     bg: "linear-gradient(180deg,#d3f9d8,#8ce99a)", hero: "🧑‍🌾", verb: "채집하기",
+    tool: "axe", toolRequired: true,
     loot: [
       { id: "branch", pic: "🪵", nm: "나뭇가지", pr: 10, w: 5 },
       { id: "mushroom", pic: "🍄", nm: "버섯", pr: 22, w: 3 },
@@ -286,8 +289,9 @@ const PLACES = {
     rare: { id: "ginseng", pic: "🫚", nm: "산삼", pr: 320, rare: true },
   },
   sea: {
-    name: "🌊 바닷가", desc: "낚시로 물고기를 잡아요",
+    name: "🌊 바닷가", desc: "낚싯대+새우 미끼로 바다 낚시를 해요",
     bg: "linear-gradient(180deg,#a5d8ff,#4dabf7)", hero: "🎣", verb: "낚시하기", minigame: true,
+    tool: "rod", toolRequired: true, bait: "sea",
     loot: [
       { id: "anchovy", pic: "🐟", nm: "멸치", pr: 14, w: 5 },
       { id: "shell", pic: "🐚", nm: "조개", pr: 26, w: 3 },
@@ -296,8 +300,9 @@ const PLACES = {
     rare: { id: "pearl", pic: "🦪", nm: "진주", pr: 360, rare: true },
   },
   mine: {
-    name: "⛏️ 광산", desc: "광석을 캐내요",
+    name: "⛏️ 광산", desc: "곡괭이로 광석을 캐내요",
     bg: "linear-gradient(180deg,#ced4da,#868e96)", hero: "👷", verb: "채광하기", minigame: true,
+    tool: "pickaxe", toolRequired: true,
     loot: [
       { id: "stone", pic: "🪨", nm: "돌멩이", pr: 8, w: 5 },
       { id: "copper", pic: "🟤", nm: "구리", pr: 30, w: 3 },
@@ -305,19 +310,32 @@ const PLACES = {
     ],
     rare: { id: "gem", pic: "💎", nm: "보석", pr: 420, rare: true },
   },
-  field: {
-    name: "🌾 들판", desc: "열매를 따고 사냥해요",
-    bg: "linear-gradient(180deg,#ffec99,#ffd43b)", hero: "🏹", verb: "사냥하기",
+  gather: {
+    name: "🌿 채집터", desc: "맨손으로도 되지만, 낫이 있으면 더 빨라요",
+    bg: "linear-gradient(180deg,#ffec99,#ffd43b)", hero: "🧺", verb: "채집하기",
+    tool: "sickle", toolRequired: false,
     loot: [
       { id: "berry", pic: "🍓", nm: "산딸기", pr: 12, w: 5 },
       { id: "grain", pic: "🌾", nm: "곡식", pr: 24, w: 3 },
-      { id: "meat", pic: "🍖", nm: "고기", pr: 40, w: 2 },
+      { id: "flower", pic: "🌼", nm: "들꽃", pr: 20, w: 2 },
+    ],
+    rare: { id: "clover", pic: "🍀", nm: "네잎클로버", pr: 300, rare: true },
+  },
+  hunt: {
+    name: "🏹 사냥터", desc: "활이 있어야 사냥할 수 있어요",
+    bg: "linear-gradient(180deg,#ffd8a8,#ffa94d)", hero: "🏹", verb: "사냥하기",
+    tool: "bow", toolRequired: true,
+    loot: [
+      { id: "meat", pic: "🍖", nm: "고기", pr: 40, w: 5 },
+      { id: "feather", pic: "🪶", nm: "깃털", pr: 30, w: 3 },
+      { id: "bone", pic: "🦴", nm: "뼈", pr: 50, w: 2 },
     ],
     rare: { id: "goldegg", pic: "🥚", nm: "황금알", pr: 340, rare: true },
   },
   river: {
-    name: "🏞️ 강가", desc: "민물에서 낚시해요",
+    name: "🏞️ 강가", desc: "낚싯대+지렁이 미끼로 민물 낚시를 해요",
     bg: "linear-gradient(180deg,#b2f2bb,#63e6be)", hero: "🎣", verb: "낚시하기", minigame: true,
+    tool: "rod", toolRequired: true, bait: "river",
     loot: [
       { id: "loach", pic: "🐡", nm: "미꾸라지", pr: 16, w: 5 },
       { id: "crayfish", pic: "🦐", nm: "가재", pr: 28, w: 3 },
@@ -386,6 +404,80 @@ function availableBoss(rankIdx) {
   for (const b of BOSSES) if (rankIdx >= b.reqRank) boss = b;
   return boss;
 }
+
+
+// ===== js/data/tools.js =====
+// 도구 8단계 체계 — 도끼/곡괭이/낚싯대/낫/활
+// 등급: 나무→돌→철→강철→은→금→미스릴→천사(1~8단계). 등급이 높을수록 채집이 빠르고
+// 최대 수확량이 늘고 희귀 자원 확률이 올라간다. 가격은 카테고리마다 다른 곡선(균일 배율 X).
+const TIER_NAMES = ["나무", "돌", "철", "강철", "은", "금", "미스릴", "천사"];
+
+// 공통 성능 곡선(지수 감소/완만 증가) — 카테고리 상관없이 "등급 하나가 어느 정도 강한가"는 동일하게 유지
+const DUR  = [4900, 4000, 3300, 2700, 2200, 1800, 1500, 1200]; // 1회 채집 소요(ms), 1~8단계
+const RARE = [0.042, 0.054, 0.066, 0.078, 0.090, 0.102, 0.114, 0.126]; // 희귀 자원 확률, 1~8단계
+const AMT  = [0, 1, 1, 2, 3, 3, 4, 4]; // 1회 수확 추가량(최대 보너스 개수), 1~8단계
+// 맨손(0단계, 낫 미보유 시 채집터에서만 허용)
+const BAREHAND = { dur: 6000, rare: 0.030, amt: 0 };
+
+function tiers(pic, prices) {
+  return TIER_NAMES.map((nm, i) => ({
+    tier: i + 1, nm, label: `${nm} ${pic}`, pic,
+    price: prices[i], dur: DUR[i], rare: RARE[i], amt: AMT[i],
+  }));
+}
+
+// 가격: 8단계, 카테고리별로 완전히 다른 곡선.
+// - 도끼/곡괭이/활: 위치 진입 필수(게이트) → 저단계는 적당히 저렴, 고단계는 매우 비쌈
+// - 낚싯대: 바다+강 두 곳을 동시에 열어주는 값어치 반영 → 곡괭이보다 살짝 비싸게
+// - 낫: 맨손도 되므로(선택 장비) 전 구간 가장 저렴
+const TOOLS = {
+  axe: {
+    nm: "도끼", pic: "🪓", places: ["forest"], required: true,
+    desc: "숲에서 나무를 베려면 필요해요",
+    tiers: tiers("🪓", [300, 900, 2200, 5000, 11000, 26000, 60000, 150000]),
+  },
+  pickaxe: {
+    nm: "곡괭이", pic: "⛏️", places: ["mine"], required: true,
+    desc: "광산에서 광맥을 캐려면 필요해요",
+    tiers: tiers("⛏️", [400, 1100, 2600, 6000, 13500, 32000, 75000, 190000]),
+  },
+  rod: {
+    nm: "낚싯대", pic: "🎣", places: ["sea", "river"], required: true,
+    desc: "바다·민물 낚시 공용 (미끼도 필요해요)",
+    tiers: tiers("🎣", [450, 1300, 3000, 7000, 16000, 38000, 88000, 220000]),
+  },
+  sickle: {
+    nm: "낫", pic: "🌾", places: ["gather"], required: false,
+    desc: "채집터는 맨손도 되지만, 낫이 있으면 더 빠르고 좋은 걸 캐요",
+    tiers: tiers("🌾", [150, 450, 1100, 2500, 5800, 13500, 32000, 80000]),
+  },
+  bow: {
+    nm: "활", pic: "🏹", places: ["hunt"], required: true,
+    desc: "사냥터에서 사냥하려면 반드시 필요해요",
+    tiers: tiers("🏹", [350, 1000, 2400, 5500, 12500, 29000, 68000, 170000]),
+  },
+};
+
+function toolTier(cat, tierNum) {
+  const t = TOOLS[cat]; if (!t || tierNum <= 0) return null;
+  return t.tiers[tierNum - 1] || t.tiers[t.tiers.length - 1];
+}
+// 현재 보유 등급의 성능 스탯(0단계=맨손 허용 시 BAREHAND)
+function toolStat(cat, tierNum) {
+  if (!tierNum || tierNum <= 0) return BAREHAND;
+  return toolTier(cat, tierNum) || BAREHAND;
+}
+function nextTierCost(cat, curTier) {
+  const t = TOOLS[cat]; if (!t) return null;
+  return t.tiers[curTier] || null; // curTier가 0이면 tiers[0]=1단계, 즉 다음 구매 대상
+}
+const TOOL_CATS = Object.keys(TOOLS);
+
+// 미끼(낚시 소모품) — 바다/민물 별도, 낚시 1회(채집 1사이클)당 1개 소모
+const BAIT = {
+  sea:   { id: "bait_sea",   nm: "새우 미끼",   pic: "🦐", price: 8,  place: "sea" },
+  river: { id: "bait_river", nm: "지렁이 미끼", pic: "🪱", price: 6,  place: "river" },
+};
 
 
 // ===== js/data/recipes.js =====
@@ -549,7 +641,8 @@ const STAR_SHOP = [
   { id: "elixir",   nm: "만능 물약",   pic: "✨", cost: 3000,   desc: "체력·피로 완전 회복", apply: (S) => { S.hp = S.maxHp; S.fatigue = 0; } },
   { id: "fastfarm", nm: "성장촉진제",  pic: "🌱", cost: 2000,   desc: "모든 농작물 즉시 완성", apply: (S) => { S.farm.forEach((p) => { const c = CROPS[p.cropId]; if (c) p.progress = c.grow; }); } },
   { id: "medal",    nm: "명예 훈장",   pic: "🎖️", cost: 30000,  desc: "공격력 +3 (영구)",   apply: (S) => { S.mods.atkBonus += 3; } },
-  { id: "goldtool", nm: "황금 곡괭이", pic: "⛏️", cost: 50000,  desc: "도구 레벨 +1 (영구)", apply: (S) => { S.tool += 1; } },
+  { id: "goldtool", nm: "만능 공구함", pic: "🧰", cost: 50000,  desc: "보유한 모든 채집 도구 등급 +1 (영구, 최대 8단계)",
+    apply: (S) => { Object.keys(S.equip).forEach((k) => { S.equip[k] = Math.min(8, S.equip[k] + 1); }); } },
   { id: "charm",    nm: "행운의 부적", pic: "🍀", cost: 100000, desc: "채집 수확 +1 (영구) — 최고급 사기템!", apply: (S) => { S.mods.gatherBonus += 1; } },
 ];
 
@@ -661,11 +754,13 @@ function defaultState() {
     hp: 60, maxHp: 60,
     fatigue: 0,
     // 장비
-    tool: 1,             // 도구 레벨(수확량)
     weapon: 1,           // 무기 레벨(공격력)
     armor: 0,            // 방어구 레벨(피해 감소)
     potions: 0,          // 회복 물약
     bed: false,          // 푹신침대 보유
+    // 채집 도구(0=미보유/맨손). 도끼·곡괭이·낚싯대·활은 필수, 낫은 선택(맨손도 가능)
+    equip: { axe: 0, pickaxe: 0, rod: 0, sickle: 0, bow: 0 },
+    bait: { sea: 0, river: 0 }, // 낚시 미끼 보유 개수
     // 인벤토리
     inv: {},             // id -> {id,pic,nm,pr,count,rare}
     // 집 콘텐츠 (P2)
@@ -674,6 +769,8 @@ function defaultState() {
     foodBuff: null,      // {id,nm,stat,amount,turns} 요리 일시 버프
     farm: [],            // [{cropId, progress}]
     homeTab: "rest",     // 집 화면 탭
+    shopTab: "sell",     // 상점 화면 탭
+    bagTab: "items",     // 가방 화면 탭(아이템/장비)
     // 메타 (P4)
     stats: { gather: 0, kills: 0, bossKills: 0, sold: 0, cook: 0, harvest: 0, craft: 0 },
     codex: { items: [], monsters: [], recipes: [] }, // 발견 목록
@@ -704,6 +801,8 @@ function applyState(obj) {
   S.flags = Object.assign({}, fresh.flags, (obj && obj.flags) || {});
   S.settings = Object.assign({}, fresh.settings, (obj && obj.settings) || {});
   S.mods = Object.assign({}, fresh.mods, (obj && obj.mods) || {});
+  S.equip = Object.assign({}, fresh.equip, (obj && obj.equip) || {});
+  S.bait = Object.assign({}, fresh.bait, (obj && obj.bait) || {});
   S.furniture = (obj && obj.furniture) || [];
   S.farm = (obj && obj.farm) || [];
   S.foodBuff = (obj && obj.foodBuff) || null;
@@ -1065,17 +1164,26 @@ function doWork() {
 }
 
 function doHarvest(p, tier) {
+  // 미끼 소모(낚시 장소). 여기 도달했다는 건 이미 상호작용 시점에 보유를 확인했다는 뜻이지만,
+  // 방어적으로 한 번 더 체크(0개면 채집 자체를 취소).
+  if (p.bait) {
+    if ((S.bait[p.bait] || 0) <= 0) { sfx.bad(); say(`${BAIT[p.bait].pic} ${BAIT[p.bait].nm}가 없어요! 상점에서 사세요~`); return; }
+    S.bait[p.bait]--;
+  }
   shake("hero");
   const mult = tier.mult != null ? tier.mult : 1;
 
+  // 장소가 요구하는 도구 카테고리의 현재 등급 성능(속도는 world.js 게이지에서, 여기선 수확량·희귀확률)
+  const stat = toolStat(p.tool, p.tool ? S.equip[p.tool] : 0);
+
   // 수확량: 기본 × 성공도 배수
-  const base = 1 + rnd(1 + S.tool) + gatherBonus();
+  const base = 1 + rnd(1 + stat.amt) + gatherBonus();
   const amount = Math.max(1, Math.round(base * mult));
   const rareMul = tier.perfect ? 2 : 1;
 
   let got = [], gongGain = 0, rareHit = false;
   for (let i = 0; i < amount; i++) {
-    if (Math.random() < (0.04 + S.tool * 0.015) * rareMul) {
+    if (Math.random() < stat.rare * rareMul) {
       addItem(p.rare); got.push(p.rare); rareHit = true; gongGain += 8;
     } else {
       const it = weighted(p.loot);
@@ -1249,13 +1357,28 @@ function sellAll() {
   renderHud(); renderInv(); renderPanel();
 }
 
-function toolCost() { return 800 + (S.tool - 1) * 700; }
-function buyTool() {
-  const c = toolCost();
-  if (S.money < c) { sfx.bad(); toast("돈이 부족해요!"); say("돈이 조금 모자라요~ 자원을 더 팔아봐요! 💸"); return; }
-  S.money -= c; S.tool++; sfx.up();
-  toast(`도구 강화! Lv.${S.tool}`);
-  say(`도구를 강화했어요! 이제 한 번에 최대 ${1 + S.tool}개까지 얻어요! 💪`);
+// 도구 카테고리(axe/pickaxe/rod/sickle/bow) 다음 단계 구매
+function nextTool(cat) { return nextTierCost(cat, S.equip[cat] || 0); }
+function buyToolTier(cat) {
+  const next = nextTool(cat);
+  if (!next) { toast("이미 최고 등급이에요!"); return; }
+  if (S.money < next.price) { sfx.bad(); toast("돈이 부족해요!"); say("돈이 조금 모자라요~ 자원을 더 팔아봐요! 💸"); return; }
+  S.money -= next.price; S.equip[cat] = next.tier; sfx.up();
+  const t = TOOLS[cat];
+  const placeNames = t.places.map((id) => (PLACES[id] ? PLACES[id].name : id)).join("·");
+  toast(`${t.nm} 강화! ${next.nm}등급`);
+  say(`${next.label} 장만했어요! 이제 ${placeNames}에서 더 빠르고 좋은 걸 얻을 수 있어요! 💪`);
+  renderHud(); renderPanel();
+}
+
+// 미끼(바다/민물) 구매 — 5개씩 구매
+function buyBait(kind) {
+  const b = BAIT[kind]; if (!b) return;
+  const qty = 5, cost = b.price * qty;
+  if (S.money < cost) { sfx.bad(); toast("돈이 부족해요!"); return; }
+  S.money -= cost; S.bait[kind] = (S.bait[kind] || 0) + qty; sfx.sell();
+  toast(`${b.pic}${b.nm} ×${qty} 구매!`);
+  say(`${b.nm}를 챙겼어요! 이제 낚시하러 가볼까요? 🎣`);
   renderHud(); renderPanel();
 }
 
@@ -1541,7 +1664,8 @@ const RW = s(46);                 // 길 폭
 const DOTS = Math.round(60 * SCALE * SCALE); // 잔디 점무늬 개수(면적 비례)
 
 const ART = {
-  forest: "tree", sea: "fishspot", river: "fishspot", mine: "ore", field: "wheat",
+  forest: "tree", sea: "fishspot", river: "fishspot", mine: "ore",
+  gather: "wheat", hunt: null,
   dump: "trash", pirate: "pirate", heaven: "cloud", battle: "cave",
   shop: "b_shop", home: "b_home", donate: "b_donate", journal: "b_journal",
 };
@@ -1562,17 +1686,21 @@ const MAPS = {
   sea: {
     name: "🌊 바닷가", ground: ["#a9dcf5", "#7ec2ea"],
     objects: [{ kind: "gather", place: "sea", x: 300, y: 250, label: "낚시터" },
+              { kind: "gather", place: "sea", x: 470, y: 320, label: "먼바다" },
               { kind: "gather", place: "pirate", x: 300, y: 96, label: "해적선", minReq: 3 }],
     exits: [{ dir: "S", to: "village", label: "마을" }, { dir: "E", to: "river", label: "강가" }],
   },
   river: {
     name: "🏞️ 강가", ground: ["#a9edd0", "#7fdcb4"],
-    objects: [{ kind: "gather", place: "river", x: 300, y: 236, label: "민물 낚시" }],
+    objects: [{ kind: "gather", place: "river", x: 300, y: 236, label: "민물 낚시" },
+              { kind: "gather", place: "river", x: 150, y: 320, label: "여울목" }],
     exits: [{ dir: "W", to: "sea", label: "바닷가" }, { dir: "N", to: "mine", label: "광산" }],
   },
   forest: {
     name: "🌲 숲속", ground: ["#a6ecab", "#82d68c"],
-    objects: [{ kind: "gather", place: "forest", x: 300, y: 236, label: "채집터" }],
+    objects: [{ kind: "gather", place: "forest", x: 300, y: 236, label: "벌목터" },
+              { kind: "gather", place: "forest", x: 460, y: 150, label: "고목" },
+              { kind: "gather", place: "forest", x: 150, y: 330, label: "덤불숲" }],
     exits: [{ dir: "E", to: "village", label: "마을" }, { dir: "W", to: "dungeon", label: "던전" }],
   },
   dungeon: {
@@ -1582,22 +1710,27 @@ const MAPS = {
   },
   mine: {
     name: "⛏️ 광산", ground: ["#cdd2d8", "#aeb4bc"],
-    objects: [{ kind: "gather", place: "mine", x: 300, y: 236, label: "광맥" }],
+    objects: [{ kind: "gather", place: "mine", x: 300, y: 236, label: "광맥" },
+              { kind: "gather", place: "mine", x: 460, y: 150, label: "깊은 갱도" }],
     exits: [{ dir: "W", to: "village", label: "마을" }, { dir: "S", to: "river", label: "강가" }],
   },
   field: {
     name: "🌾 들판", ground: ["#ffe9a0", "#ffd76a"],
-    objects: [{ kind: "gather", place: "field", x: 300, y: 236, label: "사냥터" }],
+    objects: [{ kind: "gather", place: "gather", x: 210, y: 230, label: "채집터" },
+              { kind: "gather", place: "gather", x: 150, y: 340, label: "들꽃밭" },
+              { kind: "gather", place: "hunt",   x: 420, y: 250, label: "사냥터" }],
     exits: [{ dir: "N", to: "village", label: "마을" }, { dir: "E", to: "dump", label: "쓰레기장" }],
   },
   dump: {
     name: "🗑️ 쓰레기장", ground: ["#d5d9cf", "#b8bdb0"],
-    objects: [{ kind: "gather", place: "dump", x: 300, y: 236, label: "고물 더미" }],
+    objects: [{ kind: "gather", place: "dump", x: 300, y: 236, label: "고물 더미" },
+              { kind: "gather", place: "dump", x: 460, y: 150, label: "폐차더미" }],
     exits: [{ dir: "W", to: "field", label: "들판" }],
   },
   heaven: {
     name: "☁️ 하늘나라", ground: ["#e0d4ff", "#c3aaff"],
-    objects: [{ kind: "gather", place: "heaven", x: 300, y: 236, label: "별밭" }],
+    objects: [{ kind: "gather", place: "heaven", x: 300, y: 236, label: "별밭" },
+              { kind: "gather", place: "heaven", x: 460, y: 150, label: "구름밭" }],
     exits: [{ dir: "S", to: "village", label: "마을" }],
   },
 };
@@ -1617,6 +1750,11 @@ function blocked() {
 function locked(o) {
   if (o.minReq != null && S.rankIdx < o.minReq) return "rank";
   if (o.heaven && !S.heavenOpen) return "heaven";
+  if (o.kind === "gather") {
+    const p = PLACES[o.place];
+    if (p && p.toolRequired && !(S.equip[p.tool] > 0)) return "tool";
+    if (p && p.bait && !((S.bait[p.bait] || 0) > 0)) return "bait";
+  }
   return null;
 }
 
@@ -1768,7 +1906,9 @@ function draw() {
   for (const o of objs) {
     const lk = locked(o);
     ctx.globalAlpha = lk ? 0.55 : 1;
-    drawSprite(ART[o.place], o.x, o.y - s(6), o.kind === "build" ? s(84) : s(76));
+    const artKey = ART[o.place];
+    if (artKey) drawSprite(artKey, o.x, o.y - s(6), o.kind === "build" ? s(84) : s(76));
+    else { ctx.font = `${s(56)}px serif`; ctx.fillText((PLACES[o.place] || {}).hero || "❓", o.x, o.y - s(6)); }
     ctx.globalAlpha = 1;
     // 라벨 칩
     ctx.font = `bold ${s(13)}px Jua, sans-serif`;
@@ -1831,6 +1971,13 @@ function drawSign(ex) {
   ctx.fillStyle = "#3a2b1f"; ctx.fillText(text, x, y - s(9));
 }
 
+// 한글 받침 유무에 따라 "이/가" 조사 선택
+function ga(word) {
+  const c = word.charCodeAt(word.length - 1);
+  if (c < 0xac00 || c > 0xd7a3) return "가";
+  return (c - 0xac00) % 28 === 0 ? "가" : "이";
+}
+
 // ---- 상호작용 ----
 function interact() { if (S.mode === "world" && !gather && active) doInteract(active); }
 function doInteract(o) {
@@ -1838,6 +1985,18 @@ function doInteract(o) {
   const lk = locked(o);
   if (lk === "rank") { sfx.bad(); toast("상인 계급부터 갈 수 있어요!"); return; }
   if (lk === "heaven") { sfx.bad(); toast(`선행 ${HEAVEN_DEED}점을 모아야 열려요! (지금 ${S.deed}점)`); return; }
+  if (lk === "tool") {
+    const p = PLACES[o.place], t = TOOLS[p.tool];
+    sfx.bad(); toast(`${t.pic} ${t.nm}이(가) 필요해요!`);
+    say(`${t.pic} ${t.nm}${ga(t.nm)} 있어야 여기서 활동할 수 있어요! 상점에서 구매해보세요~ 🏪`);
+    return;
+  }
+  if (lk === "bait") {
+    const p = PLACES[o.place], b = BAIT[p.bait];
+    sfx.bad(); toast(`${b.pic} ${b.nm}가 없어요!`);
+    say(`${b.pic} ${b.nm}${ga(b.nm)} 있어야 낚시할 수 있어요! 상점에서 구매해보세요~ 🏪`);
+    return;
+  }
   if (o.kind === "gather") {
     const p = PLACES[o.place];
     if (p.minigame) { S.place = o.place; renderNav(); say(`${p.name}에서 ${p.verb}!`); doWork(); }
@@ -1854,8 +2013,8 @@ function startGather(o) {
   const p = PLACES[o.place];
   S.place = o.place; renderNav();
   held.clear(); target = null;
-  // 기본 5초, 도구 레벨↑ 마다 0.4초 단축(최소 2.5초)
-  const dur = Math.max(2500, 5000 - (S.tool - 1) * 400);
+  // 장소가 요구하는 도구 카테고리의 현재 등급에 따라 채집 소요 시간 결정(등급↑ → 더 빠름)
+  const dur = toolStat(p.tool, p.tool ? S.equip[p.tool] : 0).dur;
   gather = { place: o.place, prog: 0, anim: 0, start: performance.now(), dur };
   sfx.get();
   say(`${p.name}에서 ${p.verb} 중... ⏳`);
@@ -2025,37 +2184,105 @@ function buildPopup(kind) {
 
 // ---------- 가방 ----------
 function renderBag(pan) {
-  const slots = invSlots();
-  let h = `<h2>🎒 내 가방 <span class="muted">${slots.length}칸</span></h2>`;
-  h += slots.length ? `<div class="inv">` + slots.map((x) =>
-    `<div class="slot${x.rare ? " rare" : ""}">${sprite("items", x.id, x.pic)} ${x.nm} <span class="cnt">${x.count}</span></div>`).join("") + `</div>`
-    : `<div class="muted">아직 비어있어요~ 자원을 모아보세요!</div>`;
+  const tab = S.bagTab || "items";
+  const tabs = [["items", "🎒 아이템"], ["equip", "🛠️ 장비"]];
+  let h = `<h2>🎒 내 가방</h2><div class="tabs">` + tabs.map(([k, t]) => `<button class="tab${tab === k ? " on" : ""}" data-bagtab="${k}">${t}</button>`).join("") + `</div>`;
+  h += `<div>${bagBody(tab)}</div>`;
   pan.innerHTML = h;
+  pan.querySelectorAll("[data-bagtab]").forEach((b) => (b.onclick = () => { S.bagTab = b.getAttribute("data-bagtab"); refreshPopup(); }));
+}
+function bagBody(tab) {
+  if (tab === "equip") {
+    return `<div class="muted" style="margin-bottom:6px">현재 장착 중인 채집 도구예요. 등급이 높을수록 유리해요. 강화는 🏪상점 → ⚒️도구 탭에서!</div>`
+      + TOOL_CATS.map((cat) => {
+        const t = TOOLS[cat], tier = S.equip[cat] || 0;
+        const label = tier > 0 ? t.tiers[tier - 1].label : (t.required ? "❌ 미보유" : "맨손");
+        return `<div class="row"><span>${t.pic} ${t.nm}</span><b>${label}</b></div>`;
+      }).join("");
+  }
+  const slots = invSlots();
+  return `<div class="muted" style="margin-bottom:6px">${slots.length}칸 사용 중</div>` + (slots.length ? `<div class="inv">` + slots.map((x) =>
+    `<div class="slot${x.rare ? " rare" : ""}">${sprite("items", x.id, x.pic)} ${x.nm} <span class="cnt">${x.count}</span></div>`).join("") + `</div>`
+    : `<div class="muted">아직 비어있어요~ 자원을 모아보세요!</div>`);
 }
 
 // ---------- 상점 ----------
+const SHOP_GREETS = {
+  sell: "어서오세요! 오늘 모아온 거 다 보여주세요~ 좋은 값에 쳐드릴게요! 😊",
+  tools: "새 장비 보러 오셨군요! 등급이 높을수록 훨씬 빠르고 귀한 걸 더 많이 캐요. 천천히 골라보세요~ 🛠️",
+  combat: "던전 가시게요? 무기랑 방어구부터 든든히 챙기셔야죠! 🗡️",
+  supplies: "미끼랑 물약은 이쪽이에요~ 낚시 가시면 미끼 꼭 챙기시고요! 🦐",
+};
 function renderShop(pan) {
-  const slots = invSlots();
-  const m = S.market || { mult: 1, hotItem: null };
-  const trend = m.mult > 1.05 ? "📈 호황!" : m.mult < 0.95 ? "📉 불황…" : "➖ 보통";
-  const hot = m.hotItem && itemDef(m.hotItem);
+  const tab = S.shopTab || "sell";
+  const tabs = [["sell", "💰 판매"], ["tools", "⚒️ 도구"], ["combat", "⚔️ 전투장비"], ["supplies", "🎒 소모품"]];
   let h = `<h2>🏪 상점</h2>`;
-  h += `<div class="muted" style="margin-bottom:8px">오늘의 시세 <b>×${m.mult}</b> ${trend}${hot ? ` · 인기 <b>${hot.pic}${hot.nm}</b>(+30%)` : ""}</div>`;
-  if (!slots.length) h += `<div class="muted">팔 자원이 없어요~ 먼저 자원을 모아오세요!</div>`;
-  else {
+  h += `<div class="row" style="background:var(--panel);align-items:flex-start">
+    <span style="font-size:34px;line-height:1">🧑‍🌾</span>
+    <span style="flex:1;font-size:13px"><b>김서방 아저씨</b><br>${SHOP_GREETS[tab]}</span>
+  </div>`;
+  h += `<div class="tabs">` + tabs.map(([k, t]) => `<button class="tab${tab === k ? " on" : ""}" data-shoptab="${k}">${t}</button>`).join("") + `</div>`;
+  h += `<div>${shopBody(tab)}</div>`;
+  pan.innerHTML = h;
+  pan.querySelectorAll("[data-shoptab]").forEach((b) => (b.onclick = () => { S.shopTab = b.getAttribute("data-shoptab"); refreshPopup(); }));
+  if (tab === "sell") {
+    if ($("sellAll")) $("sellAll").onclick = sellAll;
+    pan.querySelectorAll("[data-sell]").forEach((b) => (b.onclick = () => sellOne(b.getAttribute("data-sell"))));
+  } else if (tab === "tools") {
+    pan.querySelectorAll("[data-buytool]").forEach((b) => (b.onclick = () => buyToolTier(b.getAttribute("data-buytool"))));
+  } else if (tab === "combat") {
+    if ($("buyWeapon")) $("buyWeapon").onclick = buyWeapon;
+    if ($("buyArmor")) $("buyArmor").onclick = buyArmor;
+  } else if (tab === "supplies") {
+    if ($("buyPotion")) $("buyPotion").onclick = buyPotion;
+    pan.querySelectorAll("[data-buybait]").forEach((b) => (b.onclick = () => buyBait(b.getAttribute("data-buybait"))));
+  }
+}
+function shopBody(tab) {
+  if (tab === "sell") {
+    const slots = invSlots();
+    const m = S.market || { mult: 1, hotItem: null };
+    const trend = m.mult > 1.05 ? "📈 호황!" : m.mult < 0.95 ? "📉 불황…" : "➖ 보통";
+    const hot = m.hotItem && itemDef(m.hotItem);
+    let h = `<div class="muted" style="margin:8px 0">오늘의 시세 <b>×${m.mult}</b> ${trend}${hot ? ` · 인기 <b>${hot.pic}${hot.nm}</b>(+30%)` : ""}</div>`;
+    if (!slots.length) return h + `<div class="muted">팔 자원이 없어요~ 먼저 자원을 모아오세요!</div>`;
     h += `<button class="btn sell" id="sellAll" style="width:100%;margin-bottom:8px">💰 전부 팔기 (${won(sellTotal())})</button>`;
     h += `<div class="shopgrid">` + slots.map((x) =>
       `<div class="row"><span>${sprite("items", x.id, x.pic)}${x.nm} <span class="muted">×${x.count}</span></span>
        <button data-sell="${x.id}"${m.hotItem === x.id ? ' style="background:var(--red)"' : ""}>${won(unitPrice(x))}</button></div>`).join("") + `</div>`;
+    return h;
   }
-  h += `<h3>⚒️ 도구 강화 <span class="muted">Lv.${S.tool}</span></h3><div class="row"><span>수확량 +1 (한 번에 ${1 + S.tool}개)</span><button id="buyTool">${won(toolCost())}</button></div>`;
-  h += `<h3>🗡️ 무기 강화 <span class="muted">Lv.${S.weapon}</span></h3><div class="row"><span>공격력 +4 (현재 ${playerAtk()})</span><button id="buyWeapon">${won(weaponCost())}</button></div>`;
-  h += `<h3>🛡️ 방어구 강화 <span class="muted">Lv.${S.armor}</span></h3><div class="row"><span>받는 피해 -3 (현재 ${S.armor * 3})</span><button id="buyArmor">${won(armorCost())}</button></div>`;
-  h += `<h3>🧪 회복 물약 <span class="muted">보유 ${S.potions}</span></h3><div class="row"><span>전투 중 체력 35 회복</span><button id="buyPotion">${won(200)}</button></div>`;
-  pan.innerHTML = h;
-  if ($("sellAll")) $("sellAll").onclick = sellAll;
-  pan.querySelectorAll("[data-sell]").forEach((b) => (b.onclick = () => sellOne(b.getAttribute("data-sell"))));
-  $("buyTool").onclick = buyTool; $("buyWeapon").onclick = buyWeapon; $("buyArmor").onclick = buyArmor; $("buyPotion").onclick = buyPotion;
+  if (tab === "tools") {
+    return `<div class="muted" style="margin:8px 0">도구는 등급이 오를수록 채집이 빨라지고 희귀 자원 확률도 올라요. 필수 도구가 없으면 그 장소에서 활동할 수 없어요!</div>`
+      + TOOL_CATS.map(toolCatRow).join("");
+  }
+  if (tab === "combat") {
+    let h = `<h3>🗡️ 무기 강화 <span class="muted">Lv.${S.weapon}</span></h3><div class="row"><span>공격력 +4 (현재 ${playerAtk()})</span><button id="buyWeapon">${won(weaponCost())}</button></div>`;
+    h += `<h3>🛡️ 방어구 강화 <span class="muted">Lv.${S.armor}</span></h3><div class="row"><span>받는 피해 -3 (현재 ${S.armor * 3})</span><button id="buyArmor">${won(armorCost())}</button></div>`;
+    return h;
+  }
+  if (tab === "supplies") {
+    let h = `<h3>🧪 회복 물약 <span class="muted">보유 ${S.potions}</span></h3><div class="row"><span>전투 중 체력 35 회복</span><button id="buyPotion">${won(200)}</button></div>`;
+    h += `<h3>🎣 미끼 (5개 묶음)</h3>`;
+    h += Object.entries(BAIT).map(([kind, b]) =>
+      `<div class="row"><span>${b.pic}${b.nm} <span class="muted">보유 ${S.bait[kind] || 0}개</span></span><button data-buybait="${kind}">${won(b.price * 5)}</button></div>`).join("");
+    return h;
+  }
+  return "";
+}
+function toolCatRow(cat) {
+  const t = TOOLS[cat], curTier = S.equip[cat] || 0;
+  const cur = curTier > 0 ? t.tiers[curTier - 1] : null;
+  const next = nextTool(cat);
+  const curLabel = cur ? cur.label : (t.required ? "❌ 미보유(사용 불가)" : "맨손");
+  let h = `<div class="row" style="flex-wrap:wrap;gap:4px">
+    <span style="flex:1 1 55%"><b>${t.pic} ${t.nm}</b> <span class="muted">· ${t.desc}</span><br>
+    현재: <b>${curLabel}</b></span>
+    ${next
+      ? `<button data-buytool="${cat}"${S.money < next.price ? " disabled" : ""} style="background:${S.money < next.price ? "#ccc" : "var(--brown)"}">${next.label} · ${won(next.price)}</button>`
+      : `<span class="muted">최고 등급!</span>`}
+  </div>`;
+  return h;
 }
 
 // ---------- 집 ----------
@@ -2153,7 +2380,7 @@ function journalBody(tab) {
 
 // ---------- 빠른 이동 ----------
 function renderTravel(pan) {
-  const items = [["forest", "🌲 숲"], ["sea", "🌊 바다"], ["river", "🏞️ 강"], ["mine", "⛏️ 광산"], ["field", "🌾 들판"], ["dump", "🗑️ 쓰레기장"], ["pirate", "🏴‍☠️ 해적선"], ["battle", "⚔️ 던전"], ["shop", "🏪 상점"], ["home", "🏠 집"], ["donate", "❤️ 기부소"], ["journal", "📋 수첩"], ["heaven", "☁️ 하늘나라"]];
+  const items = [["forest", "🌲 숲"], ["sea", "🌊 바다"], ["river", "🏞️ 강"], ["mine", "⛏️ 광산"], ["gather", "🌿 채집터"], ["hunt", "🏹 사냥터"], ["dump", "🗑️ 쓰레기장"], ["pirate", "🏴‍☠️ 해적선"], ["battle", "⚔️ 던전"], ["shop", "🏪 상점"], ["home", "🏠 집"], ["donate", "❤️ 기부소"], ["journal", "📋 수첩"], ["heaven", "☁️ 하늘나라"]];
   let h = `<h2>🗺️ 빠른 이동</h2><div class="muted" style="margin-bottom:8px">가고 싶은 곳으로 바로 이동해요 (숫자키로도 가능)</div><div class="shopgrid">`;
   h += items.map(([k, t]) => `<button class="btn" data-go="${k}" style="background:var(--brown)">${t}</button>`).join("");
   pan.innerHTML = h + `</div>`;
@@ -2165,8 +2392,8 @@ function renderManual(pan) {
   pan.innerHTML = `<h2>📖 설명서</h2>
     <h3>🎯 목표</h3><div class="muted">자원을 모아 팔고, 몬스터와 싸우고, 계급을 올리고, 선행을 쌓는 생활·경제 게임이에요. 최고 계급 '생명의 왕'에 도전!</div>
     <h3>🕹️ 조작</h3><div class="muted">· 걷기: 방향키 / WASD / 마우스 클릭<br>· 상호작용: 자원·건물에 다가가 <b>Space</b>(또는 Ⓐ)<br>· 맵 이동: 길을 따라 맵 끝으로 가면 표지판 방향의 맵으로 전환<br>· 빠른 이동: 숫자키 1~0, Y·P·V<br>· 팝업 닫기: Esc</div>
-    <h3>🗺️ 맵</h3><div class="muted">마을 광장을 중심으로 숲·바다·강·광산·들판·쓰레기장·해적선·던전·하늘나라가 연결돼 있어요. 표지판이 어느 방향에 뭐가 있는지 알려줘요.</div>
-    <h3>🌿 자원 & 판매</h3><div class="muted">각 맵에서 채집/낚시/채광/사냥으로 자원을 모아 상점에 팔아요. 바다·강·광산은 타이밍 미니게임! (막대를 초록칸에 맞춰 잡으면 더 많이)</div>
+    <h3>🗺️ 맵</h3><div class="muted">마을 광장을 중심으로 숲·바다·강·광산·들판(채집터+사냥터)·쓰레기장·해적선·던전·하늘나라가 연결돼 있어요. 표지판이 어느 방향에 뭐가 있는지 알려줘요.</div>
+    <h3>🛠️ 도구 & 채집</h3><div class="muted">숲(🪓도끼)·광산(⛏️곡괭이)·낚시(🎣낚싯대+미끼)·사냥터(🏹활)는 해당 도구가 <b>꼭</b> 있어야 활동할 수 있어요. 채집터(🌾낫)는 맨손도 되지만 낫이 있으면 더 빠르고 좋은 걸 캐요. 도구는 상점 ⚒️도구 탭에서 구매! 등급이 높을수록(나무→…→천사, 총 8단계) 더 빠르고 희귀 자원 확률도 올라가요. 바다·강·광산은 타이밍 미니게임도 함께!</div>
     <h3>🏠 집</h3><div class="muted">휴식으로 회복, 작업대(제작)·부엌(요리)·농지(농사)·꾸미기.</div>
     <h3>⚔️ 전투</h3><div class="muted">던전에서 몬스터와 싸워요. 강공격은 2배 피해(피로↑), 방어구는 피해 감소. 계급이 오르면 보스 도전!</div>
     <h3>❤️ 선행 & 계급</h3><div class="muted">기부로 선행점수를 쌓으면 하늘나라가 열려요. 활동으로 내공을 모아 계급 승급!</div>
@@ -2249,9 +2476,9 @@ function open(idx) {
 // 엔트리: 저장 불러오기 → 렌더 → 튜토리얼. 액션바·팝업·키보드 조작 연결.
 
 const KEYMAP = {
-  "1": "forest", "2": "sea", "3": "river", "4": "mine", "5": "field",
+  "1": "forest", "2": "sea", "3": "river", "4": "mine", "5": "gather",
   "6": "battle", "7": "shop", "8": "home", "9": "journal", "0": "donate",
-  "y": "dump", "p": "pirate", "v": "heaven",
+  "y": "dump", "p": "pirate", "v": "heaven", "h": "hunt",
 };
 
 function shown(id) { const e = $(id); return e && e.classList.contains("show"); }
