@@ -5,7 +5,7 @@ import { PLACES } from "../data/places.js";
 import { HEAVEN_DEED } from "../data/ranks.js";
 import { sfx } from "../core/audio.js";
 import { say, toast } from "./view.js";
-import { doWork } from "../systems/gather.js";
+import { doWork, doHarvest } from "../systems/gather.js";
 import { renderScene, renderPanel, renderNav, openPopup } from "./render.js";
 import { getSprite, preloadSprites } from "./sprites.js";
 
@@ -74,9 +74,10 @@ const MAPS = {
   },
 };
 
-const char = { x: 300, y: 344, bob: 0, dir: "down" };
+const char = { x: 300, y: 344, bob: 0, dir: "down", step: 0, moving: false };
 const held = new Set();
 let target = null, active = null;
+let gather = null;   // 채집 중: { place, prog(0~1), anim }
 let canvas = null, ctx = null, raf = null, keysBound = false;
 
 function map() { return MAPS[S.mapId] || MAPS.village; }
@@ -131,6 +132,15 @@ function loop() {
 }
 
 function update() {
+  // 채집 중: 게이지 자동 충전(이동/전환 잠금)
+  if (gather) {
+    gather.anim++;
+    gather.prog += 0.02 + S.tool * 0.003;   // 약 1초, 도구 레벨↑ 빠름
+    if (gather.prog >= 1) finishGather();
+    char.moving = false;
+    return;
+  }
+
   let dx = 0, dy = 0;
   if (held.size) {
     if (held.has("up")) dy -= 1; if (held.has("down")) dy += 1;
@@ -140,11 +150,12 @@ function update() {
     if (dist < SPEED) { char.x = target.x; char.y = target.y; target = null; }
     else { dx = tx / dist; dy = ty / dist; }
   }
+  char.moving = !!(dx || dy);
   if (dx || dy) {
     const len = Math.hypot(dx, dy) || 1;
     char.x = Math.max(10, Math.min(W - 10, char.x + (dx / len) * SPEED));
     char.y = Math.max(10, Math.min(H - 10, char.y + (dy / len) * SPEED));
-    char.bob += 0.3;
+    char.bob += 0.3; char.step++;
     if (Math.abs(dx) > Math.abs(dy)) char.dir = dx < 0 ? "left" : "right";
     else char.dir = dy < 0 ? "up" : "down";
   }
@@ -231,7 +242,7 @@ function draw() {
   }
 
   // 프롬프트
-  if (active) {
+  if (active && !gather) {
     ctx.strokeStyle = "#ffcf33"; ctx.lineWidth = 4;
     ctx.beginPath(); ctx.arc(active.x, active.y - 6, 40, 0, Math.PI * 2); ctx.stroke();
     const msg = locked(active) ? "🔒 잠김" : "Space / Ⓐ";
@@ -241,13 +252,27 @@ function draw() {
     ctx.fillStyle = "#fff"; ctx.fillText(msg, active.x, active.y - 52);
   }
 
-  // 캐릭터 (방향별). 오른쪽은 왼쪽 스프라이트를 좌우반전
-  const cy = char.y - 10 + Math.sin(char.bob) * 2;
-  if (char.dir === "right") {
-    ctx.save(); ctx.translate(char.x, 0); ctx.scale(-1, 1);
-    drawSprite("char_left", 0, cy, 52); ctx.restore();
+  // 캐릭터
+  if (gather) {
+    // 채집 애니메이션 (도구 위아래) + 게이지
+    const wf = Math.floor(gather.anim / 8) % 2;
+    drawSprite("char_work_" + wf, char.x, char.y - 10, 52);
+    // 게이지 바
+    const gw = 56, gx = char.x - gw / 2, gy = char.y - 52;
+    ctx.fillStyle = "rgba(46,38,32,.75)"; roundRect(gx - 3, gy - 3, gw + 6, 14, 7); ctx.fill();
+    ctx.fillStyle = "#5a4a3a"; roundRect(gx, gy, gw, 8, 4); ctx.fill();
+    ctx.fillStyle = "#4cd68a"; roundRect(gx, gy, gw * Math.min(1, gather.prog), 8, 4); ctx.fill();
+    // 반짝임
+    if (wf === 0) { ctx.font = "14px serif"; ctx.fillStyle = "#fff"; ctx.fillText("✨", char.x + 22, char.y - 24); }
   } else {
-    drawSprite("char_" + (char.dir || "down"), char.x, cy, 52);
+    const frame = char.moving ? Math.floor(char.step / 6) % 2 : 0;
+    const cy = char.y - 10 + (char.moving ? Math.sin(char.bob) * 2 : 0);
+    if (char.dir === "right") {
+      ctx.save(); ctx.translate(char.x, 0); ctx.scale(-1, 1);
+      drawSprite("char_left_" + frame, 0, cy, 52); ctx.restore();
+    } else {
+      drawSprite("char_" + (char.dir || "down") + "_" + frame, char.x, cy, 52);
+    }
   }
 }
 
@@ -268,15 +293,35 @@ function drawSign(ex) {
 }
 
 // ---- 상호작용 ----
-export function interact() { if (S.mode === "world" && active) doInteract(active); }
+export function interact() { if (S.mode === "world" && !gather && active) doInteract(active); }
 function doInteract(o) {
+  if (gather) return;
   const lk = locked(o);
   if (lk === "rank") { sfx.bad(); toast("상인 계급부터 갈 수 있어요!"); return; }
   if (lk === "heaven") { sfx.bad(); toast(`선행 ${HEAVEN_DEED}점을 모아야 열려요! (지금 ${S.deed}점)`); return; }
-  if (o.kind === "gather") { S.place = o.place; renderNav(); say(`${PLACES[o.place].name}에서 ${PLACES[o.place].verb}!`); doWork(); }
+  if (o.kind === "gather") {
+    const p = PLACES[o.place];
+    if (p.minigame) { S.place = o.place; renderNav(); say(`${p.name}에서 ${p.verb}!`); doWork(); }
+    else startGather(o);
+  }
   else if (o.kind === "dungeon") { enterDungeon(); }
   else if (o.kind === "portal") { changeToMap(o.to); }
   else { openBuilding(o.place); }
+}
+
+// 채집 게이지 시작/완료
+function startGather(o) {
+  if (S.fatigue >= 100) { sfx.bad(); say("너무 피곤해요! 🏠집에서 쉬어야 해요~"); return; }
+  const p = PLACES[o.place];
+  S.place = o.place; renderNav();
+  held.clear(); target = null;
+  gather = { place: o.place, prog: 0, anim: 0 };
+  sfx.get();
+  say(`${p.name}에서 ${p.verb} 중... ⏳`);
+}
+function finishGather() {
+  const place = gather.place; gather = null;
+  doHarvest(PLACES[place], { mult: 1, name: "" });
 }
 
 function openBuilding(place) {

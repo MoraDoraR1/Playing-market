@@ -7,7 +7,7 @@ export function playTiming(label, onDone) {
     ov = document.createElement("div");
     ov.id = "mgOv";
     ov.className = "ov show";
-    document.getElementById("frame").appendChild(ov);
+    document.getElementById("device").appendChild(ov);
   } else {
     ov.classList.add("show");
   }

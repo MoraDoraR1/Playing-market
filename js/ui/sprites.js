@@ -4,38 +4,35 @@
 const V = (inner) => `<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">${inner}</svg>`;
 const shadow = `<ellipse cx="32" cy="58" rx="15" ry="4" fill="rgba(0,0,0,.16)"/>`;
 
+// ---- 캐릭터 부품 (걷기/채집 프레임 조합용) ----
+const legs = (a, b) => `<rect x="26" y="49" width="5" height="${a}" rx="2" fill="#37639a"/><rect x="33" y="49" width="5" height="${b}" rx="2" fill="#37639a"/>`;
+const legsSide = (spread) => spread
+  ? `<rect x="23" y="49" width="5" height="10" rx="2" fill="#37639a"/><rect x="34" y="49" width="5" height="10" rx="2" fill="#37639a"/>`
+  : `<rect x="27" y="49" width="5" height="10" rx="2" fill="#37639a"/><rect x="31" y="49" width="5" height="10" rx="2" fill="#37639a"/>`;
+const HEAD_DOWN = `<circle cx="32" cy="23" r="12" fill="#ffdcae"/><path d="M20 22 q12 -14 24 0 q-12 -6 -24 0Z" fill="#c98a4a"/><ellipse cx="32" cy="15" rx="13" ry="6" fill="#e0a95e"/><circle cx="27.5" cy="24" r="1.7" fill="#3a2b1f"/><circle cx="36.5" cy="24" r="1.7" fill="#3a2b1f"/><path d="M29 29 q3 2.5 6 0" stroke="#3a2b1f" stroke-width="1.6" fill="none" stroke-linecap="round"/>`;
+const ARMS_DOWN = `<rect x="18" y="35" width="6" height="12" rx="3" fill="#ffdcae"/><rect x="40" y="35" width="6" height="12" rx="3" fill="#ffdcae"/>`;
+const BODY_DOWN = `<rect x="23" y="33" width="18" height="18" rx="7" fill="#4a90d9"/><rect x="23" y="33" width="18" height="8" rx="6" fill="#5aa9e6"/>`;
+const HEAD_UP = `<circle cx="32" cy="23" r="12" fill="#7b4a2a"/><path d="M20 25 q12 -3 24 0 q-1 -12 -12 -13 q-11 1 -12 13Z" fill="#8a5a34"/><ellipse cx="32" cy="15" rx="13" ry="6" fill="#e0a95e"/>`;
+const BODY_UP = `<rect x="23" y="33" width="18" height="18" rx="7" fill="#3f7fc0"/><rect x="26" y="35" width="12" height="13" rx="4" fill="#8a5a34"/><rect x="29" y="38" width="6" height="7" rx="2" fill="#a06a3e"/>`;
+const HEAD_LEFT = `<circle cx="29" cy="23" r="12" fill="#ffdcae"/><path d="M18 22 q12 -12 24 0 q-12 -5 -24 0Z" fill="#c98a4a"/><ellipse cx="30" cy="15" rx="13" ry="6" fill="#e0a95e"/><path d="M17 24 q-3 0 -3 2 q1 2 3 1Z" fill="#ffdcae"/><circle cx="23" cy="24" r="1.8" fill="#3a2b1f"/><path d="M19 29 q3 1.5 5 0" stroke="#3a2b1f" stroke-width="1.5" fill="none" stroke-linecap="round"/>`;
+const BODY_LEFT = `<rect x="24" y="33" width="15" height="18" rx="6" fill="#4a90d9"/>`;
+const ARM_LEFT = `<rect x="26" y="36" width="6" height="12" rx="3" fill="#e6b98a"/>`;
+
 const SVGS = {
-  // 정면(아래로 걷기)
-  char_down: V(`${shadow}
-    <rect x="18" y="36" width="6" height="13" rx="3" fill="#ffdcae"/><rect x="40" y="36" width="6" height="13" rx="3" fill="#ffdcae"/>
-    <rect x="23" y="33" width="18" height="19" rx="8" fill="#4a90d9"/>
-    <rect x="23" y="33" width="18" height="9" rx="6" fill="#5aa9e6"/>
-    <circle cx="32" cy="23" r="12" fill="#ffdcae"/>
-    <path d="M20 22 q12 -14 24 0 q-12 -6 -24 0Z" fill="#c98a4a"/>
-    <ellipse cx="32" cy="15" rx="13" ry="6" fill="#e0a95e"/>
-    <circle cx="27.5" cy="24" r="1.7" fill="#3a2b1f"/><circle cx="36.5" cy="24" r="1.7" fill="#3a2b1f"/>
-    <path d="M29 29 q3 2.5 6 0" stroke="#3a2b1f" stroke-width="1.6" fill="none" stroke-linecap="round"/>
-    <circle cx="25" cy="28" r="2" fill="#ff9db0" opacity=".7"/><circle cx="39" cy="28" r="2" fill="#ff9db0" opacity=".7"/>`),
-  // 뒤(위로 걷기) — 뒤통수 + 가방
-  char_up: V(`${shadow}
-    <rect x="18" y="36" width="6" height="13" rx="3" fill="#ffdcae"/><rect x="40" y="36" width="6" height="13" rx="3" fill="#ffdcae"/>
-    <rect x="23" y="33" width="18" height="19" rx="8" fill="#3f7fc0"/>
-    <rect x="26" y="35" width="12" height="14" rx="4" fill="#8a5a34"/>
-    <rect x="29" y="38" width="6" height="8" rx="2" fill="#a06a3e"/>
-    <circle cx="32" cy="23" r="12" fill="#7b4a2a"/>
-    <path d="M20 25 q12 -3 24 0 q-1 -12 -12 -13 q-11 1 -12 13Z" fill="#8a5a34"/>
-    <ellipse cx="32" cy="15" rx="13" ry="6" fill="#e0a95e"/>`),
-  // 옆모습(왼쪽으로 걷기) — 오른쪽은 좌우반전으로 그림
-  char_left: V(`${shadow}
-    <rect x="26" y="37" width="6" height="13" rx="3" fill="#e6b98a"/>
-    <rect x="24" y="33" width="16" height="19" rx="7" fill="#4a90d9"/>
-    <circle cx="29" cy="23" r="12" fill="#ffdcae"/>
-    <path d="M18 22 q12 -12 24 0 q-12 -5 -24 0Z" fill="#c98a4a"/>
-    <ellipse cx="30" cy="15" rx="13" ry="6" fill="#e0a95e"/>
-    <path d="M17 24 q-3 0 -3 2 q1 2 3 1Z" fill="#ffdcae"/>
-    <circle cx="23" cy="24" r="1.8" fill="#3a2b1f"/>
-    <path d="M19 29 q3 1.5 5 0" stroke="#3a2b1f" stroke-width="1.5" fill="none" stroke-linecap="round"/>
-    <circle cx="22" cy="28" r="1.8" fill="#ff9db0" opacity=".7"/>`),
+  // 걷기 2프레임 (앞/뒤/좌) — 오른쪽은 좌우반전으로 그림
+  char_down_0: V(shadow + legs(10, 7) + BODY_DOWN + ARMS_DOWN + HEAD_DOWN),
+  char_down_1: V(shadow + legs(7, 10) + BODY_DOWN + ARMS_DOWN + HEAD_DOWN),
+  char_up_0: V(shadow + legs(10, 7) + BODY_UP + ARMS_DOWN + HEAD_UP),
+  char_up_1: V(shadow + legs(7, 10) + BODY_UP + ARMS_DOWN + HEAD_UP),
+  char_left_0: V(shadow + legsSide(true) + BODY_LEFT + ARM_LEFT + HEAD_LEFT),
+  char_left_1: V(shadow + legsSide(false) + BODY_LEFT + ARM_LEFT + HEAD_LEFT),
+  // 채집 2프레임 (도구를 올렸다 내렸다)
+  char_work_0: V(shadow + legs(9, 9) + BODY_DOWN +
+    `<rect x="17" y="27" width="6" height="12" rx="3" fill="#ffdcae"/><rect x="41" y="27" width="6" height="12" rx="3" fill="#ffdcae"/>` +
+    `<rect x="43" y="21" width="3" height="16" rx="1" fill="#8a5a34"/><rect x="41" y="19" width="7" height="4" rx="1" fill="#9aa2ab"/>` + HEAD_DOWN),
+  char_work_1: V(shadow + legs(9, 9) + BODY_DOWN +
+    `<rect x="18" y="38" width="6" height="10" rx="3" fill="#ffdcae"/><rect x="40" y="38" width="6" height="10" rx="3" fill="#ffdcae"/>` +
+    `<rect x="42" y="42" width="3" height="12" rx="1" fill="#8a5a34"/><rect x="40" y="52" width="7" height="4" rx="1" fill="#9aa2ab"/>` + HEAD_DOWN),
 
   tree: V(`${shadow}
     <rect x="29" y="34" width="6" height="18" rx="3" fill="#8a5a34"/>

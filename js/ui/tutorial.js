@@ -30,7 +30,7 @@ function open(idx) {
     ov = document.createElement("div");
     ov.id = "tutOv";
     ov.className = "ov show";
-    document.getElementById("frame").appendChild(ov);
+    document.getElementById("device").appendChild(ov);
   }
   const s = STEPS[idx];
   const last = idx === STEPS.length - 1;

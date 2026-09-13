@@ -25,7 +25,7 @@ export function doWork() {
   }
 }
 
-function doHarvest(p, tier) {
+export function doHarvest(p, tier) {
   shake("hero");
   const mult = tier.mult != null ? tier.mult : 1;
 
