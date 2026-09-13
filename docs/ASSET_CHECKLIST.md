@@ -29,7 +29,7 @@
 해적선: [x] `item/coin` 금화 [x] `item/map` 낡은지도 [x] `item/rum` 럼주 [x] `item/chest` 보물상자
 하늘나라: [x] `item/stardust` 별가루 [x] `item/cloud` 무지개조각 [x] `item/wing` 천사의날개
 가공: [x] `item/plank` 합판
-전리품: [ ] `item/jelly` 슬라임젤리 [ ] `item/batwing` 박쥐날개 [ ] `item/tusk` 멧돼지엄니 [ ] `item/soul` 영혼구슬 [ ] `item/core` 골렘핵 [ ] `item/scale` 용비늘 [ ] `item/crown` 왕관 [ ] `item/tentacle` 크라켄촉수 [ ] `item/darkgem` 마왕의보석
+전리품: [x] `item/jelly` 슬라임젤리 [x] `item/batwing` 박쥐날개 [x] `item/tusk` 멧돼지엄니 [x] `item/soul` 영혼구슬 [x] `item/core` 골렘핵 [x] `item/scale` 용비늘 [x] `item/crown` 왕관 [x] `item/tentacle` 크라켄촉수 [x] `item/darkgem` 마왕의보석
 
 ## D. 월드 오브젝트/건물 `obj/` — 512×512, 투명
 - [ ] `obj/tree` 채집터 나무 - [ ] `obj/fishspot` 낚시터 - [ ] `obj/ore` 광맥 - [ ] `obj/wheat` 밀밭
