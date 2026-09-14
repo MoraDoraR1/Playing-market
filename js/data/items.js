@@ -1,6 +1,6 @@
 // 모든 아이템의 통합 색인 (장소 자원 + 몬스터 전리품 + 가공품)
 // 레시피/농사/UI에서 id로 이름·이모지·판매가를 조회할 때 사용.
-import { PLACES } from "./places.js";
+import { PLACES, ECON_SCALE, SELL_BOOST } from "./places.js";
 import { MONSTERS } from "./monsters.js";
 
 export const ITEM_INDEX = {};
@@ -17,8 +17,8 @@ Object.values(PLACES).forEach((p) => {
 });
 MONSTERS.forEach((m) => reg(m.drop));
 
-// 가공품(작업대 산출물) — 최고 소지 금액 10억별에 맞춘 경제 재조정(×400)
-reg({ id: "plank", pic: "🟫", nm: "합판", pr: 45 * 400 });
+// 가공품(작업대 산출물) — 최고 소지 금액 10억별에 맞춘 경제 재조정(×400), 판매가는 SELL_BOOST(×5) 추가 적용
+reg({ id: "plank", pic: "🟫", nm: "합판", pr: 45 * ECON_SCALE * SELL_BOOST });
 
 export function itemDef(id) { return ITEM_INDEX[id] || { id, pic: "❔", nm: id, pr: 0 }; }
 export function itemName(id) { return itemDef(id).nm; }

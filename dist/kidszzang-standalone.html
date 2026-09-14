@@ -469,9 +469,12 @@ const PLACES = {
 // 위 pr(판매가)는 기존 밸런스 기준 원안값 — 최고 소지 금액 10억별에 맞춰 경제 전체를
 // ×400 배율로 재조정(도구·몬스터·퀘스트 등 다른 수치도 동일 배율 적용, meta.js 참고)
 const ECON_SCALE = 400;
+// 채집물 판매가가 도구/장비 등 지출 대비 너무 낮다는 피드백에 따라, "판매가(pr)"에만
+// 별도로 추가 배율을 적용(도구값·비용은 그대로 둬서 상대적으로 판매가 훨씬 후해지도록 함).
+const SELL_BOOST = 5;
 for (const p of Object.values(PLACES)) {
-  (p.loot || []).forEach((x) => { x.pr *= ECON_SCALE; });
-  if (p.rare) p.rare.pr *= ECON_SCALE;
+  (p.loot || []).forEach((x) => { x.pr *= ECON_SCALE * SELL_BOOST; });
+  if (p.rare) p.rare.pr *= ECON_SCALE * SELL_BOOST;
 }
 
 
@@ -502,9 +505,10 @@ function availableBoss(rankIdx) {
 }
 
 // 최고 소지 금액 10억별에 맞춘 경제 재조정(×400, places.js ECON_SCALE과 동일 배율)
+// 전리품(drop) 판매가는 채집물과 동일하게 SELL_BOOST(×5) 추가 적용 — 처치 보상(gold)은 그대로.
 for (const m of [...MONSTERS, ...BOSSES]) {
-  m.gold *= 400;
-  if (m.drop) m.drop.pr *= 400;
+  m.gold *= ECON_SCALE;
+  if (m.drop) m.drop.pr *= ECON_SCALE * SELL_BOOST;
 }
 
 
@@ -627,9 +631,10 @@ const CROPS = {
   herb:  { id: "herb",  nm: "약초",   pic: "🌿", seedCost: 80, grow: 6, yield: [{ id: "herb",  pic: "🌿", nm: "약초",   pr: 38, qty: 3 }] },
 };
 // 최고 소지 금액 10억별에 맞춘 경제 재조정(×400, places.js ECON_SCALE과 동일 배율)
+// 수확물 판매가는 채집물과 동일하게 SELL_BOOST(×5) 추가 적용 — 씨앗값(비용)은 그대로.
 for (const c of Object.values(CROPS)) {
-  c.seedCost *= 400;
-  c.yield.forEach((y) => { y.pr *= 400; });
+  c.seedCost *= ECON_SCALE;
+  c.yield.forEach((y) => { y.pr *= ECON_SCALE * SELL_BOOST; });
 }
 
 
@@ -651,8 +656,8 @@ Object.values(PLACES).forEach((p) => {
 });
 MONSTERS.forEach((m) => reg(m.drop));
 
-// 가공품(작업대 산출물) — 최고 소지 금액 10억별에 맞춘 경제 재조정(×400)
-reg({ id: "plank", pic: "🟫", nm: "합판", pr: 45 * 400 });
+// 가공품(작업대 산출물) — 최고 소지 금액 10억별에 맞춘 경제 재조정(×400), 판매가는 SELL_BOOST(×5) 추가 적용
+reg({ id: "plank", pic: "🟫", nm: "합판", pr: 45 * ECON_SCALE * SELL_BOOST });
 
 function itemDef(id) { return ITEM_INDEX[id] || { id, pic: "❔", nm: id, pr: 0 }; }
 function itemName(id) { return itemDef(id).nm; }
@@ -869,6 +874,7 @@ function defaultState() {
     // 전투/체력
     hp: 60, maxHp: 60,
     fatigue: 0,
+    canSleep: true,      // 방금 자서 아직 안 졸린 상태면 false — 채집/전투 등 활동을 해야 다시 true가 됨(잠 스팸 방지)
     // 장비
     weapon: 1,           // 무기 레벨(공격력)
     armor: 0,            // 방어구 레벨(피해 감소)
@@ -1311,6 +1317,7 @@ function doHarvest(p, tier) {
   gongGain += S.mods.gongBonus || 0;
   S.gong += gongGain;
   S.fatigue = Math.min(100, S.fatigue + gatherFatigue());
+  S.canSleep = true;
   got.forEach((g) => discoverItem(g.id));
   recordStat("gather", got.length);
   questProgress("gather", got.length);
@@ -1371,6 +1378,7 @@ function battleAttack() {
   const dmg = playerAtk() + rnd(6);
   f.hp -= dmg; sfx.hit(); shake("fHero");
   S.fatigue = Math.min(100, S.fatigue + 5);
+  S.canSleep = true;
   onProductionAction();
 
   if (f.hp <= 0) { winBattle(); return; }
@@ -1387,6 +1395,7 @@ function strongAttack() {
   const dmg = playerAtk() * 2 + rnd(8);
   f.hp -= dmg; sfx.hit(); shake("fHero");
   S.fatigue = Math.min(100, S.fatigue + 12);
+  S.canSleep = true;
   onProductionAction();
 
   if (f.hp <= 0) { winBattle(); return; }
@@ -1410,7 +1419,7 @@ function usePotion() {
 }
 
 function fleeBattle() {
-  S.foe = null; S.fatigue = Math.min(100, S.fatigue + 3);
+  S.foe = null; S.fatigue = Math.min(100, S.fatigue + 3); S.canSleep = true;
   say("잽싸게 도망쳤어요! 전리품은 없지만 안전이 최고죠~ 🏃💨");
   renderHud(); renderScene(); renderPanel();
 }
@@ -1426,6 +1435,7 @@ function winBattle() {
   if (boss) recordStat("bossKills", 1);
   questProgress("kill", 1);
   S.fatigue = Math.min(100, S.fatigue + (boss ? 20 : 12));
+  S.canSleep = true;
   S.foe = null; sfx.up();
   if (boss) {
     showModal("🏆", `보스 ${f.nm} 격파!`, `대단해요!! 전리품 ${f.drop.pic}${f.drop.nm} + ${won(f.gold)} + 내공 ${f.gong} 획득! 🎉`);
@@ -1567,13 +1577,21 @@ function donate(m, d) {
 
 function doSleep() {
   if (S.fatigue <= 0 && S.hp >= S.maxHp) { say("전혀 안 피곤한데요? 쌩쌩해요! 😆"); return; }
+  // 자고 나면 한동안 안 졸려요 — 채집/전투 등으로 다시 피곤해져야 잘 수 있어요.
+  // 이게 없으면 계속 눌러서 피로를 공짜로 무한 회복할 수 있어 침대·가구를 살 이유가 없어져요.
+  if (!S.canSleep) {
+    sfx.bad(); toast("아직 안 졸려요!");
+    say("방금 잘 잤잖아요~ 아직 안 졸려요! 채집이나 전투를 좀 더 하고 다시 와요 😅");
+    return;
+  }
   const rec = S.bed ? 100 : 70;
   S.fatigue = Math.max(0, S.fatigue - rec);
   S.hp = S.bed ? S.maxHp : Math.min(S.maxHp, S.hp + Math.ceil(S.maxHp * 0.7));
+  S.canSleep = false;
   sfx.sleep();
   say(S.bed
     ? "푹신침대에서 쿨쿨~ 피로와 체력이 싹 회복됐어요! 😴✨"
-    : "쿨쿨 잘 잤다~ 피로가 풀리고 체력도 많이 찼어요! 😴");
+    : "쿨쿨 잘 잤다~ 피로가 풀리고 체력도 많이 찼어요! 하지만 침대가 없어서 다 풀리진 않았어요~ 😴");
   renderHud(); renderScene(); renderPanel();
 }
 
@@ -2453,7 +2471,8 @@ function renderHome(pan) {
 function homeBody(tab) {
   if (tab === "rest") {
     let h = `<div class="muted" style="margin-bottom:8px">피로도 <b>${Math.round(S.fatigue)}%</b> · 체력 <b>❤️${S.hp}/${S.maxHp}</b>${S.foodBuff ? ` · 버프 <b>${S.foodBuff.pic}${S.foodBuff.nm}</b>(${S.foodBuff.turns})` : ""}</div>`;
-    h += `<div class="row"><span>😴 잠자기 (피로 ${S.bed ? "전부" : "70"} 회복)</span><button id="sleepBtn" style="background:var(--blue)">쉬기</button></div>`;
+    h += `<div class="row"><span>😴 잠자기 (피로 ${S.bed ? "전부" : "70"} 회복)</span><button id="sleepBtn" ${S.canSleep ? "" : "disabled"} style="background:${S.canSleep ? "var(--blue)" : "#ccc"}">${S.canSleep ? "쉬기" : "안 졸려요"}</button></div>`;
+    if (!S.canSleep) h += `<div class="muted" style="margin-top:-4px;margin-bottom:8px">💡 방금 잤어요! 채집이나 전투를 좀 더 해야 다시 잘 수 있어요~</div>`;
     h += S.bed ? `<div class="row"><span>🛏️ 푹신침대 보유중! 😊</span><button disabled style="background:#ccc">완료</button></div>`
       : `<div class="row"><span>🛏️ 푹신침대 (완전 회복)</span><button id="bedBtn" style="background:var(--brown)">${won(BED_COST)}</button></div>`;
     return h;

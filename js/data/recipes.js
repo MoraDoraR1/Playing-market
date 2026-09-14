@@ -39,7 +39,9 @@ export const CROPS = {
   herb:  { id: "herb",  nm: "약초",   pic: "🌿", seedCost: 80, grow: 6, yield: [{ id: "herb",  pic: "🌿", nm: "약초",   pr: 38, qty: 3 }] },
 };
 // 최고 소지 금액 10억별에 맞춘 경제 재조정(×400, places.js ECON_SCALE과 동일 배율)
+// 수확물 판매가는 채집물과 동일하게 SELL_BOOST(×5) 추가 적용 — 씨앗값(비용)은 그대로.
+import { ECON_SCALE, SELL_BOOST } from "./places.js";
 for (const c of Object.values(CROPS)) {
-  c.seedCost *= 400;
-  c.yield.forEach((y) => { y.pr *= 400; });
+  c.seedCost *= ECON_SCALE;
+  c.yield.forEach((y) => { y.pr *= ECON_SCALE * SELL_BOOST; });
 }

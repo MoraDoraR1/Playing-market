@@ -16,6 +16,7 @@ export function defaultState() {
     // 전투/체력
     hp: 60, maxHp: 60,
     fatigue: 0,
+    canSleep: true,      // 방금 자서 아직 안 졸린 상태면 false — 채집/전투 등 활동을 해야 다시 true가 됨(잠 스팸 방지)
     // 장비
     weapon: 1,           // 무기 레벨(공격력)
     armor: 0,            // 방어구 레벨(피해 감소)

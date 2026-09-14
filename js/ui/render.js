@@ -241,7 +241,8 @@ function renderHome(pan) {
 function homeBody(tab) {
   if (tab === "rest") {
     let h = `<div class="muted" style="margin-bottom:8px">피로도 <b>${Math.round(S.fatigue)}%</b> · 체력 <b>❤️${S.hp}/${S.maxHp}</b>${S.foodBuff ? ` · 버프 <b>${S.foodBuff.pic}${S.foodBuff.nm}</b>(${S.foodBuff.turns})` : ""}</div>`;
-    h += `<div class="row"><span>😴 잠자기 (피로 ${S.bed ? "전부" : "70"} 회복)</span><button id="sleepBtn" style="background:var(--blue)">쉬기</button></div>`;
+    h += `<div class="row"><span>😴 잠자기 (피로 ${S.bed ? "전부" : "70"} 회복)</span><button id="sleepBtn" ${S.canSleep ? "" : "disabled"} style="background:${S.canSleep ? "var(--blue)" : "#ccc"}">${S.canSleep ? "쉬기" : "안 졸려요"}</button></div>`;
+    if (!S.canSleep) h += `<div class="muted" style="margin-top:-4px;margin-bottom:8px">💡 방금 잤어요! 채집이나 전투를 좀 더 해야 다시 잘 수 있어요~</div>`;
     h += S.bed ? `<div class="row"><span>🛏️ 푹신침대 보유중! 😊</span><button disabled style="background:#ccc">완료</button></div>`
       : `<div class="row"><span>🛏️ 푹신침대 (완전 회복)</span><button id="bedBtn" style="background:var(--brown)">${won(BED_COST)}</button></div>`;
     return h;

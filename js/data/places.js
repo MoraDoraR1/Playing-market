@@ -179,7 +179,10 @@ export const PLACES = {
 // 위 pr(판매가)는 기존 밸런스 기준 원안값 — 최고 소지 금액 10억별에 맞춰 경제 전체를
 // ×400 배율로 재조정(도구·몬스터·퀘스트 등 다른 수치도 동일 배율 적용, meta.js 참고)
 export const ECON_SCALE = 400;
+// 채집물 판매가가 도구/장비 등 지출 대비 너무 낮다는 피드백에 따라, "판매가(pr)"에만
+// 별도로 추가 배율을 적용(도구값·비용은 그대로 둬서 상대적으로 판매가 훨씬 후해지도록 함).
+export const SELL_BOOST = 5;
 for (const p of Object.values(PLACES)) {
-  (p.loot || []).forEach((x) => { x.pr *= ECON_SCALE; });
-  if (p.rare) p.rare.pr *= ECON_SCALE;
+  (p.loot || []).forEach((x) => { x.pr *= ECON_SCALE * SELL_BOOST; });
+  if (p.rare) p.rare.pr *= ECON_SCALE * SELL_BOOST;
 }

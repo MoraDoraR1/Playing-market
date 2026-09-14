@@ -24,7 +24,9 @@ export function availableBoss(rankIdx) {
 }
 
 // 최고 소지 금액 10억별에 맞춘 경제 재조정(×400, places.js ECON_SCALE과 동일 배율)
+// 전리품(drop) 판매가는 채집물과 동일하게 SELL_BOOST(×5) 추가 적용 — 처치 보상(gold)은 그대로.
+import { ECON_SCALE, SELL_BOOST } from "./places.js";
 for (const m of [...MONSTERS, ...BOSSES]) {
-  m.gold *= 400;
-  if (m.drop) m.drop.pr *= 400;
+  m.gold *= ECON_SCALE;
+  if (m.drop) m.drop.pr *= ECON_SCALE * SELL_BOOST;
 }

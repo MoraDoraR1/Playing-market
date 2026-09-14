@@ -56,6 +56,7 @@ export function doHarvest(p, tier) {
   gongGain += S.mods.gongBonus || 0;
   S.gong += gongGain;
   S.fatigue = Math.min(100, S.fatigue + gatherFatigue());
+  S.canSleep = true;
   got.forEach((g) => discoverItem(g.id));
   recordStat("gather", got.length);
   questProgress("gather", got.length);
