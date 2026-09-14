@@ -27,13 +27,13 @@ const RW = s(46);                 // 길 폭
 const DOTS = Math.round(60 * SCALE * SCALE); // 잔디 점무늬 개수(면적 비례)
 
 const ART = {
-  forest: "tree", forest_deep: "tree",
-  sea: "fishspot", sea_deep: "fishspot",
-  river: "fishspot", river_deep: "fishspot",
-  mine: "ore", mine_deep: "ore",
-  gather: "wheat", gather_deep: "wheat", hunt: null, hunt_deep: null,
-  dump: "trash", pirate: "pirate", heaven: "cloud", battle: "cave",
-  shop: "b_shop", home: "b_home", donate: "b_donate", journal: "b_journal",
+  forest: "obj_tree", forest_deep: "obj_tree",
+  sea: "obj_fishspot", sea_deep: "obj_fishspot",
+  river: "obj_fishspot", river_deep: "obj_fishspot",
+  mine: "obj_ore", mine_deep: "obj_ore",
+  gather: "obj_wheat", gather_deep: "obj_wheat", hunt: null, hunt_deep: null,
+  dump: "obj_trash", pirate: "obj_pirate", heaven: "obj_cloud", battle: "obj_cave",
+  shop: "obj_b_shop", home: "obj_b_home", donate: "obj_b_donate", journal: "obj_b_journal",
 };
 
 // 오브젝트 이름 규칙: 같은 자원을 주는 노드는 이름을 통일하고("낚시터"가 여러 개),

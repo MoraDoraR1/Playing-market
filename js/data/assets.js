@@ -22,6 +22,38 @@ export const PNG = {
   char_left_1: "assets/sprites/char/left_1.png",
   char_work_0: "assets/sprites/char/work_0.png",
   char_work_1: "assets/sprites/char/work_1.png",
+
+  // 월드 오브젝트/건물 (Codex 생성)
+  obj_tree: "assets/sprites/obj/tree.png",
+  obj_fishspot: "assets/sprites/obj/fishspot.png",
+  obj_ore: "assets/sprites/obj/ore.png",
+  obj_wheat: "assets/sprites/obj/wheat.png",
+  obj_trash: "assets/sprites/obj/trash.png",
+  obj_pirate: "assets/sprites/obj/pirate.png",
+  obj_cave: "assets/sprites/obj/cave.png",
+  obj_cloud: "assets/sprites/obj/cloud.png",
+  obj_b_shop: "assets/sprites/obj/b_shop.png",
+  obj_b_home: "assets/sprites/obj/b_home.png",
+  obj_b_donate: "assets/sprites/obj/b_donate.png",
+  obj_b_journal: "assets/sprites/obj/b_journal.png",
+  obj_sign: "assets/sprites/obj/sign.png",
+
+  // 몬스터/보스 (Codex 생성 — 현재 5종만. 나머지는 이모지 폴백)
+  mon_slime: "assets/sprites/mon/slime.png",
+  mon_ghost: "assets/sprites/mon/ghost.png",
+  mon_golem: "assets/sprites/mon/golem.png",
+  mon_kingslime: "assets/sprites/mon/kingslime.png",
+  mon_kraken: "assets/sprites/mon/kraken.png",
+
+  // 자원/전리품 아이템 (Codex 생성 — 현재 8종만. 나머지는 이모지 폴백)
+  item_shell: "assets/sprites/item/shell.png",
+  item_soul: "assets/sprites/item/soul.png",
+  item_squid: "assets/sprites/item/squid.png",
+  item_stardust: "assets/sprites/item/stardust.png",
+  item_stone: "assets/sprites/item/stone.png",
+  item_tentacle: "assets/sprites/item/tentacle.png",
+  item_tusk: "assets/sprites/item/tusk.png",
+  item_wing: "assets/sprites/item/wing.png",
 };
 
 export function hasPng(key) { return !!PNG[key]; }
@@ -32,8 +64,3 @@ export function pngURL(key) {
   if (embedded && embedded[key]) return embedded[key];
   return PNG[key] || null;
 }
-
-// ---- (구) 아이템용 kind/id 파이프라인 — 아직 사용, PNG 붙기 전까지 이모지 폴백 ----
-export const SPRITES_READY = new Set([]);
-export function spritePath(kind, id) { return `${SPRITE_BASE}${kind}/${id}.png`; }
-export function hasSprite(kind, id) { return id != null && SPRITES_READY.has(`${kind}/${id}`); }

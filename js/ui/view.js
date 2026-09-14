@@ -1,13 +1,12 @@
 // UI 기본 요소: DOM 헬퍼, 말풍선, 토스트, 모달, 이펙트, 스프라이트
-import { hasSprite, spritePath } from "../data/assets.js";
+import { hasPng, pngURL } from "../data/assets.js";
 
 export const $ = (id) => document.getElementById(id);
 
-// 스프라이트: 준비된 이미지가 있으면 <img>, 없으면 이모지 텍스트
+// 스프라이트: 준비된 고품질 PNG(Codex 생성)가 있으면 <img>, 없으면 이모지 텍스트로 폴백
 export function sprite(kind, id, emoji, cls = "spr") {
-  if (hasSprite(kind, id)) {
-    return `<img class="${cls}" src="${spritePath(kind, id)}" alt="" draggable="false">`;
-  }
+  const key = `${kind}_${id}`;
+  if (hasPng(key)) return `<img class="${cls}" src="${pngURL(key)}" alt="" draggable="false">`;
   return emoji || "";
 }
 
@@ -49,7 +48,7 @@ export function floatLoot(got) {
   got.slice(0, 6).forEach((it, i) => {
     const f = document.createElement("div");
     f.className = "float";
-    f.textContent = it.pic;
+    f.innerHTML = sprite("item", it.id, it.pic);
     f.style.left = (r.width / 2 - 10 + (i - 2) * 22) + "px";
     f.style.top = (r.height / 2) + "px";
     f.style.setProperty("--dx", ((i - 2) * 10) + "px");

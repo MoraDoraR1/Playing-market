@@ -19,6 +19,7 @@ import { CRAFT, COOK, CROPS, MAX_PLOTS } from "../data/recipes.js";
 import { claimQuest, buyStar, achievementsStatus, ensureDaily } from "../systems/meta.js";
 import { STAR_SHOP } from "../data/meta.js";
 import { itemDef } from "../data/items.js";
+import { hasPng, pngURL } from "../data/assets.js";
 import { MONSTERS } from "../data/monsters.js";
 import { hardReset } from "../core/save.js";
 import { maybeTutorial } from "./tutorial.js";
@@ -74,7 +75,7 @@ function renderBattle() {
     const foe = pickFoe();
     const boss = availableBoss(S.rankIdx);
     box.innerHTML = `
-      <div class="bfield"><div class="who"><div class="em">${foe.pic}</div><div>야생의 ${foe.nm}</div>
+      <div class="bfield"><div class="who"><div class="em">${sprite("mon", foe.id, foe.pic)}</div><div>야생의 ${foe.nm}</div>
         <div style="font-size:12px;opacity:.8">체력 ${foe.hp}·공격 ${foe.atk}·보상 ${won(foe.gold)}</div></div></div>
       <div class="act" id="act"></div>`;
     const act = $("act");
@@ -87,7 +88,7 @@ function renderBattle() {
       <div class="bfield">
         <div class="who"><div class="em">🧑‍🌾</div><div>나 (공격 ${playerAtk()})</div>${hpBar(S.hp, S.maxHp, "#20bf6b")}<div style="font-size:12px">❤️ ${S.hp}/${S.maxHp}</div></div>
         <div style="align-self:center;font-size:22px">⚔️</div>
-        <div class="who"><div class="em">${f.ref.pic}</div><div>${f.ref.nm}</div>${hpBar(f.hp, f.ref.hp, "#eb3b5a")}<div style="font-size:12px">💀 ${Math.max(0, f.hp)}/${f.ref.hp}</div></div>
+        <div class="who"><div class="em">${sprite("mon", f.ref.id, f.ref.pic)}</div><div>${f.ref.nm}</div>${hpBar(f.hp, f.ref.hp, "#eb3b5a")}<div style="font-size:12px">💀 ${Math.max(0, f.hp)}/${f.ref.hp}</div></div>
       </div>
       <div class="act" id="act"></div>`;
     const act = $("act");
@@ -141,7 +142,7 @@ function bagBody(tab) {
   }
   const slots = invSlots();
   return `<div class="muted" style="margin-bottom:6px">${slots.length}칸 사용 중</div>` + (slots.length ? `<div class="inv">` + slots.map((x) =>
-    `<div class="slot${x.rare ? " rare" : ""}">${sprite("items", x.id, x.pic)} ${x.nm} <span class="cnt">${x.count}</span></div>`).join("") + `</div>`
+    `<div class="slot${x.rare ? " rare" : ""}">${sprite("item", x.id, x.pic)} ${x.nm} <span class="cnt">${x.count}</span></div>`).join("") + `</div>`
     : `<div class="muted">아직 비어있어요~ 자원을 모아보세요!</div>`);
 }
 
@@ -183,11 +184,11 @@ function shopBody(tab) {
     const m = S.market || { mult: 1, hotItem: null };
     const trend = m.mult > 1.05 ? "📈 호황!" : m.mult < 0.95 ? "📉 불황…" : "➖ 보통";
     const hot = m.hotItem && itemDef(m.hotItem);
-    let h = `<div class="muted" style="margin:8px 0">오늘의 시세 <b>×${m.mult}</b> ${trend}${hot ? ` · 인기 <b>${hot.pic}${hot.nm}</b>(+30%)` : ""}</div>`;
+    let h = `<div class="muted" style="margin:8px 0">오늘의 시세 <b>×${m.mult}</b> ${trend}${hot ? ` · 인기 <b>${sprite("item", hot.id, hot.pic)}${hot.nm}</b>(+30%)` : ""}</div>`;
     if (!slots.length) return h + `<div class="muted">팔 자원이 없어요~ 먼저 자원을 모아오세요!</div>`;
     h += `<button class="btn sell" id="sellAll" style="width:100%;margin-bottom:8px">💰 전부 팔기 (${won(sellTotal())})</button>`;
     h += `<div class="shopgrid">` + slots.map((x) =>
-      `<div class="row"><span>${sprite("items", x.id, x.pic)}${x.nm} <span class="muted">×${x.count}</span></span>
+      `<div class="row"><span>${sprite("item", x.id, x.pic)}${x.nm} <span class="muted">×${x.count}</span></span>
        <button data-sell="${x.id}"${m.hotItem === x.id ? ' style="background:var(--red)"' : ""}>${won(unitPrice(x))}</button></div>`).join("") + `</div>`;
     return h;
   }
@@ -307,8 +308,8 @@ function journalBody(tab) {
   if (tab === "codex") {
     const iF = S.codex.items.length, iT = GATHERABLE_IDS.length, mF = S.codex.monsters.length, mT = MONSTERS.length;
     let h = `<div class="muted" style="margin-bottom:6px">자원 <b>${iF}/${iT}</b> · 몬스터 <b>${mF}/${mT}</b></div><h3>🎒 자원</h3><div class="inv">`;
-    h += GATHERABLE_IDS.map((id) => { const f = S.codex.items.includes(id), d = itemDef(id); return `<div class="slot"${f ? "" : ' style="opacity:.35;filter:grayscale(1)"'}>${f ? d.pic : "❔"} ${f ? d.nm : "???"}</div>`; }).join("") + `</div>`;
-    h += `<h3>👾 몬스터</h3><div class="inv">` + MONSTERS.map((mo) => { const f = S.codex.monsters.includes(mo.id); return `<div class="slot"${f ? "" : ' style="opacity:.35;filter:grayscale(1)"'}>${f ? mo.pic : "❔"} ${f ? mo.nm : "???"}</div>`; }).join("") + `</div>`;
+    h += GATHERABLE_IDS.map((id) => { const f = S.codex.items.includes(id), d = itemDef(id); return `<div class="slot"${f ? "" : ' style="opacity:.35;filter:grayscale(1)"'}>${f ? sprite("item", id, d.pic) : "❔"} ${f ? d.nm : "???"}</div>`; }).join("") + `</div>`;
+    h += `<h3>👾 몬스터</h3><div class="inv">` + MONSTERS.map((mo) => { const f = S.codex.monsters.includes(mo.id); return `<div class="slot"${f ? "" : ' style="opacity:.35;filter:grayscale(1)"'}>${f ? sprite("mon", mo.id, mo.pic) : "❔"} ${f ? mo.nm : "???"}</div>`; }).join("") + `</div>`;
     return h;
   }
   if (tab === "achieve") return achievementsStatus().map((a) => `<div class="row"><span>${a.done ? a.pic : "🔒"} <b>${a.nm}</b> <span class="muted">· ${a.desc}</span></span><span>${a.done ? "✅" : "…"}</span></div>`).join("");
@@ -322,7 +323,8 @@ function journalBody(tab) {
 // ---------- 빠른 이동 ----------
 function renderTravel(pan) {
   const items = [["forest", "🌲 숲"], ["sea", "🌊 바다"], ["river", "🏞️ 강"], ["mine", "⛏️ 광산"], ["gather", "🌿 채집터"], ["hunt", "🏹 사냥터"], ["dump", "🗑️ 쓰레기장"], ["pirate", "🏴‍☠️ 해적선"], ["battle", "⚔️ 던전"], ["shop", "🏪 상점"], ["home", "🏠 집"], ["donate", "❤️ 기부소"], ["journal", "📋 수첩"], ["heaven", "☁️ 하늘나라"]];
-  let h = `<h2>🗺️ 빠른 이동</h2><div class="muted" style="margin-bottom:8px">가고 싶은 곳으로 바로 이동해요 (숫자키로도 가능)</div><div class="shopgrid">`;
+  const signIcon = hasPng("obj_sign") ? `<img class="spr" src="${pngURL("obj_sign")}" alt="">` : "🗺️";
+  let h = `<h2>${signIcon} 빠른 이동</h2><div class="muted" style="margin-bottom:8px">가고 싶은 곳으로 바로 이동해요 (숫자키로도 가능)</div><div class="shopgrid">`;
   h += items.map(([k, t]) => `<button class="btn" data-go="${k}" style="background:var(--brown)">${t}</button>`).join("");
   pan.innerHTML = h + `</div>`;
   pan.querySelectorAll("[data-go]").forEach((b) => (b.onclick = () => { closePopup(); go(b.getAttribute("data-go")); }));

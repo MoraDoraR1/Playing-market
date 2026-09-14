@@ -14,28 +14,30 @@
 > 프롬프트 예: `a chubby 2-head cute boy in straw hat, blue shirt navy pants, top-down 3/4 view, walking, left foot forward` (+마스터 스타일). **정면/뒷면은 반드시 §5의 프레임별 포즈 지정을 그대로 따를 것.**
 
 ## B. 몬스터/보스 `mon/` — 512×512, 투명
-- [ ] `mon/slime` 슬라임 - [ ] `mon/bat` 박쥐 - [ ] `mon/boar` 멧돼지
-- [ ] `mon/ghost` 유령 - [ ] `mon/golem` 바위골렘 - [ ] `mon/dragon` 아기 드래곤
-- [ ] `mon/kingslime` 슬라임 왕(보스) - [ ] `mon/kraken` 크라켄(보스) - [ ] `mon/darklord` 마왕(보스)
+- [x] `mon/slime` 슬라임 - [ ] `mon/bat` 박쥐 - [ ] `mon/boar` 멧돼지
+- [x] `mon/ghost` 유령 - [x] `mon/golem` 바위골렘 - [ ] `mon/dragon` 아기 드래곤
+- [x] `mon/kingslime` 슬라임 왕(보스) - [x] `mon/kraken` 크라켄(보스) - [ ] `mon/darklord` 마왕(보스)
 > 보스는 더 크고 위엄 있게. 예: `cute round green slime monster, big shiny eyes` (+마스터 스타일)
+> 미생성분(bat/boar/dragon/darklord)은 표시 연결 완료 상태라 이모지로 폴백 표시됨 — 생성되는 대로 자동 적용.
 
 ## C. 자원/전리품/가공품 `item/` — 512×512, 투명 (단일 오브젝트, 심플·굵게)
 숲: [ ] `item/branch` 나뭇가지 [ ] `item/mushroom` 버섯 [ ] `item/herb` 약초 [ ] `item/ginseng` 산삼
-바다: [ ] `item/anchovy` 멸치 [ ] `item/shell` 조개 [ ] `item/squid` 오징어 [ ] `item/pearl` 진주
+바다: [ ] `item/anchovy` 멸치 [x] `item/shell` 조개 [x] `item/squid` 오징어 [ ] `item/pearl` 진주
 강: [ ] `item/loach` 미꾸라지 [ ] `item/crayfish` 가재 [ ] `item/carp` 잉어 [ ] `item/goldcarp` 황금잉어
-광산: [ ] `item/stone` 돌멩이 [ ] `item/copper` 구리 [ ] `item/iron` 철광석 [ ] `item/gem` 보석
+광산: [x] `item/stone` 돌멩이 [ ] `item/copper` 구리 [ ] `item/iron` 철광석 [ ] `item/gem` 보석
 들판: [ ] `item/berry` 산딸기 [ ] `item/grain` 곡식 [ ] `item/meat` 고기 [ ] `item/goldegg` 황금알
 쓰레기장: [ ] `item/scrap` 고철 [ ] `item/bottle` 빈병 [ ] `item/radio` 고장난 라디오 [ ] `item/record` 희귀음반
 해적선: [ ] `item/coin` 금화 [ ] `item/map` 낡은지도 [ ] `item/rum` 럼주 [ ] `item/chest` 보물상자
-하늘나라: [ ] `item/stardust` 별가루 [ ] `item/cloud` 무지개조각 [ ] `item/wing` 천사의날개
+하늘나라: [x] `item/stardust` 별가루 [ ] `item/cloud` 무지개조각 [x] `item/wing` 천사의날개
 가공: [ ] `item/plank` 합판
-전리품: [ ] `item/jelly` 슬라임젤리 [ ] `item/batwing` 박쥐날개 [ ] `item/tusk` 멧돼지엄니 [ ] `item/soul` 영혼구슬 [ ] `item/core` 골렘핵 [ ] `item/scale` 용비늘 [ ] `item/crown` 왕관 [ ] `item/tentacle` 크라켄촉수 [ ] `item/darkgem` 마왕의보석
+전리품: [ ] `item/jelly` 슬라임젤리 [ ] `item/batwing` 박쥐날개 [x] `item/tusk` 멧돼지엄니 [x] `item/soul` 영혼구슬 [ ] `item/core` 골렘핵 [ ] `item/scale` 용비늘 [ ] `item/crown` 왕관 [x] `item/tentacle` 크라켄촉수 [ ] `item/darkgem` 마왕의보석
+> 미생성 아이템은 표시 연결 완료 상태라 이모지로 폴백 표시됨 — 생성되는 대로 자동 적용.
 
 ## D. 월드 오브젝트/건물 `obj/` — 512×512, 투명
-- [ ] `obj/tree` 채집터 나무 - [ ] `obj/fishspot` 낚시터 - [ ] `obj/ore` 광맥 - [ ] `obj/wheat` 밀밭
-- [ ] `obj/trash` 고물더미 - [ ] `obj/pirate` 해적선 - [ ] `obj/cave` 던전 입구 - [ ] `obj/cloud` 하늘나라 구름
-- [ ] `obj/b_shop` 상점 - [ ] `obj/b_home` 집 - [ ] `obj/b_donate` 기부소 - [ ] `obj/b_journal` 수첩(책 좌판)
-- [ ] `obj/sign` 표지판(나무 팻말) - [ ] (선택) `obj/portal` 하늘나라 포탈
+- [x] `obj/tree` 채집터 나무 - [x] `obj/fishspot` 낚시터 - [x] `obj/ore` 광맥 - [x] `obj/wheat` 밀밭
+- [x] `obj/trash` 고물더미 - [x] `obj/pirate` 해적선 - [x] `obj/cave` 던전 입구 - [x] `obj/cloud` 하늘나라 구름
+- [x] `obj/b_shop` 상점 - [x] `obj/b_home` 집 - [x] `obj/b_donate` 기부소 - [x] `obj/b_journal` 수첩(책 좌판)
+- [x] `obj/sign` 표지판(나무 팻말, 현재 🗺️빠른이동 팝업 제목 아이콘으로 사용 — 방향별 회전이 필요한 맵 표지판 자체는 기존 벡터 방식 유지) - [ ] (선택) `obj/portal` 하늘나라 포탈
 
 ## E. UI 아이콘 `ui/` — 256×256, 투명 (픽토그램·세트감)
 HUD: [ ] `ui/hud_rank` 계급메달 [ ] `ui/hud_star` 별머니 [ ] `ui/hud_hp` 체력하트 [ ] `ui/hud_fat` 피로 [ ] `ui/hud_deed` 선행선물
@@ -57,9 +59,9 @@ HUD: [ ] `ui/hud_rank` 계급메달 [ ] `ui/hud_star` 별머니 [ ] `ui/hud_hp` 
 4. **D. 월드/건물** → **E. UI 아이콘**
 5. **F/G. 배경·이펙트**(선택)
 
-## ⚠️ 표시 연결(별도 구현 과제 — 규격만 정의)
-이미지가 준비되면 표시되려면 다음이 필요(현재 미구현):
-1. `js/data/assets.js`의 준비목록(`SPRITES_READY`)에 `"<종류>/<id>"` 추가
-2. 렌더가 이모지/SVG 대신 해당 PNG를 쓰도록 연결(캐릭터/월드/몬스터/아이템/아이콘)
-3. **플레이 링크용**: 빌드시 PNG를 **data URI로 인라인**(외부 파일 CSP 차단 회피)
-> 위 3번까지 되어야 배포 링크에서 이미지가 보인다. (이 문서는 "무엇을 어떤 규격으로 만들지"만 정의)
+## ⚠️ 표시 연결 — ✅ 완료(B/C/D 전 종류 공통 파이프라인)
+1. `js/data/assets.js`의 `PNG` 맵에 `"<종류>_<아이디>"` 키로 등록(예: `obj_tree`, `mon_slime`, `item_shell`)
+2. 월드(캔버스): `js/ui/world.js`의 `ART` 값 + `js/ui/sprites.js`의 `SVGS` 키를 동일 접두("obj_") 이름으로 통일 → `getSprite()`가 PNG 우선, 없으면 벡터 플레이스홀더로 자동 폴백
+3. 배틀/가방/상점/도감(HTML): `js/ui/view.js`의 `sprite(kind, id, emoji)` 헬퍼가 `PNG["<kind>_<id>"]`가 있으면 `<img class="spr">`, 없으면 이모지 텍스트로 자동 폴백(`kind`는 "mon"/"item")
+4. **플레이 링크용**: `tools/build-standalone.mjs`가 `assets/sprites/**/*.png`를 전부 `data:` URI로 인라인(`__SPRITE_DATA`) — 새 PNG를 폴더에 커밋만 하면 다음 빌드에 자동 포함됨
+> 새 이미지 추가 절차: PNG를 `assets/sprites/<종류>/<id>.png`로 커밋 → `assets.js`의 `PNG` 맵에 한 줄 등록 → 빌드. 그 외 코드 변경 불필요(이모지 폴백이 자동으로 이미지로 교체됨).
