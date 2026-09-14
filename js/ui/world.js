@@ -182,8 +182,12 @@ function onTap(e) {
 }
 
 function loop() {
-  raf = null;
-  if (!canvas || S.mode !== "world") return;
+  // 주의: update()가 채집 완료(finishGather→doHarvest→renderScene→ensureMounted→start())를
+  // 재귀적으로 트리거할 수 있다. 여기서 raf를 미리 null로 비워두면 그 사이에 start()가
+  // "안 돌고 있네?" 하고 착각해 rAF 체인을 하나 더 만들어버려서, 채집할 때마다 루프가
+  // 2배·4배·8배로 배가되며 이동/애니메이션 속도가 기하급수적으로 빨라지는 버그가 있었다.
+  // (raf를 끝까지 값이 있는 상태로 유지 → start()의 재진입 방지)
+  if (!canvas || S.mode !== "world") { raf = null; return; }
   update(); draw();
   raf = requestAnimationFrame(loop);
 }

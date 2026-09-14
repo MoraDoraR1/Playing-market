@@ -43,7 +43,9 @@ export function renderHud() {
     $("rankChip").title = `다음: ${nr.n} (${S.gong}/${nr.g})`;
   } else { $("gongBar").style.width = "100%"; $("rankChip").title = "최고 계급!"; }
   const fp = Math.min(100, S.fatigue);
-  $("fatBar").style.width = fp + "%"; $("fatTxt").textContent = Math.round(fp) + "%";
+  // 반올림하면 99.x%도 "100%"로 보여서 "표시는 100%인데 채집이 된다"는 혼란이 생김
+  // (게이트는 S.fatigue>=100 정확 비교) — 내림으로 표시가 실제 상태와 항상 맞도록 함.
+  $("fatBar").style.width = fp + "%"; $("fatTxt").textContent = Math.floor(fp) + "%";
   $("money").textContent = won(S.money);
   $("hp").textContent = `${S.hp}/${S.maxHp}`;
   $("deed").textContent = S.deed + "점";
@@ -283,7 +285,7 @@ function renderHome(pan) {
 function homeBody(tab) {
   if (tab === "rest") {
     const cd = sleepCooldownLeftMs(), ready = cd <= 0, cdMin = Math.ceil(cd / 60000);
-    let h = `<div class="muted" style="margin-bottom:8px">피로도 <b>${Math.round(S.fatigue)}%</b> · 체력 <b>❤️${S.hp}/${S.maxHp}</b>${S.foodBuff ? ` · 버프 <b>${S.foodBuff.pic}${S.foodBuff.nm}</b>(${S.foodBuff.turns})` : ""}</div>`;
+    let h = `<div class="muted" style="margin-bottom:8px">피로도 <b>${Math.floor(S.fatigue)}%</b> · 체력 <b>❤️${S.hp}/${S.maxHp}</b>${S.foodBuff ? ` · 버프 <b>${S.foodBuff.pic}${S.foodBuff.nm}</b>(${S.foodBuff.turns})` : ""}</div>`;
     h += `<div class="row"><span>😴 잠자기 (피로 ${S.bed ? "전부" : "70"} 회복)</span><button id="sleepBtn" ${ready ? "" : "disabled"} style="background:${ready ? "var(--blue)" : "#ccc"}">${ready ? "쉬기" : `${cdMin}분 대기`}</button></div>`;
     if (!ready) h += `<div class="muted" style="margin-top:-4px;margin-bottom:8px">💡 방금 잤어요! ${cdMin}분 후 다시 잘 수 있어요 (가만히 있어도 분당 ${NATURAL_REGEN_PER_MIN}%씩 천천히 풀려요)</div>`;
     h += S.bed ? `<div class="row"><span>🛏️ 푹신침대 보유중! 😊</span><button disabled style="background:#ccc">완료</button></div>`
