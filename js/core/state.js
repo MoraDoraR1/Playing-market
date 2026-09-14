@@ -16,7 +16,8 @@ export function defaultState() {
     // 전투/체력
     hp: 60, maxHp: 60,
     fatigue: 0,
-    canSleep: true,      // 방금 자서 아직 안 졸린 상태면 false — 채집/전투 등 활동을 해야 다시 true가 됨(잠 스팸 방지)
+    lastSleepAt: 0,               // 마지막으로 잔 시각(ms) — 잠자기 쿨타임 계산용
+    lastFatigueTickAt: Date.now(),// 마지막 자연 회복 계산 시각(ms)
     // 장비
     weapon: 1,           // 무기 레벨(공격력)
     armor: 0,            // 방어구 레벨(피해 감소)
@@ -89,6 +90,27 @@ export function playerAtk() {
 }
 // 채집 1회 피로 소모(가구 보너스 반영)
 export function gatherFatigue() { return Math.max(3, 12 - (S.mods.fatigueReduce || 0)); }
+
+// ---- 피로 자연 회복 & 잠자기 쿨타임 ----
+// 가만히 있어도(실제 시간 기준) 아주 천천히 피로가 풀림 — 잠자기와는 별개의 완만한 회복.
+export const NATURAL_REGEN_PER_MIN = 1;   // 분당 1% (5분당 5%)
+export const SLEEP_COOLDOWN_MS = 5 * 60 * 1000; // 잠자기 재사용 대기시간 5분
+
+// 실제 경과 시간만큼 피로를 자연 회복시킴. 침대 없이 여러 번 자서 편법으로 완전 회복하는 걸
+// 막는 대신, 진짜 시간이 지나면 알아서 조금씩은 풀리게 해서 "영영 못 푼다"는 느낌은 없앰.
+export function applyNaturalRegen() {
+  const now = Date.now();
+  const last = S.lastFatigueTickAt || now;
+  const elapsedMin = Math.max(0, (now - last) / 60000);
+  if (S.fatigue > 0 && elapsedMin > 0) {
+    S.fatigue = Math.max(0, S.fatigue - elapsedMin * NATURAL_REGEN_PER_MIN);
+  }
+  S.lastFatigueTickAt = now;
+}
+// 다음 잠자기까지 남은 시간(ms). 0이면 지금 잘 수 있음.
+export function sleepCooldownLeftMs() {
+  return Math.max(0, SLEEP_COOLDOWN_MS - (Date.now() - (S.lastSleepAt || 0)));
+}
 // 채집 추가 수확량(가구 + 요리 버프)
 export function gatherBonus() {
   const food = (S.foodBuff && S.foodBuff.stat === "gather") ? S.foodBuff.amount : 0;

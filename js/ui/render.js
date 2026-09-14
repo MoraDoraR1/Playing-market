@@ -1,5 +1,5 @@
 // 렌더러: 인게임 HUD / 월드·전투 화면 / 팝업(가방·상점·집·수첩·설명서·설정)
-import { S, playerAtk, rankName, nextRank, invSlots } from "../core/state.js";
+import { S, playerAtk, rankName, nextRank, invSlots, applyNaturalRegen, sleepCooldownLeftMs, NATURAL_REGEN_PER_MIN } from "../core/state.js";
 import { RANKS, HEAVEN_DEED } from "../data/ranks.js";
 import { PLACES } from "../data/places.js";
 import { won } from "../core/format.js";
@@ -33,6 +33,7 @@ const DYNAMIC_POPS = new Set(["shop", "home", "donate", "journal", "bag", "trave
 
 // ---------- HUD ----------
 export function renderHud() {
+  applyNaturalRegen();
   $("rankName").textContent = rankName();
   const nr = nextRank();
   if (nr) {
@@ -240,9 +241,10 @@ function renderHome(pan) {
 }
 function homeBody(tab) {
   if (tab === "rest") {
+    const cd = sleepCooldownLeftMs(), ready = cd <= 0, cdMin = Math.ceil(cd / 60000);
     let h = `<div class="muted" style="margin-bottom:8px">피로도 <b>${Math.round(S.fatigue)}%</b> · 체력 <b>❤️${S.hp}/${S.maxHp}</b>${S.foodBuff ? ` · 버프 <b>${S.foodBuff.pic}${S.foodBuff.nm}</b>(${S.foodBuff.turns})` : ""}</div>`;
-    h += `<div class="row"><span>😴 잠자기 (피로 ${S.bed ? "전부" : "70"} 회복)</span><button id="sleepBtn" ${S.canSleep ? "" : "disabled"} style="background:${S.canSleep ? "var(--blue)" : "#ccc"}">${S.canSleep ? "쉬기" : "안 졸려요"}</button></div>`;
-    if (!S.canSleep) h += `<div class="muted" style="margin-top:-4px;margin-bottom:8px">💡 방금 잤어요! 채집이나 전투를 좀 더 해야 다시 잘 수 있어요~</div>`;
+    h += `<div class="row"><span>😴 잠자기 (피로 ${S.bed ? "전부" : "70"} 회복)</span><button id="sleepBtn" ${ready ? "" : "disabled"} style="background:${ready ? "var(--blue)" : "#ccc"}">${ready ? "쉬기" : `${cdMin}분 대기`}</button></div>`;
+    if (!ready) h += `<div class="muted" style="margin-top:-4px;margin-bottom:8px">💡 방금 잤어요! ${cdMin}분 후 다시 잘 수 있어요 (가만히 있어도 분당 ${NATURAL_REGEN_PER_MIN}%씩 천천히 풀려요)</div>`;
     h += S.bed ? `<div class="row"><span>🛏️ 푹신침대 보유중! 😊</span><button disabled style="background:#ccc">완료</button></div>`
       : `<div class="row"><span>🛏️ 푹신침대 (완전 회복)</span><button id="bedBtn" style="background:var(--brown)">${won(BED_COST)}</button></div>`;
     return h;

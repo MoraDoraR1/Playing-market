@@ -2,7 +2,7 @@
 import { S } from "./core/state.js";
 import { load, startAutosave } from "./core/save.js";
 import { setMuted, startBgm, stopBgm } from "./core/audio.js";
-import { renderAll, openPopup, closePopup, go } from "./ui/render.js";
+import { renderAll, renderHud, renderPanel, openPopup, closePopup, go } from "./ui/render.js";
 import { hideModal, $ } from "./ui/view.js";
 import { maybeTutorial } from "./ui/tutorial.js";
 import { ensureDaily } from "./systems/meta.js";
@@ -72,6 +72,9 @@ function init() {
 
   startAutosave();
   maybeTutorial();
+
+  // 피로 자연 회복 + 잠자기 쿨타임 표시를 실시간으로 갱신(가만히 있어도 화면에 반영)
+  setInterval(() => { renderHud(); renderPanel(); }, 15000);
 }
 
 if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init);

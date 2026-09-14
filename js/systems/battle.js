@@ -45,7 +45,6 @@ export function battleAttack() {
   const dmg = playerAtk() + rnd(6);
   f.hp -= dmg; sfx.hit(); shake("fHero");
   S.fatigue = Math.min(100, S.fatigue + 5);
-  S.canSleep = true;
   onProductionAction();
 
   if (f.hp <= 0) { winBattle(); return; }
@@ -62,7 +61,6 @@ export function strongAttack() {
   const dmg = playerAtk() * 2 + rnd(8);
   f.hp -= dmg; sfx.hit(); shake("fHero");
   S.fatigue = Math.min(100, S.fatigue + 12);
-  S.canSleep = true;
   onProductionAction();
 
   if (f.hp <= 0) { winBattle(); return; }
@@ -86,7 +84,7 @@ export function usePotion() {
 }
 
 export function fleeBattle() {
-  S.foe = null; S.fatigue = Math.min(100, S.fatigue + 3); S.canSleep = true;
+  S.foe = null; S.fatigue = Math.min(100, S.fatigue + 3);
   say("잽싸게 도망쳤어요! 전리품은 없지만 안전이 최고죠~ 🏃💨");
   renderHud(); renderScene(); renderPanel();
 }
@@ -102,7 +100,6 @@ function winBattle() {
   if (boss) recordStat("bossKills", 1);
   questProgress("kill", 1);
   S.fatigue = Math.min(100, S.fatigue + (boss ? 20 : 12));
-  S.canSleep = true;
   S.foe = null; sfx.up();
   if (boss) {
     showModal("🏆", `보스 ${f.nm} 격파!`, `대단해요!! 전리품 ${f.drop.pic}${f.drop.nm} + ${won(f.gold)} + 내공 ${f.gong} 획득! 🎉`);

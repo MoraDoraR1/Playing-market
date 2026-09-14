@@ -874,7 +874,8 @@ function defaultState() {
     // 전투/체력
     hp: 60, maxHp: 60,
     fatigue: 0,
-    canSleep: true,      // 방금 자서 아직 안 졸린 상태면 false — 채집/전투 등 활동을 해야 다시 true가 됨(잠 스팸 방지)
+    lastSleepAt: 0,               // 마지막으로 잔 시각(ms) — 잠자기 쿨타임 계산용
+    lastFatigueTickAt: Date.now(),// 마지막 자연 회복 계산 시각(ms)
     // 장비
     weapon: 1,           // 무기 레벨(공격력)
     armor: 0,            // 방어구 레벨(피해 감소)
@@ -947,6 +948,27 @@ function playerAtk() {
 }
 // 채집 1회 피로 소모(가구 보너스 반영)
 function gatherFatigue() { return Math.max(3, 12 - (S.mods.fatigueReduce || 0)); }
+
+// ---- 피로 자연 회복 & 잠자기 쿨타임 ----
+// 가만히 있어도(실제 시간 기준) 아주 천천히 피로가 풀림 — 잠자기와는 별개의 완만한 회복.
+const NATURAL_REGEN_PER_MIN = 1;   // 분당 1% (5분당 5%)
+const SLEEP_COOLDOWN_MS = 5 * 60 * 1000; // 잠자기 재사용 대기시간 5분
+
+// 실제 경과 시간만큼 피로를 자연 회복시킴. 침대 없이 여러 번 자서 편법으로 완전 회복하는 걸
+// 막는 대신, 진짜 시간이 지나면 알아서 조금씩은 풀리게 해서 "영영 못 푼다"는 느낌은 없앰.
+function applyNaturalRegen() {
+  const now = Date.now();
+  const last = S.lastFatigueTickAt || now;
+  const elapsedMin = Math.max(0, (now - last) / 60000);
+  if (S.fatigue > 0 && elapsedMin > 0) {
+    S.fatigue = Math.max(0, S.fatigue - elapsedMin * NATURAL_REGEN_PER_MIN);
+  }
+  S.lastFatigueTickAt = now;
+}
+// 다음 잠자기까지 남은 시간(ms). 0이면 지금 잘 수 있음.
+function sleepCooldownLeftMs() {
+  return Math.max(0, SLEEP_COOLDOWN_MS - (Date.now() - (S.lastSleepAt || 0)));
+}
 // 채집 추가 수확량(가구 + 요리 버프)
 function gatherBonus() {
   const food = (S.foodBuff && S.foodBuff.stat === "gather") ? S.foodBuff.amount : 0;
@@ -1317,7 +1339,6 @@ function doHarvest(p, tier) {
   gongGain += S.mods.gongBonus || 0;
   S.gong += gongGain;
   S.fatigue = Math.min(100, S.fatigue + gatherFatigue());
-  S.canSleep = true;
   got.forEach((g) => discoverItem(g.id));
   recordStat("gather", got.length);
   questProgress("gather", got.length);
@@ -1378,7 +1399,6 @@ function battleAttack() {
   const dmg = playerAtk() + rnd(6);
   f.hp -= dmg; sfx.hit(); shake("fHero");
   S.fatigue = Math.min(100, S.fatigue + 5);
-  S.canSleep = true;
   onProductionAction();
 
   if (f.hp <= 0) { winBattle(); return; }
@@ -1395,7 +1415,6 @@ function strongAttack() {
   const dmg = playerAtk() * 2 + rnd(8);
   f.hp -= dmg; sfx.hit(); shake("fHero");
   S.fatigue = Math.min(100, S.fatigue + 12);
-  S.canSleep = true;
   onProductionAction();
 
   if (f.hp <= 0) { winBattle(); return; }
@@ -1419,7 +1438,7 @@ function usePotion() {
 }
 
 function fleeBattle() {
-  S.foe = null; S.fatigue = Math.min(100, S.fatigue + 3); S.canSleep = true;
+  S.foe = null; S.fatigue = Math.min(100, S.fatigue + 3);
   say("잽싸게 도망쳤어요! 전리품은 없지만 안전이 최고죠~ 🏃💨");
   renderHud(); renderScene(); renderPanel();
 }
@@ -1435,7 +1454,6 @@ function winBattle() {
   if (boss) recordStat("bossKills", 1);
   questProgress("kill", 1);
   S.fatigue = Math.min(100, S.fatigue + (boss ? 20 : 12));
-  S.canSleep = true;
   S.foe = null; sfx.up();
   if (boss) {
     showModal("🏆", `보스 ${f.nm} 격파!`, `대단해요!! 전리품 ${f.drop.pic}${f.drop.nm} + ${won(f.gold)} + 내공 ${f.gong} 획득! 🎉`);
@@ -1576,24 +1594,30 @@ function donate(m, d) {
 // 휴식 — 잠자기(피로/체력 회복) / 푹신침대 구매
 
 function doSleep() {
+  applyNaturalRegen();
   if (S.fatigue <= 0 && S.hp >= S.maxHp) { say("전혀 안 피곤한데요? 쌩쌩해요! 😆"); return; }
-  // 자고 나면 한동안 안 졸려요 — 채집/전투 등으로 다시 피곤해져야 잘 수 있어요.
-  // 이게 없으면 계속 눌러서 피로를 공짜로 무한 회복할 수 있어 침대·가구를 살 이유가 없어져요.
-  if (!S.canSleep) {
-    sfx.bad(); toast("아직 안 졸려요!");
-    say("방금 잘 잤잖아요~ 아직 안 졸려요! 채집이나 전투를 좀 더 하고 다시 와요 😅");
+  // 잠자기엔 실제 시간 기준 쿨타임이 있어요 — 없으면 계속 눌러서 피로를 공짜로 무한
+  // 회복할 수 있어 침대·가구를 살 이유가 없어져요. 대신 가만히 있어도 시간이 지나면
+  // 자연 회복(분당 소량)이 되니 "영영 못 푼다"는 답답함은 없어요.
+  const left = sleepCooldownLeftMs();
+  if (left > 0) {
+    const m = Math.ceil(left / 60000);
+    sfx.bad(); toast(`아직 안 졸려요! (${m}분 후 가능)`);
+    say(`방금 잘 잤잖아요~ ${m}분 정도 더 있어야 다시 잘 수 있어요! 그동안 채집이나 전투를 해봐요 😅`);
     return;
   }
   const rec = S.bed ? 100 : 70;
   S.fatigue = Math.max(0, S.fatigue - rec);
   S.hp = S.bed ? S.maxHp : Math.min(S.maxHp, S.hp + Math.ceil(S.maxHp * 0.7));
-  S.canSleep = false;
+  S.lastSleepAt = Date.now();
   sfx.sleep();
   say(S.bed
     ? "푹신침대에서 쿨쿨~ 피로와 체력이 싹 회복됐어요! 😴✨"
     : "쿨쿨 잘 잤다~ 피로가 풀리고 체력도 많이 찼어요! 하지만 침대가 없어서 다 풀리진 않았어요~ 😴");
   renderHud(); renderScene(); renderPanel();
 }
+
+const SLEEP_COOLDOWN_MIN = SLEEP_COOLDOWN_MS / 60000;
 
 const BED_COST = 600000;
 function buyBed() {
@@ -2263,6 +2287,7 @@ const DYNAMIC_POPS = new Set(["shop", "home", "donate", "journal", "bag", "trave
 
 // ---------- HUD ----------
 function renderHud() {
+  applyNaturalRegen();
   $("rankName").textContent = rankName();
   const nr = nextRank();
   if (nr) {
@@ -2470,9 +2495,10 @@ function renderHome(pan) {
 }
 function homeBody(tab) {
   if (tab === "rest") {
+    const cd = sleepCooldownLeftMs(), ready = cd <= 0, cdMin = Math.ceil(cd / 60000);
     let h = `<div class="muted" style="margin-bottom:8px">피로도 <b>${Math.round(S.fatigue)}%</b> · 체력 <b>❤️${S.hp}/${S.maxHp}</b>${S.foodBuff ? ` · 버프 <b>${S.foodBuff.pic}${S.foodBuff.nm}</b>(${S.foodBuff.turns})` : ""}</div>`;
-    h += `<div class="row"><span>😴 잠자기 (피로 ${S.bed ? "전부" : "70"} 회복)</span><button id="sleepBtn" ${S.canSleep ? "" : "disabled"} style="background:${S.canSleep ? "var(--blue)" : "#ccc"}">${S.canSleep ? "쉬기" : "안 졸려요"}</button></div>`;
-    if (!S.canSleep) h += `<div class="muted" style="margin-top:-4px;margin-bottom:8px">💡 방금 잤어요! 채집이나 전투를 좀 더 해야 다시 잘 수 있어요~</div>`;
+    h += `<div class="row"><span>😴 잠자기 (피로 ${S.bed ? "전부" : "70"} 회복)</span><button id="sleepBtn" ${ready ? "" : "disabled"} style="background:${ready ? "var(--blue)" : "#ccc"}">${ready ? "쉬기" : `${cdMin}분 대기`}</button></div>`;
+    if (!ready) h += `<div class="muted" style="margin-top:-4px;margin-bottom:8px">💡 방금 잤어요! ${cdMin}분 후 다시 잘 수 있어요 (가만히 있어도 분당 ${NATURAL_REGEN_PER_MIN}%씩 천천히 풀려요)</div>`;
     h += S.bed ? `<div class="row"><span>🛏️ 푹신침대 보유중! 😊</span><button disabled style="background:#ccc">완료</button></div>`
       : `<div class="row"><span>🛏️ 푹신침대 (완전 회복)</span><button id="bedBtn" style="background:var(--brown)">${won(BED_COST)}</button></div>`;
     return h;
@@ -2708,6 +2734,9 @@ function init() {
 
   startAutosave();
   maybeTutorial();
+
+  // 피로 자연 회복 + 잠자기 쿨타임 표시를 실시간으로 갱신(가만히 있어도 화면에 반영)
+  setInterval(() => { renderHud(); renderPanel(); }, 15000);
 }
 
 if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init);
