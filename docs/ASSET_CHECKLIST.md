@@ -13,25 +13,22 @@
 - [ ] (선택) `char/idle` 정지 1프레임
 > 프롬프트 예: `a chubby 2-head cute boy in straw hat, blue shirt navy pants, top-down 3/4 view, walking, left foot forward` (+마스터 스타일). **정면/뒷면은 반드시 §5의 프레임별 포즈 지정을 그대로 따를 것.**
 
-## B. 몬스터/보스 `mon/` — 512×512, 투명
-- [x] `mon/slime` 슬라임 - [ ] `mon/bat` 박쥐 - [ ] `mon/boar` 멧돼지
-- [x] `mon/ghost` 유령 - [x] `mon/golem` 바위골렘 - [ ] `mon/dragon` 아기 드래곤
-- [x] `mon/kingslime` 슬라임 왕(보스) - [x] `mon/kraken` 크라켄(보스) - [ ] `mon/darklord` 마왕(보스)
-> 보스는 더 크고 위엄 있게. 예: `cute round green slime monster, big shiny eyes` (+마스터 스타일)
-> 미생성분(bat/boar/dragon/darklord)은 표시 연결 완료 상태라 이모지로 폴백 표시됨 — 생성되는 대로 자동 적용.
+## B. 몬스터/보스 `mon/` — 512×512, 투명 — ✅ 9종 전부 완료
+- [x] `mon/slime` 슬라임 - [x] `mon/bat` 박쥐 - [x] `mon/boar` 멧돼지
+- [x] `mon/ghost` 유령 - [x] `mon/golem` 바위골렘 - [x] `mon/dragon` 아기 드래곤
+- [x] `mon/kingslime` 슬라임 왕(보스) - [x] `mon/kraken` 크라켄(보스) - [x] `mon/darklord` 마왕(보스)
 
-## C. 자원/전리품/가공품 `item/` — 512×512, 투명 (단일 오브젝트, 심플·굵게)
-숲: [ ] `item/branch` 나뭇가지 [ ] `item/mushroom` 버섯 [ ] `item/herb` 약초 [ ] `item/ginseng` 산삼
-바다: [ ] `item/anchovy` 멸치 [x] `item/shell` 조개 [x] `item/squid` 오징어 [ ] `item/pearl` 진주
-강: [ ] `item/loach` 미꾸라지 [ ] `item/crayfish` 가재 [ ] `item/carp` 잉어 [ ] `item/goldcarp` 황금잉어
-광산: [x] `item/stone` 돌멩이 [ ] `item/copper` 구리 [ ] `item/iron` 철광석 [ ] `item/gem` 보석
-들판: [ ] `item/berry` 산딸기 [ ] `item/grain` 곡식 [ ] `item/meat` 고기 [ ] `item/goldegg` 황금알
-쓰레기장: [ ] `item/scrap` 고철 [ ] `item/bottle` 빈병 [ ] `item/radio` 고장난 라디오 [ ] `item/record` 희귀음반
-해적선: [ ] `item/coin` 금화 [ ] `item/map` 낡은지도 [ ] `item/rum` 럼주 [ ] `item/chest` 보물상자
-하늘나라: [x] `item/stardust` 별가루 [ ] `item/cloud` 무지개조각 [x] `item/wing` 천사의날개
-가공: [ ] `item/plank` 합판
-전리품: [ ] `item/jelly` 슬라임젤리 [ ] `item/batwing` 박쥐날개 [x] `item/tusk` 멧돼지엄니 [x] `item/soul` 영혼구슬 [ ] `item/core` 골렘핵 [ ] `item/scale` 용비늘 [ ] `item/crown` 왕관 [x] `item/tentacle` 크라켄촉수 [ ] `item/darkgem` 마왕의보석
-> 미생성 아이템은 표시 연결 완료 상태라 이모지로 폴백 표시됨 — 생성되는 대로 자동 적용.
+## C. 자원/전리품/가공품 `item/` — 512×512, 투명 (단일 오브젝트, 심플·굵게) — ✅ 41종 전부 완료
+숲: [x] `item/branch` 나뭇가지 [x] `item/mushroom` 버섯 [x] `item/herb` 약초 [x] `item/ginseng` 산삼
+바다: [x] `item/anchovy` 멸치 [x] `item/shell` 조개 [x] `item/squid` 오징어 [x] `item/pearl` 진주
+강: [x] `item/loach` 미꾸라지 [x] `item/crayfish` 가재 [x] `item/carp` 잉어 [x] `item/goldcarp` 황금잉어
+광산: [x] `item/stone` 돌멩이 [x] `item/copper` 구리 [x] `item/iron` 철광석 [x] `item/gem` 보석
+들판: [x] `item/berry` 산딸기 [x] `item/grain` 곡식 [x] `item/meat` 고기 [x] `item/goldegg` 황금알
+쓰레기장: [x] `item/scrap` 고철 [x] `item/bottle` 빈병 [x] `item/radio` 고장난 라디오 [x] `item/record` 희귀음반
+해적선: [x] `item/coin` 금화 [x] `item/map` 낡은지도 [x] `item/rum` 럼주 [x] `item/chest` 보물상자
+하늘나라: [x] `item/stardust` 별가루 [x] `item/cloud` 무지개조각 [x] `item/wing` 천사의날개
+가공: [x] `item/plank` 합판
+전리품: [x] `item/jelly` 슬라임젤리 [x] `item/batwing` 박쥐날개 [x] `item/tusk` 멧돼지엄니 [x] `item/soul` 영혼구슬 [x] `item/core` 골렘핵 [x] `item/scale` 용비늘 [x] `item/crown` 왕관 [x] `item/tentacle` 크라켄촉수 [x] `item/darkgem` 마왕의보석
 
 ## D. 월드 오브젝트/건물 `obj/` — 512×512, 투명
 - [x] `obj/tree` 채집터 나무 - [x] `obj/fishspot` 낚시터 - [x] `obj/ore` 광맥 - [x] `obj/wheat` 밀밭
