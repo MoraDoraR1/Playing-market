@@ -132,10 +132,26 @@ img{user-select:none;}
 .tab.on{background:var(--brown); color:#fff;}
 .spr{display:inline-block; height:1.1em; width:auto; vertical-align:-0.18em;}
 
-/* 전투 씬 */
+/* 전투 씬 — 클리커형: 몬스터를 직접 클릭해서 공격 */
 .bfield{display:flex; justify-content:space-around; align-items:flex-end; padding:10px; background:linear-gradient(180deg,#3a4149,#20252b);
-  border-radius:12px; color:#fff;}
-.bfield .who{text-align:center;} .bfield .em{font-size:46px;}
+  border-radius:12px; color:#fff; position:relative; overflow:hidden;}
+.bfield .who{text-align:center; position:relative;}
+.bfield .em{font-size:46px; display:inline-block; transition:transform .08s;}
+.bfield .who.clickable{cursor:pointer; user-select:none; -webkit-tap-highlight-color:transparent;}
+.bfield .who.clickable:active .em{transform:scale(.88);}
+.bfield .who.clickable::after{content:"👆탭!"; position:absolute; top:-6px; right:-4px; font-size:11px;
+  background:#ffcf33; color:#3a2b1f; padding:1px 6px; border-radius:8px; opacity:.9;}
+@keyframes hitShake{0%,100%{transform:translateX(0)} 20%{transform:translateX(-6px) rotate(-4deg)}
+  40%{transform:translateX(5px) rotate(3deg)} 60%{transform:translateX(-4px)} 80%{transform:translateX(3px)}}
+.em.hitfx{animation:hitShake .28s ease-in-out;}
+@keyframes dmgFlash{0%{filter:brightness(2) saturate(2)} 100%{filter:none}}
+.who.dmgflash .em{animation:dmgFlash .25s ease-out;}
+.dmgnum{position:absolute; left:50%; top:0; font-weight:800; font-size:18px; pointer-events:none;
+  text-shadow:0 2px 2px rgba(0,0,0,.4); animation:dmgFloat .7s ease-out forwards; z-index:6; white-space:nowrap;}
+.dmgnum.foe{color:#ff5a5a;} .dmgnum.hero{color:#ffe066;}
+@keyframes dmgFloat{from{transform:translate(-50%,0); opacity:1} to{transform:translate(-50%,-46px); opacity:0}}
+.atkbar{height:5px; width:70px; margin:4px auto 0; border-radius:4px; background:#ffffff30; overflow:hidden;}
+.atkbar > i{display:block; height:100%; width:0%; background:#ff9f43; transition:width .08s linear;}
 
 /* 토스트 */
 .toast{position:absolute; left:50%; top:52px; transform:translateX(-50%) translateY(-20px); background:var(--ink);

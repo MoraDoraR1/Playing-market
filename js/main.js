@@ -7,6 +7,7 @@ import { hideModal, $ } from "./ui/view.js";
 import { maybeTutorial } from "./ui/tutorial.js";
 import { ensureDaily } from "./systems/meta.js";
 import * as world from "./ui/world.js";
+import { clickMonster } from "./systems/battle.js";
 
 const KEYMAP = {
   "1": "forest", "2": "sea", "3": "river", "4": "mine", "5": "gather",
@@ -42,6 +43,7 @@ function handleKey(e) {
   if (k === " " || k === "Enter") {
     e.preventDefault();
     if (S.mode === "world") world.interact();
+    else if (S.foe) clickMonster();
     else { const b = document.querySelector("#act .btn.work"); if (b && !b.disabled) b.click(); }
     return;
   }

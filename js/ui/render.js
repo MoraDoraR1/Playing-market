@@ -7,7 +7,7 @@ import { sfx, toggleMuted, setMuted, startBgm, stopBgm } from "../core/audio.js"
 import { $, sprite, say, toast } from "./view.js";
 
 import { doWork } from "../systems/gather.js";
-import { pickFoe, startBattle, startBoss, battleAttack, strongAttack, usePotion, fleeBattle } from "../systems/battle.js";
+import { pickFoe, startBattle, startBoss, clickMonster, strongAttack, usePotion, fleeBattle } from "../systems/battle.js";
 import { availableBoss } from "../data/monsters.js";
 import { sellTotal, unitPrice, sellOne, sellAll, weaponCost, buyWeapon, armorCost, buyArmor, buyPotion, POTION_COST, nextTool, buyToolTier, buyBait } from "../systems/economy.js";
 import { BED_COST } from "../systems/rest.js";
@@ -64,9 +64,9 @@ export function renderScene() {
   else { battle.classList.remove("show"); world.ensureMounted($("scene")); }
 }
 
-function hpBar(cur, max, color) {
+function hpBar(cur, max, color, id) {
   const p = Math.max(0, Math.min(100, (cur / max) * 100));
-  return `<div style="width:130px;height:9px;border-radius:6px;background:#0004;margin:4px auto"><i style="display:block;height:100%;width:${p}%;border-radius:6px;background:${color}"></i></div>`;
+  return `<div style="width:130px;height:9px;border-radius:6px;background:#0004;margin:4px auto"><i id="${id}" style="display:block;height:100%;width:${p}%;border-radius:6px;background:${color}"></i></div>`;
 }
 
 function renderBattle() {
@@ -74,9 +74,10 @@ function renderBattle() {
   if (!S.foe) {
     const foe = pickFoe();
     const boss = availableBoss(S.rankIdx);
+    const sec = ((foe.atkInterval || 1800) / 1000).toFixed(1);
     box.innerHTML = `
       <div class="bfield"><div class="who"><div class="em">${sprite("mon", foe.id, foe.pic)}</div><div>야생의 ${foe.nm}</div>
-        <div style="font-size:12px;opacity:.8">체력 ${foe.hp}·공격 ${foe.atk}·보상 ${won(foe.gold)}</div></div></div>
+        <div style="font-size:12px;opacity:.8">체력 ${foe.hp}·공격 ${foe.atk}(${sec}초마다)·보상 ${won(foe.gold)}</div></div></div>
       <div class="act" id="act"></div>`;
     const act = $("act");
     const b = mkbtn("btn work", "⚔️ 싸우기 시작!", () => startBattle(foe)); if (S.fatigue >= 100 || S.hp <= 0) b.disabled = true; act.appendChild(b);
@@ -86,20 +87,53 @@ function renderBattle() {
     const f = S.foe;
     box.innerHTML = `
       <div class="bfield">
-        <div class="who"><div class="em">🧑‍🌾</div><div>나 (공격 ${playerAtk()})</div>${hpBar(S.hp, S.maxHp, "#20bf6b")}<div style="font-size:12px">❤️ ${S.hp}/${S.maxHp}</div></div>
+        <div class="who" id="pHero"><div class="em">🧑‍🌾</div><div>나 (공격 ${playerAtk()})</div>${hpBar(S.hp, S.maxHp, "#20bf6b", "pHpBar")}<div style="font-size:12px" id="pHpText">❤️ ${S.hp}/${S.maxHp}</div></div>
         <div style="align-self:center;font-size:22px">⚔️</div>
-        <div class="who"><div class="em">${sprite("mon", f.ref.id, f.ref.pic)}</div><div>${f.ref.nm}</div>${hpBar(f.hp, f.ref.hp, "#eb3b5a")}<div style="font-size:12px">💀 ${Math.max(0, f.hp)}/${f.ref.hp}</div></div>
+        <div class="who clickable" id="fHero"><div class="em">${sprite("mon", f.ref.id, f.ref.pic)}</div><div>${f.ref.nm}</div>${hpBar(f.hp, f.ref.hp, "#eb3b5a", "fHpBar")}<div style="font-size:12px" id="fHpText">💀 ${Math.max(0, f.hp)}/${f.ref.hp}</div>
+          <div class="atkbar" title="이 게이지가 차면 몬스터가 공격해요"><i id="atkBarFill"></i></div>
+        </div>
       </div>
+      <div class="muted" style="text-align:center;margin-top:6px">👆 몬스터를 클릭해서 공격하세요!</div>
       <div class="act" id="act"></div>`;
+    $("fHero").onclick = clickMonster;
     const act = $("act");
-    act.appendChild(mkbtn("btn work", "🗡️ 공격!", battleAttack));
-    const s = mkbtn("btn up", "💥 강공격", strongAttack); if (S.fatigue >= 100) s.disabled = true; act.appendChild(s);
+    act.appendChild(mkbtn("btn up", "💥 강공격", strongAttack));
     const pot = mkbtn("btn sleep", `🧪 물약(${S.potions})`, usePotion); if (S.potions <= 0) pot.disabled = true; act.appendChild(pot);
     act.appendChild(mkbtn("btn give", "🏃 도망", fleeBattle));
   }
 }
 
 function mkbtn(cls, text, on) { const b = document.createElement("button"); b.className = cls; b.textContent = text; b.onclick = on; return b; }
+
+// 클릭/공격 이펙트: 데미지 숫자 띄우기 + 흔들림/번쩍임 + 해당 진영 체력바 즉시 갱신.
+// (전투 박스 전체를 다시 그리면 클릭 반응성이 끊기므로, 상태 전환 때만 renderBattle로 전체를
+//  다시 그리고, 클릭/몬스터 공격 매 순간은 이 가벼운 DOM 갱신만 한다.)
+export function hitFx(id, dmg, kind) {
+  const who = $(id);
+  if (!who) return;
+  const em = who.querySelector(".em");
+  if (em) { em.classList.remove("hitfx"); void em.offsetWidth; em.classList.add("hitfx"); }
+  who.classList.remove("dmgflash"); void who.offsetWidth; who.classList.add("dmgflash");
+  const num = document.createElement("div");
+  num.className = "dmgnum " + kind;
+  num.textContent = "-" + dmg;
+  who.appendChild(num);
+  setTimeout(() => num.remove(), 700);
+  if (id === "pHero") {
+    const bar = $("pHpBar"), txt = $("pHpText");
+    if (bar) bar.style.width = Math.max(0, Math.min(100, (S.hp / S.maxHp) * 100)) + "%";
+    if (txt) txt.textContent = `❤️ ${S.hp}/${S.maxHp}`;
+  } else if (id === "fHero" && S.foe) {
+    const bar = $("fHpBar"), txt = $("fHpText"), f = S.foe;
+    if (bar) bar.style.width = Math.max(0, Math.min(100, (f.hp / f.ref.hp) * 100)) + "%";
+    if (txt) txt.textContent = `💀 ${Math.max(0, f.hp)}/${f.ref.hp}`;
+  }
+}
+// 몬스터의 "다음 공격까지" 게이지(0~1) 갱신
+export function tickAtkBar(fraction) {
+  const bar = $("atkBarFill");
+  if (bar) bar.style.width = Math.max(0, Math.min(1, fraction)) * 100 + "%";
+}
 
 // ---------- 팝업 시스템 ----------
 export function openPopup(kind) { S.popup = kind; buildPopup(kind); $("popup").classList.add("show"); }
