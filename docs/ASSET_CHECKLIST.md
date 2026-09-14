@@ -18,17 +18,21 @@
 - [x] `mon/ghost` 유령 - [x] `mon/golem` 바위골렘 - [x] `mon/dragon` 아기 드래곤
 - [x] `mon/kingslime` 슬라임 왕(보스) - [x] `mon/kraken` 크라켄(보스) - [x] `mon/darklord` 마왕(보스)
 
-## C. 자원/전리품/가공품 `item/` — 512×512, 투명 (단일 오브젝트, 심플·굵게) — ✅ 41종 전부 완료
+## C. 자원/전리품/가공품 `item/` — 512×512, 투명 (단일 오브젝트, 심플·굵게) — ⚠️ 4종 누락 발견(45종 중 41종만 완료)
+> 이 문서 최초 작성 이후 "들판"이 채집터(맨손/낫)·사냥터(활 필수)로 분리되면서 생긴 신규 아이템
+> 4종이 체크리스트에 누락된 채 빠져 있었음(코덱스에 생성 요청 자체가 안 나감 → 지금 이모지로만 표시됨).
 숲: [x] `item/branch` 나뭇가지 [x] `item/mushroom` 버섯 [x] `item/herb` 약초 [x] `item/ginseng` 산삼
 바다: [x] `item/anchovy` 멸치 [x] `item/shell` 조개 [x] `item/squid` 오징어 [x] `item/pearl` 진주
 강: [x] `item/loach` 미꾸라지 [x] `item/crayfish` 가재 [x] `item/carp` 잉어 [x] `item/goldcarp` 황금잉어
 광산: [x] `item/stone` 돌멩이 [x] `item/copper` 구리 [x] `item/iron` 철광석 [x] `item/gem` 보석
-들판: [x] `item/berry` 산딸기 [x] `item/grain` 곡식 [x] `item/meat` 고기 [x] `item/goldegg` 황금알
+채집터(맨손/낫): [x] `item/berry` 산딸기 [ ] `item/flower` 🌼 들꽃 [x] `item/grain` 곡식 [ ] `item/clover` 🍀 네잎클로버(레어)
+사냥터(활 필수): [x] `item/meat` 🍖 고기 [ ] `item/feather` 🪶 깃털 [ ] `item/bone` 🦴 뼈 [x] `item/goldegg` 황금알(레어)
 쓰레기장: [x] `item/scrap` 고철 [x] `item/bottle` 빈병 [x] `item/radio` 고장난 라디오 [x] `item/record` 희귀음반
 해적선: [x] `item/coin` 금화 [x] `item/map` 낡은지도 [x] `item/rum` 럼주 [x] `item/chest` 보물상자
 하늘나라: [x] `item/stardust` 별가루 [x] `item/cloud` 무지개조각 [x] `item/wing` 천사의날개
 가공: [x] `item/plank` 합판
 전리품: [x] `item/jelly` 슬라임젤리 [x] `item/batwing` 박쥐날개 [x] `item/tusk` 멧돼지엄니 [x] `item/soul` 영혼구슬 [x] `item/core` 골렘핵 [x] `item/scale` 용비늘 [x] `item/crown` 왕관 [x] `item/tentacle` 크라켄촉수 [x] `item/darkgem` 마왕의보석
+- [ ] `item/flower` [ ] `item/clover` [ ] `item/feather` [ ] `item/bone`
 
 ## D. 월드 오브젝트/건물 `obj/` — 512×512, 투명
 - [x] `obj/tree` 채집터 나무 - [x] `obj/fishspot` 낚시터 - [x] `obj/ore` 광맥 - [x] `obj/wheat` 밀밭
@@ -59,9 +63,12 @@ HUD: [x] `ui/hud_rank` 계급메달 [x] `ui/hud_star` 별머니 [x] `ui/hud_hp` 
 
 ---
 
-## 남은 항목 (전부 선택사항)
-- `char/idle` 정지 1프레임, `obj/portal` 하늘나라 포탈 전용 오브젝트, `ui/close`·`ui/dpad`
-- 이 문서의 A~G 전 카테고리 핵심 목록은 이제 전부 생성·배선 완료.
+## 남은 항목
+- ⚠️ **실제 게임에서 쓰이는데 생성 요청이 아예 안 나간 것(선택사항 아님)**: `item/flower`(들꽃)
+  `item/clover`(네잎클로버) `item/feather`(깃털) `item/bone`(뼈) — 4종. 이모지 폴백으로는
+  잘 작동하지만, 다른 41종 아이템은 다 그림인데 이 4개만 이모지라 도감/가방에서 티가 남.
+- 선택사항(없어도 무방): `char/idle` 정지 1프레임, `obj/portal` 하늘나라 포탈 전용 오브젝트,
+  `ui/close`·`ui/dpad`
 
 ## ⚠️ 표시 연결 — ✅ 완료(전 카테고리 공통 파이프라인)
 1. `js/data/assets.js`의 `PNG` 맵에 `"<종류>_<아이디>"` 키로 등록(예: `obj_tree`, `mon_slime`, `item_shell`, `bg_ground_forest`, `ui_hud_star`, `fx_win`)
