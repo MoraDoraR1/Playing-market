@@ -22,7 +22,7 @@ export function toast(msg) {
 }
 
 export function showModal(em, title, text, onClose) {
-  $("ovEm").textContent = em;
+  $("ovEm").innerHTML = em;
   $("ovTitle").textContent = title;
   $("ovText").textContent = text;
   $("ov").classList.add("show");

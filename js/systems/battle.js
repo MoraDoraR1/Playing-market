@@ -7,7 +7,7 @@ import { MONSTERS, availableBoss } from "../data/monsters.js";
 import { rnd } from "../core/rng.js";
 import { won } from "../core/format.js";
 import { sfx } from "../core/audio.js";
-import { say, toast, showModal } from "../ui/view.js";
+import { say, toast, showModal, sprite } from "../ui/view.js";
 import { renderHud, renderInv, renderScene, renderPanel, renderNav, hitFx, tickAtkBar } from "../ui/render.js";
 import { checkRankUp } from "./progress.js";
 import { onProductionAction } from "./home.js";
@@ -137,7 +137,7 @@ function winBattle() {
   onProductionAction();
   S.foe = null; sfx.up();
   if (boss) {
-    showModal("🏆", `보스 ${f.nm} 격파!`, `대단해요!! 전리품 ${f.drop.pic}${f.drop.nm} + ${won(f.gold)} + 내공 ${f.gong} 획득! 🎉`);
+    showModal(sprite("fx", "win", "🏆"), `보스 ${f.nm} 격파!`, `대단해요!! 전리품 ${f.drop.pic}${f.drop.nm} + ${won(f.gold)} + 내공 ${f.gong} 획득! 🎉`);
   } else {
     say(`${f.pic}${f.nm} 처치! 전리품 ${f.drop.pic}${f.drop.nm} + ${won(f.gold)} + 내공 ${f.gong} 획득! 🎉`);
     toast(`승리! +${won(f.gold)} / 내공 +${f.gong}`);

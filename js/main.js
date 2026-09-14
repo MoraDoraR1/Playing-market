@@ -8,6 +8,7 @@ import { maybeTutorial } from "./ui/tutorial.js";
 import { ensureDaily } from "./systems/meta.js";
 import * as world from "./ui/world.js";
 import { clickMonster } from "./systems/battle.js";
+import { hasPng, pngURL } from "./data/assets.js";
 
 const KEYMAP = {
   "1": "forest", "2": "sea", "3": "river", "4": "mine", "5": "gather",
@@ -54,10 +55,30 @@ function handleKey(e) {
 
 function applyBgm() { if (S.settings.bgm && S.settings.sound) startBgm(); else stopBgm(); }
 
+// HUD/액션바의 기본 SVG·이모지 아이콘을 Codex가 만든 PNG로 교체(있을 때만, 1회성 — 값 표시용
+// id는 그대로 두고 아이콘 요소만 갈아끼움).
+function swapIcon(selector, key, cls) {
+  if (!hasPng(key)) return;
+  const el = document.querySelector(selector);
+  if (el) el.outerHTML = `<img class="${cls}" src="${pngURL(key)}" alt="">`;
+}
+function applyUiIcons() {
+  swapIcon("#rankChip svg.ic", "ui_hud_rank", "ic");
+  swapIcon('.chip[title="별머니"] svg.ic', "ui_hud_star", "ic");
+  swapIcon('.chip[title="체력"] svg.ic', "ui_hud_hp", "ic");
+  swapIcon('.chip[title="피로도"] svg.ic', "ui_hud_fat", "ic");
+  swapIcon('.chip[title="선행점수"] svg.ic', "ui_hud_deed", "ic");
+  swapIcon("#bagBtn .e", "ui_bag", "e");
+  swapIcon("#travelBtn .e", "ui_travel", "e");
+  swapIcon("#manualBtn .e", "ui_manual", "e");
+  swapIcon("#gearBtn .e", "ui_gear", "e");
+}
+
 function init() {
   load();
   setMuted(!S.settings.sound);
   ensureDaily();
+  applyUiIcons();
   renderAll();
 
   $("ovBtn").onclick = hideModal;

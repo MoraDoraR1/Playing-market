@@ -249,24 +249,51 @@ function drawSprite(name, x, y, size) {
   const img = getSprite(name);
   if (img && img.complete && img.naturalWidth) ctx.drawImage(img, x - size / 2, y - size / 2, size, size);
 }
+// 이음매 없이 타일링되는 재질(Codex 생성) → 캔버스 패턴. 아직 로드 전이면 null(폴백 색상 사용).
+function pattern(key) {
+  if (!key) return null;
+  const img = getSprite(key);
+  if (img && img.complete && img.naturalWidth) return ctx.createPattern(img, "repeat");
+  return null;
+}
+// 맵마다 다른 바닥 재질 — 몰입감을 위해 맵별로 실제 지형처럼 보이게(요청: "맵 배경 다 다르게").
+const GROUND_TEX = {
+  village: "bg_ground_village", forest: "bg_ground_forest", sea: "bg_ground_sea",
+  river: "bg_ground_river", mine: "bg_ground_mine", field: "bg_ground_field",
+  dump: "bg_ground_dump", dungeon: "bg_ground_dungeon", heaven: "bg_ground_heaven",
+};
+// 길 재질은 생물군계별로 공유(흙길/모랫길/돌길/구름길)
+const ROAD_TEX = {
+  village: "bg_road_dirt", forest: "bg_road_dirt", field: "bg_road_dirt", dump: "bg_road_dirt",
+  sea: "bg_road_sand", river: "bg_road_sand",
+  mine: "bg_road_stone", dungeon: "bg_road_stone",
+  heaven: "bg_road_cloud",
+};
 
 function draw() {
   const M = map();
   // 배경은 캔버스 전체(레터박스 여백 포함)를 채워 여백이 비어 보이지 않게 함
-  const g = ctx.createLinearGradient(0, 0, 0, CANVAS_H);
-  g.addColorStop(0, M.ground[0]); g.addColorStop(1, M.ground[1]);
-  ctx.fillStyle = g; ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
+  const groundPat = pattern(GROUND_TEX[S.mapId]);
+  if (groundPat) { ctx.fillStyle = groundPat; ctx.fillRect(0, 0, CANVAS_W, CANVAS_H); }
+  else {
+    const g = ctx.createLinearGradient(0, 0, 0, CANVAS_H);
+    g.addColorStop(0, M.ground[0]); g.addColorStop(1, M.ground[1]);
+    ctx.fillStyle = g; ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
+  }
 
   ctx.save();
   ctx.translate(OFFSET_X, 0);   // 이후 모든 좌표는 로직 공간(W x H) 기준, 캔버스 중앙에 배치
 
-  // 잔디 점무늬
-  ctx.fillStyle = "rgba(255,255,255,.10)";
-  for (let i = 0; i < DOTS; i++) ctx.fillRect((i * 97) % W, (i * 53) % H, s(3), s(3));
+  // 잔디 점무늬 — 실제 바닥 재질이 로드되기 전(또는 없을 때)의 임시 폴백 질감
+  if (!groundPat) {
+    ctx.fillStyle = "rgba(255,255,255,.10)";
+    for (let i = 0; i < DOTS; i++) ctx.fillRect((i * 97) % W, (i * 53) % H, s(3), s(3));
+  }
 
   // 길
+  const roadPat = pattern(ROAD_TEX[S.mapId]);
   for (const ex of M.exits) {
-    ctx.fillStyle = "#d8c48c";
+    ctx.fillStyle = roadPat || "#d8c48c";
     if (ex.dir === "N") ctx.fillRect(W / 2 - RW / 2, 0, RW, H / 2);
     if (ex.dir === "S") ctx.fillRect(W / 2 - RW / 2, H / 2, RW, H / 2);
     if (ex.dir === "W") ctx.fillRect(0, H / 2 - RW / 2, W / 2, RW);
@@ -326,7 +353,11 @@ function draw() {
     ctx.fillStyle = "#5a4a3a"; roundRect(gx, gy, gw, s(8), s(4)); ctx.fill();
     ctx.fillStyle = "#4cd68a"; roundRect(gx, gy, gw * Math.min(1, gather.prog), s(8), s(4)); ctx.fill();
     // 반짝임
-    if (wf === 0) { ctx.font = `${s(14)}px serif`; ctx.fillStyle = "#fff"; ctx.fillText("✨", char.x + s(22), char.y - s(24)); }
+    if (wf === 0) {
+      const spark = getSprite("fx_sparkle");
+      if (spark && spark.complete && spark.naturalWidth) drawSprite("fx_sparkle", char.x + s(22), char.y - s(24), s(28));
+      else { ctx.font = `${s(14)}px serif`; ctx.fillStyle = "#fff"; ctx.fillText("✨", char.x + s(22), char.y - s(24)); }
+    }
   } else {
     const frame = char.moving ? Math.floor(char.step / 9) % 2 : 0;
     // 발걸음에 맞춘 통통 바운스(떠다니는 sin 흔들림 대신)

@@ -36,61 +36,37 @@
 - [x] `obj/b_shop` 상점 - [x] `obj/b_home` 집 - [x] `obj/b_donate` 기부소 - [x] `obj/b_journal` 수첩(책 좌판)
 - [x] `obj/sign` 표지판(나무 팻말, 현재 🗺️빠른이동 팝업 제목 아이콘으로 사용 — 방향별 회전이 필요한 맵 표지판 자체는 기존 벡터 방식 유지) - [ ] (선택) `obj/portal` 하늘나라 포탈
 
-## E. UI 아이콘 `ui/` — 256×256, 투명 (픽토그램·세트감)
-HUD: [ ] `ui/hud_rank` 계급메달 [ ] `ui/hud_star` 별머니 [ ] `ui/hud_hp` 체력하트 [ ] `ui/hud_fat` 피로 [ ] `ui/hud_deed` 선행선물
-액션바: [ ] `ui/bag` 가방 [ ] `ui/travel` 빠른이동(지도) [ ] `ui/manual` 설명서(책) [ ] `ui/gear` 설정
+## E. UI 아이콘 `ui/` — 256×256, 투명 (픽토그램·세트감) — ✅ 9종 전부 완료
+HUD: [x] `ui/hud_rank` 계급메달 [x] `ui/hud_star` 별머니 [x] `ui/hud_hp` 체력하트 [x] `ui/hud_fat` 피로 [x] `ui/hud_deed` 선행선물
+액션바: [x] `ui/bag` 가방 [x] `ui/travel` 빠른이동(지도) [x] `ui/manual` 설명서(책) [x] `ui/gear` 설정
 기타: [ ] `ui/close` 닫기(✕) [ ] (선택) `ui/dpad` 방향버튼
 
-## F. 맵 배경/길 타일 `bg/` — 512×512, 불투명, **이음매 없이 타일링**(규격은 `VISUAL_GUIDE.md` §7-1)
-> 지금은 맵마다 단색 그라디언트 바닥 + 단색 흙길 사각형이라 9개 맵이 다 비슷해 보임(몰입 저하).
-> 맵마다 실제 지형처럼 보이는 **바닥 텍스처**와, 그 위를 지나는 **길 텍스처**를 따로 만들어서
-> 코드에서 `ctx.createPattern()`으로 반복 채운다(바닥 전체 1장 그리는 게 아니라 "이어붙이는 작은 타일").
-
+## F. 맵 배경/길 타일 `bg/` — 512×512, 불투명, **이음매 없이 타일링**(규격은 `VISUAL_GUIDE.md` §7-1) — ✅ 13종 전부 완료
 ### F-1. 바닥(ground) 텍스처 — 맵 9개당 1종
-| id | 맵 | 현재 그라디언트(참고 톤) | 소재 설명 |
-|---|---|---|---|
-| `bg/ground_village` | 마을 광장 | `#bff0b4→#9fe08f` | 잔디 마당 사이사이 낮은 돌포석(디딤돌), 아기자기한 광장 느낌 |
-| `bg/ground_forest` | 숲속 | `#a6ecab→#82d68c` | 짙은 잔디 + 낙엽 몇 장 + 작은 클로버, 나무 그늘 |
-| `bg/ground_sea` | 바닷가 | `#a9dcf5→#7ec2ea` | 젖은 모래사장, 잔물결 자국, 작은 조개껍데기 알갱이 |
-| `bg/ground_river` | 강가 | `#a9edd0→#7fdcb4` | 강둑의 짧은 초록 풀 + 둥근 냇돌(자갈) 몇 개 |
-| `bg/ground_mine` | 광산 | `#cdd2d8→#aeb4bc` | 회색 암반 바닥, 희미한 광물 반짝임 알갱이 |
-| `bg/ground_field` | 들판 | `#ffe9a0→#ffd76a` | 마른 황토색 농지, 그루터기 자국, 잔디 섞임 |
-| `bg/ground_dump` | 쓰레기장 | `#d5d9cf→#b8bdb0` | 금 간 회색 콘크리트 + 잡초 틈새 |
-| `bg/ground_dungeon` | 던전 입구 | `#9aa0a8→#7c828c` | 이끼 낀 어두운 돌바닥, 습기 자국 |
-| `bg/ground_heaven` | 하늘나라 | `#e0d4ff→#c3aaff` | 폭신폭신한 파스텔 구름 바닥, 은은한 반짝임 |
-- [ ] `bg/ground_village` [ ] `bg/ground_forest` [ ] `bg/ground_sea` [ ] `bg/ground_river` [ ] `bg/ground_mine`
-- [ ] `bg/ground_field` [ ] `bg/ground_dump` [ ] `bg/ground_dungeon` [ ] `bg/ground_heaven`
+- [x] `bg/ground_village` [x] `bg/ground_forest` [x] `bg/ground_sea` [x] `bg/ground_river` [x] `bg/ground_mine`
+- [x] `bg/ground_field` [x] `bg/ground_dump` [x] `bg/ground_dungeon` [x] `bg/ground_heaven`
 
 ### F-2. 길(road) 텍스처 — 생물군계별 4종 (여러 맵이 공유)
-| id | 사용 맵 | 소재 설명 |
-|---|---|---|
-| `bg/road_dirt` | 마을, 숲속, 들판, 쓰레기장 | 다져진 흙길, 옅은 자갈·발자국 자국, 바닥보다 살짝 어두운 갈색 |
-| `bg/road_sand` | 바닷가, 강가 | 나무 판자 데크길 또는 다져진 모랫길, 바닥보다 밝은 베이지 |
-| `bg/road_stone` | 광산, 던전 입구 | 거친 회색 돌길, 바닥보다 어둡고 각진 돌판 이음선 |
-| `bg/road_cloud` | 하늘나라 | 은은하게 빛나는 금빛~흰색 구름 디딤길 |
-- [ ] `bg/road_dirt` [ ] `bg/road_sand` [ ] `bg/road_stone` [ ] `bg/road_cloud`
+- [x] `bg/road_dirt` [x] `bg/road_sand` [x] `bg/road_stone` [x] `bg/road_cloud`
 
-> 참고: 맵의 실제 길 모양(십자/L자/직선/반쪽)은 `js/ui/world.js`의 `exits` 배열에 따라
-> **코드가 이미 정확히 계산**해서 그 위치에 사각형을 그리고 있음 — 이미지는 "그 사각형을 채울 재질"만
-> 만들면 되고, 길의 모양·위치를 직접 그릴 필요는 없음(타일링이라 어차피 잘림).
+> `js/ui/world.js`의 `GROUND_TEX`/`ROAD_TEX` 맵이 mapId→텍스처를 연결, `ctx.createPattern()`으로
+> 반복 채움. 맵의 실제 길 모양(십자/L자/직선/반쪽)은 `exits` 배열 기준으로 코드가 계산해 그 자리에
+> 패턴을 채우는 것이라, 이미지 자체는 모양·위치를 신경 쓸 필요 없이 재질만 만들면 됨.
 
-## G. 이펙트(선택) `fx/` — 512×512, 투명
-- [ ] `fx/sparkle` 채집 반짝임 [ ] `fx/levelup` 승급 [ ] `fx/hit` 타격 [ ] `fx/win` 승리
+## G. 이펙트 `fx/` — 512×512, 투명 — ✅ 4종 전부 완료
+- [x] `fx/sparkle` 채집 반짝임(월드 채집 애니메이션에 적용) [x] `fx/levelup` 승급(계급 상승 모달에 적용)
+- [x] `fx/hit` 타격(전투 클릭 시 임팩트 이펙트로 적용) [x] `fx/win` 승리(보스 격파 모달에 적용)
 
 ---
 
-## 권장 생성 순서 (작은 배치)
-1. **A. 캐릭터 10프레임** (게임 중 항상 노출·통일성 기준점) — ✅ 완료
-2. **B. 몬스터/보스 9종** — ✅ 완료
-3. **C. 아이템 41종** — ✅ 완료
-4. **D. 월드/건물 13종** — ✅ 완료
-5. **F. 맵 배경/길 타일 13종**(바닥 9 + 길 4) — 다음 우선순위(몰입감 개선 요청)
-6. **E. UI 아이콘 9종**
-7. **G. 이펙트 4종**(선택)
+## 남은 항목 (전부 선택사항)
+- `char/idle` 정지 1프레임, `obj/portal` 하늘나라 포탈 전용 오브젝트, `ui/close`·`ui/dpad`
+- 이 문서의 A~G 전 카테고리 핵심 목록은 이제 전부 생성·배선 완료.
 
-## ⚠️ 표시 연결 — ✅ 완료(B/C/D 전 종류 공통 파이프라인)
-1. `js/data/assets.js`의 `PNG` 맵에 `"<종류>_<아이디>"` 키로 등록(예: `obj_tree`, `mon_slime`, `item_shell`)
-2. 월드(캔버스): `js/ui/world.js`의 `ART` 값 + `js/ui/sprites.js`의 `SVGS` 키를 동일 접두("obj_") 이름으로 통일 → `getSprite()`가 PNG 우선, 없으면 벡터 플레이스홀더로 자동 폴백
-3. 배틀/가방/상점/도감(HTML): `js/ui/view.js`의 `sprite(kind, id, emoji)` 헬퍼가 `PNG["<kind>_<id>"]`가 있으면 `<img class="spr">`, 없으면 이모지 텍스트로 자동 폴백(`kind`는 "mon"/"item")
-4. **플레이 링크용**: `tools/build-standalone.mjs`가 `assets/sprites/**/*.png`를 전부 `data:` URI로 인라인(`__SPRITE_DATA`) — 새 PNG를 폴더에 커밋만 하면 다음 빌드에 자동 포함됨
-> 새 이미지 추가 절차: PNG를 `assets/sprites/<종류>/<id>.png`로 커밋 → `assets.js`의 `PNG` 맵에 한 줄 등록 → 빌드. 그 외 코드 변경 불필요(이모지 폴백이 자동으로 이미지로 교체됨).
+## ⚠️ 표시 연결 — ✅ 완료(전 카테고리 공통 파이프라인)
+1. `js/data/assets.js`의 `PNG` 맵에 `"<종류>_<아이디>"` 키로 등록(예: `obj_tree`, `mon_slime`, `item_shell`, `bg_ground_forest`, `ui_hud_star`, `fx_win`)
+2. 월드(캔버스): `js/ui/world.js`의 `ART`/`GROUND_TEX`/`ROAD_TEX` 값 + `js/ui/sprites.js`의 `SVGS` 키를 동일 접두 이름으로 통일 → `getSprite()`가 PNG 우선, 없으면 벡터/색상 폴백으로 자동 대체
+3. 배틀/가방/상점/도감(HTML): `js/ui/view.js`의 `sprite(kind, id, emoji)` 헬퍼가 `PNG["<kind>_<id>"]`가 있으면 `<img class="spr">`, 없으면 이모지 텍스트로 자동 폴백(`kind`는 "mon"/"item"/"fx")
+4. HUD/액션바 아이콘: `js/main.js`의 `applyUiIcons()`가 초기 1회 기존 SVG/이모지를 PNG로 교체(있을 때만)
+5. **플레이 링크용**: `tools/build-standalone.mjs`가 `assets/sprites/**/*.png`를 전부 `data:` URI로 인라인(`__SPRITE_DATA`) — 새 PNG를 폴더에 커밋만 하면 다음 빌드에 자동 포함됨
+> 새 이미지 추가 절차: PNG를 `assets/sprites/<종류>/<id>.png`로 커밋 → `assets.js`의 `PNG` 맵에 한 줄 등록 → 빌드. 그 외 코드 변경은 카테고리에 따라 다름(mon/item/fx는 자동, obj/bg는 맵/키 연결 1줄 추가 필요).

@@ -119,6 +119,12 @@ export function hitFx(id, dmg, kind) {
   num.textContent = "-" + dmg;
   who.appendChild(num);
   setTimeout(() => num.remove(), 700);
+  if (kind === "foe" && hasPng("fx_hit")) {
+    const burst = document.createElement("img");
+    burst.src = pngURL("fx_hit"); burst.className = "hitburst"; burst.alt = "";
+    who.appendChild(burst);
+    setTimeout(() => burst.remove(), 350);
+  }
   if (id === "pHero") {
     const bar = $("pHpBar"), txt = $("pHpText");
     if (bar) bar.style.width = Math.max(0, Math.min(100, (S.hp / S.maxHp) * 100)) + "%";

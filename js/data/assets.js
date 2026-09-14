@@ -91,6 +91,38 @@ export const PNG = {
   item_crown: "assets/sprites/item/crown.png",
   item_tentacle: "assets/sprites/item/tentacle.png",
   item_darkgem: "assets/sprites/item/darkgem.png",
+
+  // 맵 배경/길 타일 (Codex 생성 — 이음매 없이 타일링되는 재질. 바닥 9종 + 길 4종)
+  bg_ground_village: "assets/sprites/bg/ground_village.png",
+  bg_ground_forest: "assets/sprites/bg/ground_forest.png",
+  bg_ground_sea: "assets/sprites/bg/ground_sea.png",
+  bg_ground_river: "assets/sprites/bg/ground_river.png",
+  bg_ground_mine: "assets/sprites/bg/ground_mine.png",
+  bg_ground_field: "assets/sprites/bg/ground_field.png",
+  bg_ground_dump: "assets/sprites/bg/ground_dump.png",
+  bg_ground_dungeon: "assets/sprites/bg/ground_dungeon.png",
+  bg_ground_heaven: "assets/sprites/bg/ground_heaven.png",
+  bg_road_dirt: "assets/sprites/bg/road_dirt.png",
+  bg_road_sand: "assets/sprites/bg/road_sand.png",
+  bg_road_stone: "assets/sprites/bg/road_stone.png",
+  bg_road_cloud: "assets/sprites/bg/road_cloud.png",
+
+  // UI 아이콘 (Codex 생성 — HUD 5종 + 액션바 4종)
+  ui_hud_rank: "assets/sprites/ui/hud_rank.png",
+  ui_hud_star: "assets/sprites/ui/hud_star.png",
+  ui_hud_hp: "assets/sprites/ui/hud_hp.png",
+  ui_hud_fat: "assets/sprites/ui/hud_fat.png",
+  ui_hud_deed: "assets/sprites/ui/hud_deed.png",
+  ui_bag: "assets/sprites/ui/bag.png",
+  ui_travel: "assets/sprites/ui/travel.png",
+  ui_manual: "assets/sprites/ui/manual.png",
+  ui_gear: "assets/sprites/ui/gear.png",
+
+  // 이펙트 (Codex 생성)
+  fx_sparkle: "assets/sprites/fx/sparkle.png",
+  fx_levelup: "assets/sprites/fx/levelup.png",
+  fx_hit: "assets/sprites/fx/hit.png",
+  fx_win: "assets/sprites/fx/win.png",
 };
 
 export function hasPng(key) { return !!PNG[key]; }

@@ -3,7 +3,7 @@ import { S, rankName, nextRank } from "../core/state.js";
 import { RANKS, HEAVEN_DEED } from "../data/ranks.js";
 import { won } from "../core/format.js";
 import { sfx } from "../core/audio.js";
-import { say, toast, showModal } from "../ui/view.js";
+import { say, toast, showModal, sprite } from "../ui/view.js";
 import { renderHud, renderPanel, renderNav } from "../ui/render.js";
 
 export function checkRankUp() {
@@ -12,7 +12,7 @@ export function checkRankUp() {
     S.rankIdx++; sfx.up();
     const isKing = S.rankIdx === RANKS.length - 1;
     showModal(
-      isKing ? "👑" : "🏅",
+      isKing ? "👑" : sprite("fx", "levelup", "🏅"),
       isKing ? "최고 계급 달성!" : "계급 상승!",
       isKing
         ? `축하해요! 마침내 '생명의 왕'이 되었어요! 시장의 전설이에요! 👑✨`
