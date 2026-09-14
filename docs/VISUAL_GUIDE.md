@@ -50,7 +50,7 @@ centered, isolated on transparent background, no text, no watermark, no border
 | 자원/아이템/전리품 | **512×512** | 투명 | ~24–40px |
 | 월드 오브젝트/건물 | **512×512** | 투명 | 76–84px |
 | UI 아이콘(HUD/버튼) | **256×256** | 투명 | 22–28px |
-| 맵 배경/타일(선택) | **1200×880** (월드 2×) | 불투명 | 전체 화면 |
+| 맵 배경/길 타일 | **512×512, 반드시 이음매 없이 타일링(seamless tileable)** | 불투명 | 화면 전체를 반복 채움 |
 - 포맷: **PNG-32(투명 알파)**. 아이콘/캐릭터/오브젝트는 반드시 배경 투명.
 - 피사체는 프레임 중앙, 가장자리 여백 8~12% 확보(잘림 방지). 발밑 그림자는 피사체에 포함(투명 위 반투명 타원).
 - 색공간 sRGB. 과도한 그림자/글로우 금지.
@@ -88,13 +88,34 @@ centered, isolated on transparent background, no text, no watermark, no border
 - **아이템**: 단일 오브젝트를 정면-살짝 부감으로. 배경 투명. 작은 크기에서 식별되도록 심플·굵게.
 - **UI 아이콘**(가방/빠른이동/설명서/설정, HUD 계급·별머니·체력·피로·선행): **동일한 선 두께·모서리 라운드·채도**로 아이콘 세트감. 픽토그램에 가깝게 단순화.
 
+## 7-1. 맵 배경/길 타일 규격 (`bg/`) — 다른 카테고리와 성격이 다름 ⚠️
+다른 카테고리(캐릭터/몬스터/아이템/오브젝트)는 **투명 배경 + 단일 오브젝트를 중앙 배치**하지만,
+`bg/`는 **불투명 + 이음매 없이 반복 타일링되는 "재질감(텍스처)"**이다. 특정 장면 하나를 그리는 게
+아니라, 사각형 타일 하나를 사방으로 이어붙였을 때 경계가 안 보이는 **패턴**을 만드는 것.
+
+- **종류**: 맵별 **바닥(ground)** 텍스처 9종 + 생물군계별 **길(road)** 텍스처 4종(공유).
+  정확한 목록·맵 배정은 `docs/ASSET_CHECKLIST.md` §F 참고.
+- **전용 마스터 스타일**(§2의 캐릭터용 문구 대신 이걸 사용):
+  ```
+  cute rounded storybook cartoon ground texture, soft cel-shading, warm pastel palette,
+  seamless tileable top-down texture, smooth vector-like finish, kids mobile game asset,
+  flat opaque background (no transparency), subtle soft shading only, very low contrast,
+  no single focal object, no vignette, no border, no text, no watermark,
+  edges must tile seamlessly with no visible seam
+  ```
+  - **네거티브**: `pixel art, photorealistic, 3d render, harsh shadows, gritty, dark, text, letters, watermark, frame, vignette, visible seams, hard tile edges, single centered object, character, creature`
+- **명도/채도**: 같은 맵의 `ground:[색1,색2]` 그라디언트(월드 코드 `MAPS.<id>.ground`, world.js)와 톤을 맞춰
+  전체적인 밝기가 크게 어긋나지 않게(오브젝트·라벨 칩의 가독성 유지).
+- **길(road)은 바닥보다 살짝 어둡거나 대비되는 재질**로 — 걷는 길이라는 게 한눈에 구분돼야 함
+  (예: 잔디밭 위 흙길, 모래밭 위 나무 데크길).
+- 검수: 타일을 4×4로 이어붙인 미리보기에서 경계선이 안 보여야 통과.
+
 ## 8. 파일·명명·연결 규격
 - **경로**: `assets/sprites/<종류>/<아이디>.png`
-  - 종류: `char`(캐릭터) · `mon`(몬스터/보스) · `item`(자원/전리품/가공품) · `obj`(월드 오브젝트/건물) · `ui`(아이콘) · `bg`(배경/타일, 선택)
-- **아이디**: 소문자 스네이크. 캐릭터 `char/down_0`,`char/up_1`,`char/left_0`,`char/work_0`… / 몬스터 `mon/slime` / 아이템 `item/branch` / 오브젝트 `obj/tree`,`obj/b_shop` / 아이콘 `ui/bag`,`ui/hud_star`.
+  - 종류: `char`(캐릭터) · `mon`(몬스터/보스) · `item`(자원/전리품/가공품) · `obj`(월드 오브젝트/건물) · `ui`(아이콘) · `bg`(배경/길 타일)
+- **아이디**: 소문자 스네이크. 캐릭터 `char/down_0`,`char/up_1`,`char/left_0`,`char/work_0`… / 몬스터 `mon/slime` / 아이템 `item/branch` / 오브젝트 `obj/tree`,`obj/b_shop` / 아이콘 `ui/bag`,`ui/hud_star` / 배경 `bg/ground_village`,`bg/road_dirt`.
 - 정확한 아이디·개수는 `docs/ASSET_CHECKLIST.md`에 정의.
-- **연결(참고, 별도 구현 과제)**: 게임은 준비된 이미지를 `js/data/assets.js`의 목록으로 인식해 표시.
-  ⚠️ **플레이 링크(아티팩트)는 외부 PNG를 못 불러오므로**, 표시되려면 **빌드시 data URI로 인라인**하는 작업이 필요(현재 미구현, 별도 과제).
+- **연결(구현 완료)**: `js/data/assets.js`의 `PNG` 맵에 `"<종류>_<아이디>"` 키로 등록하면 자동 표시됨(월드는 `js/ui/world.js`/`sprites.js`, 그 외 UI는 `js/ui/view.js`의 `sprite()`). 빌드(`tools/build-standalone.mjs`)가 PNG를 data URI로 자동 인라인하므로 플레이 링크(아티팩트)에서도 바로 보인다. `bg/`는 추가로 `ctx.createPattern(img,"repeat")`로 타일링하는 렌더 코드 연결이 필요(별도 구현 과제).
 
 ## 9. 통일성 체크(Do/Don't)
 - ✅ 마스터 스타일 문구+팔레트 고정, 투명 배경, 위쪽 광원, 바닥 타원 그림자, 굵은 실루엣, 파스텔.
