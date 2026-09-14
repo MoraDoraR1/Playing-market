@@ -107,25 +107,47 @@ function renderBattle() {
 
 function mkbtn(cls, text, on) { const b = document.createElement("button"); b.className = cls; b.textContent = text; b.onclick = on; return b; }
 
-// 클릭/공격 이펙트: 데미지 숫자 띄우기 + 흔들림/번쩍임 + 해당 진영 체력바 즉시 갱신.
-// (전투 박스 전체를 다시 그리면 클릭 반응성이 끊기므로, 상태 전환 때만 renderBattle로 전체를
-//  다시 그리고, 클릭/몬스터 공격 매 순간은 이 가벼운 DOM 갱신만 한다.)
-export function hitFx(id, dmg, kind) {
+// 클릭/공격 이펙트: 데미지 숫자 띄우기 + 흔들림/번쩍임 + 콤보 배지 + 클릭 리플 +
+// 해당 진영 체력바 즉시 갱신. (전투 박스 전체를 다시 그리면 클릭 반응성이 끊기므로,
+// 상태 전환 때만 renderBattle로 전체를 다시 그리고, 클릭/몬스터 공격 매 순간은
+// 이 가벼운 DOM 갱신만 한다.) combo/evt는 몬스터를 직접 클릭했을 때만 넘어옴(연출 전용,
+// 데미지 자체는 항상 동일 — 밸런스에는 영향 없음).
+export function hitFx(id, dmg, kind, combo, evt) {
   const who = $(id);
   if (!who) return;
   const em = who.querySelector(".em");
   if (em) { em.classList.remove("hitfx"); void em.offsetWidth; em.classList.add("hitfx"); }
   who.classList.remove("dmgflash"); void who.offsetWidth; who.classList.add("dmgflash");
+
+  const big = combo >= 8 ? 1.6 : combo >= 4 ? 1.35 : combo >= 2 ? 1.15 : 1;
   const num = document.createElement("div");
   num.className = "dmgnum " + kind;
+  num.style.fontSize = Math.round(18 * big) + "px";
   num.textContent = "-" + dmg;
   who.appendChild(num);
   setTimeout(() => num.remove(), 700);
   if (kind === "foe" && hasPng("fx_hit")) {
     const burst = document.createElement("img");
     burst.src = pngURL("fx_hit"); burst.className = "hitburst"; burst.alt = "";
+    burst.style.transform = `translate(-50%,-50%) scale(${(0.9 * big).toFixed(2)})`;
     who.appendChild(burst);
     setTimeout(() => burst.remove(), 350);
+  }
+  if (kind === "foe" && combo >= 2) {
+    const badge = document.createElement("div");
+    badge.className = "combo";
+    badge.textContent = `${combo} COMBO!`;
+    who.appendChild(badge);
+    setTimeout(() => badge.remove(), 550);
+  }
+  if (evt && typeof evt.clientX === "number") {
+    const rect = who.getBoundingClientRect();
+    const ripple = document.createElement("div");
+    ripple.className = "clickRipple";
+    ripple.style.left = (evt.clientX - rect.left) + "px";
+    ripple.style.top = (evt.clientY - rect.top) + "px";
+    who.appendChild(ripple);
+    setTimeout(() => ripple.remove(), 400);
   }
   if (id === "pHero") {
     const bar = $("pHpBar"), txt = $("pHpText");

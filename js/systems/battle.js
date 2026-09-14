@@ -19,13 +19,19 @@ export function pickFoe() {
   return MONSTERS[rnd(maxIdx + 1)];
 }
 
-const CLICK_COOLDOWN_MS = 220;   // 연타/매크로 방지 — 사람이 실제로 탭할 수 있는 속도 정도
+// 연타가 실제로 먹혀야 "클리커"답다는 피드백 반영 — 예전 220ms는 사람 손으로도 눌리는
+// 진짜 연타를 다 씹어먹었음. 이제는 같은 클릭 이벤트가 겹쳐 들어오는 것만 막는 최소한의
+// 디바운스(60ms)로 낮춤. 데미지/피로 소모는 클릭 1회=1회 그대로라 밸런스는 안 바뀜 —
+// 빨리 때릴수록 몬스터의 공격 타이머가 덜 도는 만큼 더 안전해지기만 함(의도된 보상).
+const CLICK_COOLDOWN_MS = 60;
 const STRONG_COOLDOWN_MS = 3000; // 강공격 재사용 대기시간
+const COMBO_WINDOW_MS = 700;     // 이 시간 안에 다시 클릭하면 콤보 유지, 넘기면 리셋(연출 전용)
 
 let atkTimer = null;      // 몬스터의 "일정 시간마다 공격" 타이머(setInterval id)
 let lastClickAt = 0;
 let lastStrongAt = 0;
 let foeAtkElapsed = 0;    // 다음 몬스터 공격까지 경과 시간(ms) — 게이지 표시용
+let combo = 0;            // 연속 클릭 콤보 수 — 순수 연출용(데미지에는 영향 없음)
 
 function stopAtkTimer() { if (atkTimer) { clearInterval(atkTimer); atkTimer = null; } }
 
@@ -61,7 +67,7 @@ export function startBattle(foe) {
   if (S.fatigue >= 100) { sfx.bad(); say("너무 지쳤어요! 싸우려면 먼저 쉬어야 해요~ 😵"); return; }
   stopAtkTimer();
   S.foe = { ref: foe, hp: foe.hp, boss: !!foe.boss };
-  foeAtkElapsed = 0; lastClickAt = 0; lastStrongAt = 0;
+  foeAtkElapsed = 0; lastClickAt = 0; lastStrongAt = 0; combo = 0;
   say(`${foe.pic}${foe.nm}와(과)의 전투 시작! 몬스터를 클릭해서 공격해요! 👆`);
   renderScene(); renderPanel();
   atkTimer = setInterval(foeTick, 100);
@@ -75,17 +81,18 @@ export function startBoss() {
 }
 
 // 클릭(탭) 공격 — 클리커형 전투의 핵심 조작
-export function clickMonster() {
+export function clickMonster(e) {
   if (!S.foe) return;
   const now = Date.now();
-  if (now - lastClickAt < CLICK_COOLDOWN_MS) return; // 너무 빠른 연타는 무시
+  if (now - lastClickAt < CLICK_COOLDOWN_MS) return; // 같은 클릭이 겹쳐 들어오는 것만 방지
+  combo = (now - lastClickAt < COMBO_WINDOW_MS) ? combo + 1 : 1;
   lastClickAt = now;
   const f = S.foe;
   const dmg = playerAtk() + rnd(6);
   f.hp -= dmg; sfx.hit();
-  hitFx("fHero", dmg, "foe");
+  hitFx("fHero", dmg, "foe", combo, e);
   S.fatigue = Math.min(100, S.fatigue + 5);
-  if (f.hp <= 0) { winBattle(); return; }
+  if (f.hp <= 0) { combo = 0; winBattle(); return; }
   renderHud(); renderPanel();
 }
 
@@ -117,6 +124,7 @@ export function usePotion() {
 
 export function fleeBattle() {
   stopAtkTimer();
+  combo = 0;
   S.foe = null; S.fatigue = Math.min(100, S.fatigue + 3);
   onProductionAction();
   say("잽싸게 도망쳤어요! 전리품은 없지만 안전이 최고죠~ 🏃💨");
@@ -148,6 +156,7 @@ function winBattle() {
 
 function loseBattle() {
   stopAtkTimer();
+  combo = 0;
   const lost = Math.floor(S.money * 0.1);
   S.money -= lost; S.foe = null; S.hp = S.maxHp; S.place = "home"; S.mode = "world";
   onProductionAction();

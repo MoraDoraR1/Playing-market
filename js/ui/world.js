@@ -127,6 +127,8 @@ const char = { x: W / 2, y: s(344), bob: 0, dir: "down", step: 0, moving: false 
 const held = new Set();
 let target = null, active = null;
 let gather = null;   // 채집 중: { place, prog(0~1), anim }
+let running = false; // Shift 홀드 중이면 달리기(이동속도 배율)
+const RUN_MULT = 1.8;
 let canvas = null, ctx = null, raf = null, keysBound = false;
 
 function map() { return MAPS[S.mapId] || MAPS.village; }
@@ -149,8 +151,17 @@ function bindKeys() {
   if (keysBound) return; keysBound = true;
   preloadSprites();
   const m = { ArrowUp: "up", ArrowDown: "down", ArrowLeft: "left", ArrowRight: "right", w: "up", s: "down", a: "left", d: "right", W: "up", S: "down", A: "left", D: "right" };
-  window.addEventListener("keydown", (e) => { if (S.mode !== "world" || blocked()) return; const d = m[e.key]; if (d) { held.add(d); target = null; e.preventDefault(); } });
-  window.addEventListener("keyup", (e) => { const d = m[e.key]; if (d) held.delete(d); });
+  window.addEventListener("keydown", (e) => {
+    if (e.key === "Shift") { running = true; return; }
+    if (S.mode !== "world" || blocked()) return;
+    const d = m[e.key]; if (d) { held.add(d); target = null; e.preventDefault(); }
+  });
+  window.addEventListener("keyup", (e) => {
+    if (e.key === "Shift") { running = false; return; }
+    const d = m[e.key]; if (d) held.delete(d);
+  });
+  // 창 전환 등으로 keyup을 못 받는 경우 대비 — 포커스를 잃으면 달리기 상태를 초기화
+  window.addEventListener("blur", () => { running = false; });
 }
 
 export function ensureMounted(sc) {
@@ -202,21 +213,22 @@ function update() {
     return;
   }
 
+  const spd = running ? SPEED * RUN_MULT : SPEED; // Shift 홀드 시 달리기
   let dx = 0, dy = 0;
   if (held.size) {
     if (held.has("up")) dy -= 1; if (held.has("down")) dy += 1;
     if (held.has("left")) dx -= 1; if (held.has("right")) dx += 1;
   } else if (target) {
     const tx = target.x - char.x, ty = target.y - char.y, dist = Math.hypot(tx, ty);
-    if (dist < SPEED) { char.x = target.x; char.y = target.y; target = null; }
+    if (dist < spd) { char.x = target.x; char.y = target.y; target = null; }
     else { dx = tx / dist; dy = ty / dist; }
   }
   char.moving = !!(dx || dy);
   if (dx || dy) {
     const len = Math.hypot(dx, dy) || 1;
-    char.x = Math.max(s(10), Math.min(W - s(10), char.x + (dx / len) * SPEED));
-    char.y = Math.max(s(10), Math.min(H - s(10), char.y + (dy / len) * SPEED));
-    char.bob += 0.3; char.step++;
+    char.x = Math.max(s(10), Math.min(W - s(10), char.x + (dx / len) * spd));
+    char.y = Math.max(s(10), Math.min(H - s(10), char.y + (dy / len) * spd));
+    char.bob += 0.3; char.step += running ? 1.6 : 1; // 달릴 때 걸음 애니메이션도 더 빠르게
     if (Math.abs(dx) > Math.abs(dy)) char.dir = dx < 0 ? "left" : "right";
     else char.dir = dy < 0 ? "up" : "down";
   }
