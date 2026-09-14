@@ -496,10 +496,16 @@ const MONSTERS = [
 ];
 
 // 보스 — 계급 관문마다 도전할 수 있는 강력한 적. 처치 시 큰 별머니 보상.
+// 밸런스 재조정(v3, 마왕 한정): 슬라임 왕·크라켄은 막 잡을 수 있는 최소 장비로 실측해보니
+// 이미 위험한 실전이라(예: 슬라임 왕 무기25·방어구0 → 3방 컷이지만 체력 16/60까지 깎임) 그대로 뒀다.
+// 마왕만 문제였음 — 방어구를 충분히 쌓아(반격 피해가 max(1,...)로 바닥까지 떨어지는 지점)부터는
+// HP·전투횟수가 그대로라 "고피로 대비 초고수익" 판이 열려버림(무기60·방어구15에서 피로당 약
+// 10.4만별 — 최상급 채집인 피로당 약 2.9만별의 3.6배, 실측 확인됨). 반격이 뚫리든 안 뚫리든
+// "몇 대 때려야 잡히는지"가 그대로 유지되도록 마왕 HP만 ×1.5, 그만큼 골드·전리품 판매가는 ×0.7.
 const BOSSES = [
   { id: "kingslime", pic: "👑", nm: "슬라임 왕",  hp: 320,  atk: 20, gong: 150, gold: 500,  boss: true, reqRank: 2, drop: { id: "crown",    pic: "👑", nm: "왕관",          pr: 700 } },
   { id: "kraken",    pic: "🐙", nm: "크라켄",     hp: 560,  atk: 32, gong: 320, gold: 1100, boss: true, reqRank: 4, drop: { id: "tentacle", pic: "🦑", nm: "크라켄 촉수",    pr: 1300 } },
-  { id: "darklord",  pic: "😈", nm: "마왕",       hp: 900,  atk: 48, gong: 600, gold: 2400, boss: true, reqRank: 6, drop: { id: "darkgem",  pic: "🟣", nm: "마왕의 보석",    pr: 2800 } },
+  { id: "darklord",  pic: "😈", nm: "마왕",       hp: 1350, atk: 48, gong: 600, gold: 1680, boss: true, reqRank: 6, drop: { id: "darkgem",  pic: "🟣", nm: "마왕의 보석",    pr: 1960 } },
 ];
 
 // 현재 계급에서 도전 가능한 가장 높은 보스
