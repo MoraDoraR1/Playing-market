@@ -250,11 +250,45 @@ function drawSprite(name, x, y, size) {
   if (img && img.complete && img.naturalWidth) ctx.drawImage(img, x - size / 2, y - size / 2, size, size);
 }
 // 이음매 없이 타일링되는 재질(Codex 생성) → 캔버스 패턴. 아직 로드 전이면 null(폴백 색상 사용).
-function pattern(key) {
+// scale로 타일 자체를 확대해서 화면에 보이는 반복 횟수를 줄인다(너무 촘촘하면 눈이 아프다는 피드백).
+function pattern(key, scale) {
   if (!key) return null;
   const img = getSprite(key);
-  if (img && img.complete && img.naturalWidth) return ctx.createPattern(img, "repeat");
+  if (img && img.complete && img.naturalWidth) {
+    const pat = ctx.createPattern(img, "repeat");
+    if (pat && scale && scale !== 1 && pat.setTransform) {
+      try { pat.setTransform(new DOMMatrix().scale(scale)); } catch (e) { /* 구형 브라우저 폴백 무시 */ }
+    }
+    return pat;
+  }
   return null;
+}
+const GROUND_TILE_SCALE = 1.15; // 바닥 타일 확대 배율(타일이 너무 촘촘해 눈이 아프다는 피드백 반영)
+const ROAD_TILE_SCALE = 1.1;    // 길 타일 확대 배율
+// 길을 반듯한 직사각형이 아니라 살짝 구불구불한(발로 다져진 듯한) 오솔길처럼 보이게 하는 흔들림.
+// t: 교차로(0)~맵 끝(1) 사이 진행도, seed: 방향별로 흔들림 패턴이 겹치지 않게 하는 위상차.
+function roadWobble(t, seed) {
+  return Math.sin(t * 7 + seed) * s(5) + Math.sin(t * 3.1 + seed * 1.7) * s(3);
+}
+const ROAD_SEED = { N: 0, S: 10, W: 20, E: 30 };
+// 교차로 중심에서 맵 끝까지, 살짝 굽이치는 폭 가변 오솔길을 여러 개의 원을 이어붙여 채운다
+// (원 여러 개를 하나의 path로 합쳐 채우면 각지지 않고 자연스럽게 이어짐).
+function drawOrganicRoad(dir) {
+  const halfW = RW / 2, steps = 16, seed = ROAD_SEED[dir];
+  ctx.beginPath();
+  for (let i = 0; i <= steps; i++) {
+    const t = i / steps;
+    const along = t * (dir === "N" || dir === "S" ? H / 2 : W / 2);
+    const wob = roadWobble(t, seed);
+    const rr = halfW + Math.sin(t * 5 + seed * 1.3) * s(3);
+    let cx, cy;
+    if (dir === "N") { cx = W / 2 + wob; cy = H / 2 - along; }
+    else if (dir === "S") { cx = W / 2 + wob; cy = H / 2 + along; }
+    else if (dir === "W") { cx = W / 2 - along; cy = H / 2 + wob; }
+    else { cx = W / 2 + along; cy = H / 2 + wob; }
+    ctx.moveTo(cx + rr, cy);
+    ctx.arc(cx, cy, rr, 0, Math.PI * 2);
+  }
 }
 // 맵마다 다른 바닥 재질 — 몰입감을 위해 맵별로 실제 지형처럼 보이게(요청: "맵 배경 다 다르게").
 const GROUND_TEX = {
@@ -273,7 +307,7 @@ const ROAD_TEX = {
 function draw() {
   const M = map();
   // 배경은 캔버스 전체(레터박스 여백 포함)를 채워 여백이 비어 보이지 않게 함
-  const groundPat = pattern(GROUND_TEX[S.mapId]);
+  const groundPat = pattern(GROUND_TEX[S.mapId], GROUND_TILE_SCALE);
   if (groundPat) { ctx.fillStyle = groundPat; ctx.fillRect(0, 0, CANVAS_W, CANVAS_H); }
   else {
     const g = ctx.createLinearGradient(0, 0, 0, CANVAS_H);
@@ -290,23 +324,26 @@ function draw() {
     for (let i = 0; i < DOTS; i++) ctx.fillRect((i * 97) % W, (i * 53) % H, s(3), s(3));
   }
 
-  // 길
-  const roadPat = pattern(ROAD_TEX[S.mapId]);
-  for (const ex of M.exits) {
-    ctx.fillStyle = roadPat || "#d8c48c";
-    if (ex.dir === "N") ctx.fillRect(W / 2 - RW / 2, 0, RW, H / 2);
-    if (ex.dir === "S") ctx.fillRect(W / 2 - RW / 2, H / 2, RW, H / 2);
-    if (ex.dir === "W") ctx.fillRect(0, H / 2 - RW / 2, W / 2, RW);
-    if (ex.dir === "E") ctx.fillRect(W / 2, H / 2 - RW / 2, W / 2, RW);
-  }
-  // 길 가운데 점선
+  // 길 — 각진 직사각형 대신, 발로 다져진 듯 살짝 굽이치는 오솔길(요청: "너무 직선적").
+  const roadPat = pattern(ROAD_TEX[S.mapId], ROAD_TILE_SCALE);
+  ctx.fillStyle = roadPat || "#d8c48c";
+  for (const ex of M.exits) { drawOrganicRoad(ex.dir); ctx.fill(); }
+  // 길 가운데 점선 — 길과 같은 방향으로 살짝 흔들리게 해서 자연스럽게 이어지도록 함
   ctx.strokeStyle = "rgba(255,255,255,.5)"; ctx.lineWidth = s(3); ctx.setLineDash([s(10), s(10)]);
   for (const ex of M.exits) {
+    const seed = ROAD_SEED[ex.dir], steps = 16;
     ctx.beginPath();
-    if (ex.dir === "N") { ctx.moveTo(W / 2, 0); ctx.lineTo(W / 2, H / 2); }
-    if (ex.dir === "S") { ctx.moveTo(W / 2, H); ctx.lineTo(W / 2, H / 2); }
-    if (ex.dir === "W") { ctx.moveTo(0, H / 2); ctx.lineTo(W / 2, H / 2); }
-    if (ex.dir === "E") { ctx.moveTo(W, H / 2); ctx.lineTo(W / 2, H / 2); }
+    for (let i = 0; i <= steps; i++) {
+      const t = i / steps;
+      const along = t * (ex.dir === "N" || ex.dir === "S" ? H / 2 : W / 2);
+      const wob = roadWobble(t, seed);
+      let x, y;
+      if (ex.dir === "N") { x = W / 2 + wob; y = H / 2 - along; }
+      else if (ex.dir === "S") { x = W / 2 + wob; y = H / 2 + along; }
+      else if (ex.dir === "W") { x = W / 2 - along; y = H / 2 + wob; }
+      else { x = W / 2 + along; y = H / 2 + wob; }
+      if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    }
     ctx.stroke();
   }
   ctx.setLineDash([]);
