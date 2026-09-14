@@ -27,12 +27,17 @@ const RW = s(46);                 // 길 폭
 const DOTS = Math.round(60 * SCALE * SCALE); // 잔디 점무늬 개수(면적 비례)
 
 const ART = {
-  forest: "tree", sea: "fishspot", river: "fishspot", mine: "ore",
-  gather: "wheat", hunt: null,
+  forest: "tree", forest_deep: "tree",
+  sea: "fishspot", sea_deep: "fishspot",
+  river: "fishspot", river_deep: "fishspot",
+  mine: "ore", mine_deep: "ore",
+  gather: "wheat", gather_deep: "wheat", hunt: null, hunt_deep: null,
   dump: "trash", pirate: "pirate", heaven: "cloud", battle: "cave",
   shop: "b_shop", home: "b_home", donate: "b_donate", journal: "b_journal",
 };
 
+// 오브젝트 이름 규칙: 같은 자원을 주는 노드는 이름을 통일하고("낚시터"가 여러 개),
+// 자원 구성이 다른("고급") 노드만 별도 이름 + 별도 place(도구 최소 등급 조건)를 씀.
 const MAPS = {
   village: {
     name: "🏘️ 마을 광장", ground: ["#bff0b4", "#9fe08f"],
@@ -48,29 +53,29 @@ const MAPS = {
   },
   sea: {
     name: "🌊 바닷가", ground: ["#a9dcf5", "#7ec2ea"],
-    objects: [{ kind: "gather", place: "sea", x: 150, y: 300, label: "조용한 포구" },
-              { kind: "gather", place: "sea", x: 470, y: 320, label: "먼바다" },
-              { kind: "gather", place: "sea", x: 480, y: 110, label: "암초지대" },
-              { kind: "gather", place: "sea", x: 150, y: 120, label: "밀물웅덩이" },
+    objects: [{ kind: "gather", place: "sea", x: 150, y: 300, label: "낚시터" },
+              { kind: "gather", place: "sea", x: 470, y: 320, label: "낚시터" },
+              { kind: "gather", place: "sea_deep", x: 480, y: 110, label: "심해" },
+              { kind: "gather", place: "sea_deep", x: 150, y: 120, label: "심해" },
               { kind: "gather", place: "pirate", x: 300, y: 96, label: "해적선", minReq: 3 }],
     exits: [{ dir: "S", to: "village", label: "마을" }, { dir: "E", to: "river", label: "강가" }],
   },
   river: {
     name: "🏞️ 강가", ground: ["#a9edd0", "#7fdcb4"],
-    objects: [{ kind: "gather", place: "river", x: 150, y: 320, label: "여울목" },
-              { kind: "gather", place: "river", x: 450, y: 300, label: "하류" },
-              { kind: "gather", place: "river", x: 450, y: 120, label: "상류" },
-              { kind: "gather", place: "river", x: 150, y: 120, label: "조약돌 여울" },
-              { kind: "gather", place: "river", x: 500, y: 220, label: "소용돌이" }],
+    objects: [{ kind: "gather", place: "river", x: 150, y: 320, label: "낚시터" },
+              { kind: "gather", place: "river", x: 450, y: 300, label: "낚시터" },
+              { kind: "gather", place: "river", x: 450, y: 120, label: "낚시터" },
+              { kind: "gather", place: "river_deep", x: 150, y: 120, label: "깊은 여울" },
+              { kind: "gather", place: "river_deep", x: 500, y: 220, label: "깊은 여울" }],
     exits: [{ dir: "W", to: "sea", label: "바닷가" }, { dir: "N", to: "mine", label: "광산" }],
   },
   forest: {
     name: "🌲 숲속", ground: ["#a6ecab", "#82d68c"],
-    objects: [{ kind: "gather", place: "forest", x: 460, y: 150, label: "고목" },
-              { kind: "gather", place: "forest", x: 150, y: 330, label: "덤불숲" },
+    objects: [{ kind: "gather", place: "forest", x: 460, y: 150, label: "벌목터" },
+              { kind: "gather", place: "forest", x: 150, y: 330, label: "벌목터" },
               { kind: "gather", place: "forest", x: 300, y: 120, label: "벌목터" },
-              { kind: "gather", place: "forest", x: 500, y: 330, label: "그루터기밭" },
-              { kind: "gather", place: "forest", x: 150, y: 150, label: "숲속 오솔길" }],
+              { kind: "gather", place: "forest_deep", x: 500, y: 330, label: "깊은 숲" },
+              { kind: "gather", place: "forest_deep", x: 150, y: 150, label: "깊은 숲" }],
     exits: [{ dir: "E", to: "village", label: "마을" }, { dir: "W", to: "dungeon", label: "던전" }],
   },
   dungeon: {
@@ -80,38 +85,38 @@ const MAPS = {
   },
   mine: {
     name: "⛏️ 광산", ground: ["#cdd2d8", "#aeb4bc"],
-    objects: [{ kind: "gather", place: "mine", x: 460, y: 150, label: "깊은 갱도" },
+    objects: [{ kind: "gather", place: "mine_deep", x: 460, y: 150, label: "심층 갱도" },
               { kind: "gather", place: "mine", x: 150, y: 120, label: "광맥" },
-              { kind: "gather", place: "mine", x: 500, y: 320, label: "폐광" },
-              { kind: "gather", place: "mine", x: 450, y: 250, label: "갱도 안쪽" },
-              { kind: "gather", place: "mine", x: 150, y: 350, label: "돌무더기" }],
+              { kind: "gather", place: "mine", x: 500, y: 320, label: "광맥" },
+              { kind: "gather", place: "mine_deep", x: 450, y: 250, label: "심층 갱도" },
+              { kind: "gather", place: "mine", x: 150, y: 350, label: "광맥" }],
     exits: [{ dir: "W", to: "village", label: "마을" }, { dir: "S", to: "river", label: "강가" }],
   },
   field: {
     name: "🌾 들판", ground: ["#ffe9a0", "#ffd76a"],
     objects: [{ kind: "gather", place: "gather", x: 210, y: 230, label: "채집터" },
-              { kind: "gather", place: "gather", x: 150, y: 340, label: "들꽃밭" },
-              { kind: "gather", place: "gather", x: 480, y: 110, label: "약초밭" },
+              { kind: "gather", place: "gather", x: 150, y: 340, label: "채집터" },
+              { kind: "gather", place: "gather_deep", x: 480, y: 110, label: "약초밭" },
               { kind: "gather", place: "hunt",   x: 430, y: 290, label: "사냥터" },
-              { kind: "gather", place: "hunt",   x: 500, y: 340, label: "매복터" }],
+              { kind: "gather", place: "hunt_deep", x: 500, y: 340, label: "매복터" }],
     exits: [{ dir: "N", to: "village", label: "마을" }, { dir: "E", to: "dump", label: "쓰레기장" }],
   },
   dump: {
     name: "🗑️ 쓰레기장", ground: ["#d5d9cf", "#b8bdb0"],
-    objects: [{ kind: "gather", place: "dump", x: 460, y: 150, label: "폐차더미" },
+    objects: [{ kind: "gather", place: "dump", x: 460, y: 150, label: "고물 더미" },
               { kind: "gather", place: "dump", x: 150, y: 320, label: "고물 더미" },
-              { kind: "gather", place: "dump", x: 500, y: 300, label: "녹슨 컨테이너" },
-              { kind: "gather", place: "dump", x: 450, y: 380, label: "쓰레기산" },
-              { kind: "gather", place: "dump", x: 150, y: 120, label: "폐가전더미" }],
+              { kind: "gather", place: "dump", x: 500, y: 300, label: "고물 더미" },
+              { kind: "gather", place: "dump", x: 450, y: 380, label: "고물 더미" },
+              { kind: "gather", place: "dump", x: 150, y: 120, label: "고물 더미" }],
     exits: [{ dir: "W", to: "field", label: "들판" }],
   },
   heaven: {
     name: "☁️ 하늘나라", ground: ["#e0d4ff", "#c3aaff"],
-    objects: [{ kind: "gather", place: "heaven", x: 460, y: 150, label: "구름밭" },
-              { kind: "gather", place: "heaven", x: 150, y: 150, label: "은하수터" },
+    objects: [{ kind: "gather", place: "heaven", x: 460, y: 150, label: "별밭" },
+              { kind: "gather", place: "heaven", x: 150, y: 150, label: "별밭" },
               { kind: "gather", place: "heaven", x: 150, y: 300, label: "별밭" },
-              { kind: "gather", place: "heaven", x: 500, y: 320, label: "무지개언덕" },
-              { kind: "gather", place: "heaven", x: 150, y: 380, label: "천사의정원" }],
+              { kind: "gather", place: "heaven", x: 500, y: 320, label: "별밭" },
+              { kind: "gather", place: "heaven", x: 150, y: 380, label: "별밭" }],
     exits: [{ dir: "S", to: "village", label: "마을" }],
   },
 };
@@ -135,6 +140,7 @@ function locked(o) {
     const p = PLACES[o.place];
     if (p && p.toolRequired && !(S.equip[p.tool] > 0)) return "tool";
     if (p && p.bait && !((S.bait[p.bait] || 0) > 0)) return "bait";
+    if (p && p.minTier && (S.equip[p.tool] || 0) < p.minTier) return "minTier";
   }
   return null;
 }
@@ -376,6 +382,12 @@ function doInteract(o) {
     const p = PLACES[o.place], b = BAIT[p.bait];
     sfx.bad(); toast(`${b.pic} ${b.nm}가 없어요!`);
     say(`${b.pic} ${b.nm}${ga(b.nm)} 있어야 낚시할 수 있어요! 상점에서 구매해보세요~ 🏪`);
+    return;
+  }
+  if (lk === "minTier") {
+    const p = PLACES[o.place], t = TOOLS[p.tool], need = t.tiers[p.minTier - 1];
+    sfx.bad(); toast(`${need.nm} 등급 이상의 ${t.nm}이(가) 필요해요!`);
+    say(`여긴 고급 채집지예요! ${t.pic} ${t.nm} ${need.nm} 등급 이상이어야 캘 수 있어요. 상점에서 강화해보세요~ 🏪`);
     return;
   }
   if (o.kind === "gather") {

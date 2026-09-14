@@ -4,6 +4,9 @@
 // combat:true 인 장소는 전투 씬으로 렌더링됨
 // tool: 필요 도구 카테고리(data/tools.js) — required:true면 미보유 시 진입 불가
 // bait: "sea"|"river" — 해당 미끼가 있어야 함(낚시 전용)
+// minTier: 이 장소가 요구하는 도구의 "최소 등급"(장비 등급이 낮으면 소유해도 진입 불가) —
+//   같은 맵 안에서도 "고급" 채집지는 더 좋은 자원 위주(가중치 역전)라 아무 등급으로나
+//   함부로 캐지 못하게 막는 용도. 기본 채집지는 minTier 없음(도구만 있으면 OK).
 export const PLACES = {
   forest: {
     name: "🌲 숲속", desc: "도끼로 나무를 베어 채집해요",
@@ -99,6 +102,74 @@ export const PLACES = {
       { id: "cloud", pic: "🌈", nm: "무지개조각", pr: 420, w: 2 },
     ],
     rare: { id: "wing", pic: "🪽", nm: "천사의날개", pr: 1100, rare: true },
+  },
+  // ---- "고급" 채집지 변형 — 같은 자원이지만 가중치를 역전(귀한 것 위주)해 실질 기대값을 높임.
+  // 도구를 "소유"만 해선 못 들어가고 minTier 이상 등급이어야 함(장비 등급 조건).
+  forest_deep: {
+    name: "🌲 깊은 숲", desc: "도끼 철 등급 이상만 들어갈 수 있는 깊은 숲",
+    bg: "linear-gradient(180deg,#d3f9d8,#8ce99a)", hero: "🧑‍🌾", verb: "채집하기",
+    tool: "axe", toolRequired: true, minTier: 3,
+    loot: [
+      { id: "branch", pic: "🪵", nm: "나뭇가지", pr: 10, w: 2 },
+      { id: "mushroom", pic: "🍄", nm: "버섯", pr: 22, w: 3 },
+      { id: "herb", pic: "🌿", nm: "약초", pr: 38, w: 5 },
+    ],
+    rare: { id: "ginseng", pic: "🫚", nm: "산삼", pr: 320, rare: true },
+  },
+  mine_deep: {
+    name: "⛏️ 심층 갱도", desc: "곡괭이 철 등급 이상만 들어갈 수 있는 깊은 갱도",
+    bg: "linear-gradient(180deg,#ced4da,#868e96)", hero: "👷", verb: "채광하기", minigame: true,
+    tool: "pickaxe", toolRequired: true, minTier: 3,
+    loot: [
+      { id: "stone", pic: "🪨", nm: "돌멩이", pr: 8, w: 2 },
+      { id: "copper", pic: "🟤", nm: "구리", pr: 30, w: 3 },
+      { id: "iron", pic: "⚙️", nm: "철광석", pr: 48, w: 5 },
+    ],
+    rare: { id: "gem", pic: "💎", nm: "보석", pr: 420, rare: true },
+  },
+  sea_deep: {
+    name: "🌊 심해", desc: "낚싯대 철 등급 이상만 갈 수 있는 심해(미끼 필요)",
+    bg: "linear-gradient(180deg,#a5d8ff,#4dabf7)", hero: "🎣", verb: "낚시하기", minigame: true,
+    tool: "rod", toolRequired: true, bait: "sea", minTier: 3,
+    loot: [
+      { id: "anchovy", pic: "🐟", nm: "멸치", pr: 14, w: 2 },
+      { id: "shell", pic: "🐚", nm: "조개", pr: 26, w: 3 },
+      { id: "squid", pic: "🦑", nm: "오징어", pr: 42, w: 5 },
+    ],
+    rare: { id: "pearl", pic: "🦪", nm: "진주", pr: 360, rare: true },
+  },
+  river_deep: {
+    name: "🏞️ 깊은 여울", desc: "낚싯대 철 등급 이상만 갈 수 있는 깊은 여울(미끼 필요)",
+    bg: "linear-gradient(180deg,#b2f2bb,#63e6be)", hero: "🎣", verb: "낚시하기", minigame: true,
+    tool: "rod", toolRequired: true, bait: "river", minTier: 3,
+    loot: [
+      { id: "loach", pic: "🐡", nm: "미꾸라지", pr: 16, w: 2 },
+      { id: "crayfish", pic: "🦐", nm: "가재", pr: 28, w: 3 },
+      { id: "carp", pic: "🐟", nm: "잉어", pr: 46, w: 5 },
+    ],
+    rare: { id: "goldcarp", pic: "🐠", nm: "황금잉어", pr: 380, rare: true },
+  },
+  gather_deep: {
+    name: "🌿 약초밭", desc: "낫 철 등급 이상만 들어갈 수 있는 기름진 밭",
+    bg: "linear-gradient(180deg,#ffec99,#ffd43b)", hero: "🧺", verb: "채집하기",
+    tool: "sickle", toolRequired: false, minTier: 3,
+    loot: [
+      { id: "berry", pic: "🍓", nm: "산딸기", pr: 12, w: 2 },
+      { id: "flower", pic: "🌼", nm: "들꽃", pr: 20, w: 3 },
+      { id: "grain", pic: "🌾", nm: "곡식", pr: 24, w: 5 },
+    ],
+    rare: { id: "clover", pic: "🍀", nm: "네잎클로버", pr: 300, rare: true },
+  },
+  hunt_deep: {
+    name: "🏹 매복터", desc: "활 철 등급 이상만 들어갈 수 있는 매복터",
+    bg: "linear-gradient(180deg,#ffd8a8,#ffa94d)", hero: "🏹", verb: "사냥하기",
+    tool: "bow", toolRequired: true, minTier: 3,
+    loot: [
+      { id: "feather", pic: "🪶", nm: "깃털", pr: 30, w: 2 },
+      { id: "meat", pic: "🍖", nm: "고기", pr: 40, w: 3 },
+      { id: "bone", pic: "🦴", nm: "뼈", pr: 50, w: 5 },
+    ],
+    rare: { id: "goldegg", pic: "🥚", nm: "황금알", pr: 340, rare: true },
   },
   battle: {
     name: "⚔️ 던전", desc: "몬스터와 싸워 전리품을 얻어요",
