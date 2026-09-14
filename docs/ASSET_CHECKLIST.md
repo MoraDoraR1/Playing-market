@@ -32,10 +32,10 @@
 전리품: [ ] `item/jelly` 슬라임젤리 [ ] `item/batwing` 박쥐날개 [ ] `item/tusk` 멧돼지엄니 [ ] `item/soul` 영혼구슬 [ ] `item/core` 골렘핵 [ ] `item/scale` 용비늘 [ ] `item/crown` 왕관 [ ] `item/tentacle` 크라켄촉수 [ ] `item/darkgem` 마왕의보석
 
 ## D. 월드 오브젝트/건물 `obj/` — 512×512, 투명
-- [ ] `obj/tree` 채집터 나무 - [ ] `obj/fishspot` 낚시터 - [ ] `obj/ore` 광맥 - [ ] `obj/wheat` 밀밭
-- [ ] `obj/trash` 고물더미 - [ ] `obj/pirate` 해적선 - [ ] `obj/cave` 던전 입구 - [ ] `obj/cloud` 하늘나라 구름
-- [ ] `obj/b_shop` 상점 - [ ] `obj/b_home` 집 - [ ] `obj/b_donate` 기부소 - [ ] `obj/b_journal` 수첩(책 좌판)
-- [ ] `obj/sign` 표지판(나무 팻말) - [ ] (선택) `obj/portal` 하늘나라 포탈
+- [x] `obj/tree` 채집터 나무 - [x] `obj/fishspot` 낚시터 - [x] `obj/ore` 광맥 - [x] `obj/wheat` 밀밭
+- [x] `obj/trash` 고물더미 - [x] `obj/pirate` 해적선 - [x] `obj/cave` 던전 입구 - [x] `obj/cloud` 하늘나라 구름
+- [x] `obj/b_shop` 상점 - [x] `obj/b_home` 집 - [x] `obj/b_donate` 기부소 - [x] `obj/b_journal` 수첩(책 좌판)
+- [x] `obj/sign` 표지판(나무 팻말) - [ ] (선택) `obj/portal` 하늘나라 포탈
 
 ## E. UI 아이콘 `ui/` — 256×256, 투명 (픽토그램·세트감)
 HUD: [ ] `ui/hud_rank` 계급메달 [ ] `ui/hud_star` 별머니 [ ] `ui/hud_hp` 체력하트 [ ] `ui/hud_fat` 피로 [ ] `ui/hud_deed` 선행선물
